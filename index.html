@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="fil">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MonoMath — Sweldo, Kaltas, at Swerte</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+:root{
+  --navy:#14213D;
+  --navy-2:#1D2E52;
+  --paper:#F5F1E6;
+  --paper-2:#EDE6D3;
+  --green:#3F8B5C;
+  --green-dark:#2C6642;
+  --gold:#D9A441;
+  --red:#C1443C;
+  --ink:#20242E;
+  --line: rgba(20,33,61,0.18);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--navy);color:var(--paper);font-family:'Space Grotesk',sans-serif;min-height:100vh;}
+h1,h2,h3{font-family:'DM Serif Display',serif;font-weight:400;margin:0 0 .3em 0;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+button{font-family:'Space Grotesk',sans-serif;cursor:pointer;border:none;border-radius:8px;}
+button:disabled{opacity:.4;cursor:not-allowed;}
+.hidden{display:none !important;}
+
+/* ---------- Screens ---------- */
+.screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.card{background:var(--paper);color:var(--ink);border-radius:16px;padding:32px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:11px;color:var(--gold);font-weight:700;margin-bottom:8px;}
+.title-row{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
+.title-row .peso{color:var(--green);}
+.subtitle{color:#5b5546;font-size:14px;margin-bottom:24px;}
+
+.menu-btn{display:block;width:100%;padding:14px 18px;margin-bottom:10px;background:var(--navy);color:var(--paper);font-size:15px;font-weight:500;text-align:left;border-radius:10px;transition:transform .12s,background .12s;}
+.menu-btn:hover:not(:disabled){background:var(--green-dark);transform:translateX(4px);}
+.menu-btn.primary{background:var(--green);}
+.menu-btn.primary:hover{background:var(--green-dark);}
+.menu-btn.danger-o{background:transparent;color:var(--red);border:1.5px solid var(--red);}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#7a7460;margin-bottom:5px;font-weight:700;}
+.field input, .field select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:14px;background:#fff;}
+.player-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.player-row input{flex:1;}
+.player-row select{width:110px;}
+.swatch{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:2px solid #fff;box-shadow:0 0 0 1.5px var(--line);}
+
+/* ---------- Game screen ---------- */
+#gameScreen{align-items:stretch;justify-content:flex-start;padding:14px;}
+.top-bar{display:flex;justify-content:space-between;align-items:center;color:var(--paper);margin-bottom:10px;padding:0 6px;}
+.top-bar .app-name{font-family:'DM Serif Display',serif;font-size:20px;}
+.top-bar .icon-btn{background:var(--navy-2);color:var(--paper);width:34px;height:34px;border-radius:8px;font-size:15px;margin-left:6px;}
+
+.game-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;max-width:1180px;margin:0 auto;width:100%;}
+@media (max-width: 880px){ .game-wrap{grid-template-columns:1fr;} }
+
+.board-outer{background:var(--paper);border-radius:16px;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.board{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(6,1fr);gap:4px;aspect-ratio:1/1;}
+.tile{position:relative;background:#fff;border:1px dashed var(--line);border-radius:6px;padding:4px;font-size:9px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;color:var(--ink);}
+.tile .band{height:8px;border-radius:2px 2px 0 0;margin:-4px -4px 3px -4px;}
+.tile .name{font-weight:700;line-height:1.1;font-size:8.5px;}
+.tile .price{font-family:'IBM Plex Mono',monospace;font-size:8px;color:#5b5546;}
+.tile .houses{position:absolute;bottom:2px;left:2px;right:2px;display:flex;gap:1px;flex-wrap:wrap;}
+.hmark{width:6px;height:6px;background:var(--red);border-radius:1px;}
+.hotelmark{width:100%;height:6px;background:var(--green);border-radius:1px;}
+.tile.corner{background:var(--navy);color:var(--paper);align-items:center;justify-content:center;text-align:center;font-family:'DM Serif Display',serif;font-size:11px;}
+.tile.owned{outline:2px solid var(--gold);}
+.tile.mortgaged{opacity:.5;}
+.tile .tokens{position:absolute;top:2px;right:2px;display:flex;gap:1px;}
+.tok{width:9px;height:9px;border-radius:50%;border:1px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3);}
+.center-cell{grid-column:2/5;grid-row:2/5;background:var(--paper-2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px;text-align:center;}
+.dice-row{display:flex;gap:8px;}
+.die{width:44px;height:44px;background:#fff;border:2px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;transition:transform .15s;}
+.die.rolling{animation:spin .12s linear infinite;}
+@keyframes spin{ 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+
+.side-panel{display:flex;flex-direction:column;gap:10px;}
+.panel{background:var(--paper);border-radius:12px;padding:14px;color:var(--ink);}
+.player-card{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;margin-bottom:6px;border:1.5px solid transparent;}
+.player-card.active{border-color:var(--gold);background:#fff8e8;}
+.player-card.bankrupt{opacity:.35;text-decoration:line-through;}
+.player-card .swatch{width:26px;height:26px;}
+.player-card .pname{font-weight:700;font-size:13px;}
+.player-card .pmoney{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green-dark);}
+.action-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.action-btns button{padding:9px 6px;background:var(--navy);color:var(--paper);font-size:12px;font-weight:600;border-radius:7px;}
+.action-btns button.wide{grid-column:1/3;}
+.action-btns button.go{background:var(--green);}
+.action-btns button.warn{background:var(--red);}
+.log{max-height:140px;overflow-y:auto;font-size:11.5px;font-family:'IBM Plex Mono',monospace;line-height:1.5;color:#4a4536;}
+.log div{padding:2px 0;border-bottom:1px dashed var(--line);}
+
+/* ---------- Modal ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(20,33,61,.72);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
+.modal{background:var(--paper);color:var(--ink);border-radius:14px;padding:26px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.modal h3{margin-bottom:10px;}
+.modal p{font-size:14px;line-height:1.5;margin:0 0 14px 0;color:#4a4536;}
+.choice-btn{display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;background:#fff;border:1.5px solid var(--line);border-radius:8px;font-size:13.5px;}
+.choice-btn:hover{border-color:var(--green);background:#f2f8f4;}
+.choice-btn.correct{border-color:var(--green);background:#e4f5e9;}
+.choice-btn.wrong{border-color:var(--red);background:#fbe8e6;}
+.modal-actions{display:flex;gap:8px;margin-top:10px;}
+.modal-actions button{flex:1;padding:11px;font-weight:600;font-size:13.5px;}
+.btn-primary{background:var(--green);color:#fff;}
+.btn-secondary{background:var(--navy);color:var(--paper);}
+.tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:var(--gold);color:var(--navy);padding:3px 8px;border-radius:20px;margin-bottom:8px;}
+
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+.settings-row input[type=range]{width:130px;}
+.toggle{width:40px;height:22px;border-radius:20px;background:#c9c2ab;position:relative;transition:.15s;}
+.toggle.on{background:var(--green);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s;}
+.toggle.on::after{left:20px;}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--paper);padding:10px 18px;border-radius:8px;font-size:13px;z-index:80;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.small{font-size:12px;color:#7a7460;}
+.rules-list{font-size:13px;line-height:1.7;padding-left:18px;}
+</style>
+</head>
+<body>
+
+<!-- ================= MAIN MENU ================= -->
+<div id="menuScreen" class="screen">
+  <div class="card">
+    <div class="eyebrow">Gross Income · Deductions · Net Pay</div>
+    <div class="title-row"><h1>Mono<span class="peso">₱</span>ath</h1></div>
+    <div class="subtitle">Isang board game tungkol sa sweldo, kaltas, at matalinong paggastos.</div>
+    <button class="menu-btn primary" onclick="startNewGameFlow()">🎮 New Game</button>
+    <button class="menu-btn" id="continueBtn" onclick="continueGame()">💾 Continue Saved Game</button>
+    <button class="menu-btn" onclick="showRules()">📖 Paano Maglaro (Rules)</button>
+    <button class="menu-btn" onclick="showSettings()">⚙️ Settings</button>
+    <button class="menu-btn danger-o" onclick="toast('Salamat sa paglalaro!')">🚪 Exit</button>
+  </div>
+</div>
+
+<!-- ================= PLAYER SETUP ================= -->
+<div id="setupScreen" class="screen hidden">
+  <div class="card">
+    <div class="eyebrow">Player Setup</div>
+    <h2>Sino ang Maglalaro?</h2>
+    <div class="field">
+      <label>Bilang ng Manlalaro (2–6)</label>
+      <select id="numPlayers" onchange="renderPlayerFields()">
+        <option value="2">2</option><option value="3">3</option><option value="4" selected>4</option>
+        <option value="5">5</option><option value="6">6</option>
+      </select>
+    </div>
+    <div id="playerFields"></div>
+    <div class="field">
+      <label>Kahirapan (Difficulty)</label>
+      <select id="difficulty">
+        <option value="easy">Easy — mas simpleng tanong</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard — mas mataas na kaltas</option>
+      </select>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="showMenu()">Bumalik</button>
+      <button class="btn-primary" onclick="confirmSetupAndStart()">Simulan ang Laro →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= RULES ================= -->
+<div id="rulesScreen" class="screen hidden">
+  <div class="card" style="max-width:560px;max-height:85vh;overflow-y:auto;">
+    <div class="eyebrow">Game Rules</div>
+    <h2>Paano Maglaro</h2>
+    <ol class="rules-list">
+      <li>Ang bawat manlalaro ay nagsisimula ng ₱15,000.</li>
+      <li>Pag-ikot: magpalabunutan (roll) ng dice, ilipat ang token, sundin ang parisukat.</li>
+      <li>Kapag walang may-ari ang lupang narating, pwede itong bilhin. Kung tinanggihan, mag-a-auction.</li>
+      <li>May-ari lang ang maaaring magpatayo ng bahay/hotel — dapat pantay-pantay sa buong kulay-grupo bago dumagdag pa.</li>
+      <li>Sa tuwing dumaan o dumating sa GO, sagutin nang tama ang tanong tungkol sa Gross Income/Net Pay upang makatanggap ng sweldo.</li>
+      <li>Kapag tumapak sa parisukat ng ibang tao, magbayad ng renta batay sa bahay/hotel.</li>
+      <li>May mga Payroll Card at Deduction Card na nagbibigay o nagbabawas ng pera.</li>
+      <li>May mga buwis (SSS, PhilHealth, Pag-IBIG, Withholding Tax) na awtomatikong ikakaltas.</li>
+      <li>Makukulong ka kung tumapak sa "Go to Jail" o 3x sunod na dobleng dice. Makakalabas sa pagbayad ng multa o pag-roll ng doble.</li>
+      <li>Ang huling manlalaro na hindi nabangkarote ang panalo!</li>
+    </ol>
+    <button class="btn-secondary" style="width:100%;margin-top:10px;" onclick="showMenu()">Bumalik sa Menu</button>
+  </div>
+</div>
+
+<!-- ================= SETTINGS ================= -->
+<div id="settingsScreen" class="screen hidden">
+  <div class="card">
+    <div class="eyebrow">Settings</div>
+    <h2>Audio &amp; Preferences</h2>
+    <div class="settings-row"><span>Music</span><div class="toggle" id="musicToggle" onclick="toggleSetting('music')"></div></div>
+    <div class="settings-row"><span>Sound Effects</span><div class="toggle" id="sfxToggle" onclick="toggleSetting('sfx')"></div></div>
+    <div class="settings-row"><span>Master Volume</span><input type="range" id="volSlider" min="0" max="100" value="70" oninput="setVolume(this.value)"></div>
+    <div class="settings-row"><span>Test Sound</span><button class="btn-secondary" style="padding:6px 14px;" onclick="sfx('coin')">🔊 Test</button></div>
+    <button class="btn-secondary" style="width:100%;margin-top:14px;" onclick="showMenu()">Bumalik</button>
+  </div>
+</div>
+
+<!-- ================= GAME SCREEN ================= -->
+<div id="gameScreen" class="screen hidden">
+  <div class="top-bar">
+    <div class="app-name">Mono₱ath</div>
+    <div>
+      <button class="icon-btn" onclick="saveGame(true)" title="Save">💾</button>
+      <button class="icon-btn" onclick="showSettings()" title="Settings">⚙️</button>
+      <button class="icon-btn" onclick="showStats()" title="Stats">📊</button>
+      <button class="icon-btn" onclick="confirmExit()" title="Exit">🚪</button>
+    </div>
+  </div>
+  <div class="game-wrap">
+    <div class="board-outer">
+      <div class="board" id="board"></div>
+    </div>
+    <div class="side-panel">
+      <div class="panel" id="playersPanel"></div>
+      <div class="panel">
+        <button id="rollBtn" class="menu-btn primary" style="margin-bottom:8px;" onclick="rollDice()">🎲 Roll Dice</button>
+        <div class="action-btns" id="actionBtns"></div>
+      </div>
+      <div class="panel">
+        <div class="eyebrow" style="margin-bottom:6px;">Transaction Log</div>
+        <div class="log" id="logBox"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* =====================================================================
+   MonoMath — Educational Monopoly-style board game
+   Single-file vanilla JS implementation.
+   ===================================================================== */
+
+/* ---------------- Persistence helpers (window.storage) ---------------- */
+async function saveGame(manual){
+  try{
+    const res = await window.storage.set('monomath:save', JSON.stringify(state));
+    if(manual) toast(res ? '✅ Na-save ang laro!' : '⚠️ Hindi na-save.');
+  }catch(e){ if(manual) toast('⚠️ Hindi available ang save ngayon.'); }
+}
+async function loadGame(){
+  try{
+    const res = await window.storage.get('monomath:save');
+    return res ? JSON.parse(res.value) : null;
+  }catch(e){ return null; }
+}
+async function hasSave(){
+  const s = await loadGame();
+  return !!s;
+}
+
+/* ---------------- Audio (Web Audio API — no external files needed) ---------------- */
+let actx = null;
+const audioSettings = { music:true, sfx:true, volume:0.7 };
+function ensureAudio(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }
+function sfx(kind){
+  if(!audioSettings.sfx) return;
+  ensureAudio(); if(!actx) return;
+  const now = actx.currentTime;
+  const map = {
+    click:[600,0.05,'square'], dice:[300,0.08,'square'], coin:[900,0.12,'triangle'],
+    buy:[500,0.15,'sawtooth'], error:[140,0.2,'sawtooth'], success:[700,0.18,'triangle'],
+    jail:[200,0.25,'square'], win:[880,0.35,'triangle']
+  };
+  const [freq,dur,type] = map[kind]||map.click;
+  const o = actx.createOscillator(); const g = actx.createGain();
+  o.type=type; o.frequency.value=freq;
+  g.gain.value = audioSettings.volume*0.25;
+  g.gain.exponentialRampToValueAtTime(0.001, now+dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(now); o.stop(now+dur);
+}
+
+/* ---------------- Board / Tile data ---------------- */
+const GROUPS = {
+  blue:{name:'Blue', color:'#3B6FB5'},
+  green:{name:'Green', color:'#3F8B5C'},
+  yellow:{name:'Yellow', color:'#D9A441'},
+  red:{name:'Red', color:'#C1443C'}
+};
+// 20 tiles, corners at 0,5,10,15
+const TILES = [
+  {i:0, type:'go', name:'GO'},
+  {i:1, type:'property', name:'Basic Salary Ave', group:'blue', price:1200, rent:[80,400,900,1600,2200], houseCost:600},
+  {i:2, type:'tax', name:'SSS Contribution', amount:300},
+  {i:3, type:'property', name:'Hourly Wage St', group:'blue', price:1400, rent:[100,450,1000,1700,2400], houseCost:600},
+  {i:4, type:'payroll', name:'Payroll Card'},
+  {i:5, type:'jail', name:'Jail / Visiting'},
+  {i:6, type:'property', name:'Overtime Blvd', group:'green', price:1600, rent:[120,500,1100,1900,2600], houseCost:700},
+  {i:7, type:'tax', name:'PhilHealth Premium', amount:350},
+  {i:8, type:'property', name:'Commission St', group:'green', price:1800, rent:[140,550,1200,2000,2800], houseCost:700},
+  {i:9, type:'deduction', name:'Deduction Card'},
+  {i:10, type:'parking', name:'Free Parking'},
+  {i:11, type:'property', name:'Bonus Ave', group:'yellow', price:2000, rent:[160,600,1300,2100,3000], houseCost:800},
+  {i:12, type:'tax', name:'Pag-IBIG Fund', amount:200},
+  {i:13, type:'property', name:'Allowance St', group:'yellow', price:2200, rent:[180,650,1400,2200,3200], houseCost:800},
+  {i:14, type:'payroll', name:'Payroll Card'},
+  {i:15, type:'gotojail', name:'Go To Jail'},
+  {i:16, type:'property', name:'Piecework Rd', group:'red', price:2400, rent:[200,700,1500,2400,3400], houseCost:900},
+  {i:17, type:'tax', name:'Withholding Tax', amount:450},
+  {i:18, type:'property', name:'Net Pay Plaza', group:'red', price:2600, rent:[220,750,1600,2600,3600], houseCost:900},
+  {i:19, type:'deduction', name:'Deduction Card'},
+];
+const CORNER_POS = new Set([0,5,10,15]);
+// grid coordinates (row,col) for a 6x6 perimeter layout, clockwise from bottom-right corner.
+// 4 corners + 4 sides x 4 interior tiles = 20 tiles, no overlap, center 4x4 free for the dice/turn panel.
+function tileGridPos(i){
+  if(i===0) return {row:6, col:6};                    // corner: GO
+  if(i>=1 && i<=4) return {row:6, col:6-i};            // bottom row, right->left
+  if(i===5) return {row:6, col:1};                     // corner: Jail
+  if(i>=6 && i<=9) return {row:6-(i-5), col:1};        // left column, bottom->top
+  if(i===10) return {row:1, col:1};                    // corner: Free Parking
+  if(i>=11 && i<=14) return {row:1, col:1+(i-10)};     // top row, left->right
+  if(i===15) return {row:1, col:6};                    // corner: Go To Jail
+  return {row:1+(i-15), col:6};                        // right column, top->bottom (16-19)
+}
+
+/* ---------------- Learning content: word problems & cards ---------------- */
+const QUESTION_BANK = [
+  {topic:'Gross Income', q:'Si Ana ay may sahod na ₱450/araw, 6 araw kada linggo. Ano ang kanyang GROSS INCOME kada linggo?', choices:['₱2,700','₱450','₱3,150','₱1,800'], a:0},
+  {topic:'Gross Income', q:'Ang oras-oras na sahod ni Ben ay ₱75/oras, 8 oras/araw. Magkano ang kanyang gross pay sa 1 araw?', choices:['₱75','₱600','₱525','₱800'], a:1},
+  {topic:'Gross Income', q:'Aling ITEM ang HINDI bahagi ng Gross Income?', choices:['Basic Salary','Overtime Pay','SSS Contribution','Commission'], a:2},
+  {topic:'Gross Income', q:'Si Carla ay may buwanang sahod na ₱18,000 kasama ang ₱2,000 allowance. Ano ang total gross income niya?', choices:['₱18,000','₱20,000','₱2,000','₱16,000'], a:1},
+  {topic:'Deductions', q:'Alin sa mga sumusunod ang MANDATORY deduction?', choices:['Union Fees','SSS Contribution','Personal Loan','Insurance (optional)'], a:1},
+  {topic:'Deductions', q:'Kung ang gross income ay ₱10,000 at ang total deductions ay ₱1,500, ano ang NET PAY?', choices:['₱11,500','₱1,500','₱8,500','₱10,000'], a:2},
+  {topic:'Deductions', q:'Ang Withholding Tax ay tumutukoy sa:', choices:['Boluntaryong ipon','Buwis na kinaltas bago matanggap ang sweldo','Bonus mula sa employer','Renta ng property'], a:1},
+  {topic:'Net Pay', q:'Formula ng Net Pay:', choices:['Gross Income + Deductions','Gross Income − Deductions','Deductions − Gross Income','Gross Income × Deductions'], a:1},
+  {topic:'Net Pay', q:'Si Mark: Gross Income ₱15,000, SSS ₱600, PhilHealth ₱400, Pag-IBIG ₱200. Net Pay?', choices:['₱13,800','₱15,000','₱14,200','₱1,200'], a:0},
+  {topic:'Gross Income', q:'Si Rina ay Piece-rate worker, ₱15 kada piraso, nakagawa ng 40 piraso. Gross pay?', choices:['₱600','₱55','₱400','₱150'], a:0},
+  {topic:'Deductions', q:'Ang Pag-IBIG Fund contribution ay ginagamit para sa:', choices:['Housing loans at savings','Overtime pay','Sales commission','Property tax'], a:0},
+  {topic:'Net Pay', q:'Kung mas MALAKI ang deductions, ano ang mangyayari sa Net Pay (kung fixed ang gross)?', choices:['Tataas', 'Bababa', 'Mananatiling pareho', 'Magiging zero agad'], a:1},
+];
+function drawQuestion(){
+  if(!state.askedPool || state.askedPool.length===0){
+    state.askedPool = QUESTION_BANK.map((_,idx)=>idx);
+    shuffleArr(state.askedPool);
+  }
+  const idx = state.askedPool.pop();
+  return QUESTION_BANK[idx];
+}
+
+const PAYROLL_CARDS = [
+  {text:'Natanggap mo ang iyong 13th Month Pay!', amount:1000},
+  {text:'Overtime pay dahil sa dagdag na oras ng trabaho.', amount:400},
+  {text:'Nanalo ka ng Employee of the Month bonus.', amount:600},
+  {text:'Nakatanggap ka ng Commission mula sa benta.', amount:350},
+  {text:'Performance Incentive mula sa kumpanya.', amount:500},
+];
+const DEDUCTION_CARDS = [
+  {text:'Late ka ng 3 beses ngayong buwan — tinanggalan ng Attendance Incentive.', amount:-250},
+  {text:'Kinaltasan ng Loan Amortization mula sa cooperative.', amount:-500},
+  {text:'Nagbayad ka ng Union Fee.', amount:-100},
+  {text:'Insurance Premium payment.', amount:-300},
+  {text:'Na-adjust ang Withholding Tax mo dahil sa dagdag na kita.', amount:-400},
+];
+
+/* ---------------- Game State ---------------- */
+const TOKEN_COLORS = ['#C1443C','#3B6FB5','#3F8B5C','#D9A441','#8E5EA2','#3E7C87'];
+const PROFESSIONS = ['Teacher','Nurse','Engineer','Businessman','Doctor','Police','Public Accountant'];
+let state = null;
+
+function freshState(players, difficulty){
+  return {
+    difficulty,
+    players: players.map((p,idx)=>({
+      id: idx, name: p.name || ('Player '+(idx+1)), profession: p.profession, color: TOKEN_COLORS[idx%TOKEN_COLORS.length],
+      money: 15000, position: 0, inJail:false, jailTurns:0, properties:[], bankrupt:false, isAI: p.isAI||false,
+      stats:{turns:0, rentPaid:0, rentCollected:0, questionsCorrect:0, questionsWrong:0}
+    })),
+    currentPlayerIndex: 0,
+    tiles: JSON.parse(JSON.stringify(TILES)),
+    log: [],
+    doublesStreak: 0,
+    hasRolledThisTurn: false,
+    canRollAgain: false,
+    freeParkingPot: 0,
+    askedPool: null,
+    pendingAuction: null,
+    gameOver: false,
+  };
+}
+
+function currentPlayer(){ return state.players[state.currentPlayerIndex]; }
+function addLog(msg){
+  state.log.unshift(msg);
+  if(state.log.length>60) state.log.pop();
+  renderLog();
+}
+function shuffleArr(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function fmt(n){ return (n<0?'-₱':'₱') + Math.abs(Math.round(n)).toLocaleString(); }
+
+/* ---------------- Screen navigation ---------------- */
+function hideAllScreens(){ document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden')); }
+function showMenu(){ hideAllScreens(); document.getElementById('menuScreen').classList.remove('hidden'); refreshContinueBtn(); }
+async function refreshContinueBtn(){
+  const btn = document.getElementById('continueBtn');
+  btn.disabled = !(await hasSave());
+}
+function showRules(){ hideAllScreens(); document.getElementById('rulesScreen').classList.remove('hidden'); }
+function showSettings(){
+  hideAllScreens(); document.getElementById('settingsScreen').classList.remove('hidden');
+  document.getElementById('musicToggle').classList.toggle('on', audioSettings.music);
+  document.getElementById('sfxToggle').classList.toggle('on', audioSettings.sfx);
+  document.getElementById('volSlider').value = Math.round(audioSettings.volume*100);
+}
+function toggleSetting(which){
+  audioSettings[which] = !audioSettings[which];
+  document.getElementById(which+'Toggle').classList.toggle('on', audioSettings[which]);
+  sfx('click');
+}
+function setVolume(v){ audioSettings.volume = v/100; }
+
+function startNewGameFlow(){ hideAllScreens(); document.getElementById('setupScreen').classList.remove('hidden'); renderPlayerFields(); }
+function renderPlayerFields(){
+  const n = parseInt(document.getElementById('numPlayers').value,10);
+  const wrap = document.getElementById('playerFields');
+  wrap.innerHTML='';
+  for(let i=0;i<n;i++){
+    const row = document.createElement('div');
+    row.className='player-row';
+    row.innerHTML = `
+      <span class="swatch" style="background:${TOKEN_COLORS[i%TOKEN_COLORS.length]}"></span>
+      <input type="text" placeholder="Pangalan ng Player ${i+1}" id="pname${i}" value="Player ${i+1}">
+      <select id="pprof${i}">${PROFESSIONS.map(p=>`<option>${p}</option>`).join('')}</select>
+      <select id="pai${i}"><option value="0">Human</option><option value="1">AI</option></select>
+    `;
+    wrap.appendChild(row);
+  }
+}
+function confirmSetupAndStart(){
+  const n = parseInt(document.getElementById('numPlayers').value,10);
+  const players=[];
+  for(let i=0;i<n;i++){
+    players.push({
+      name: document.getElementById('pname'+i).value.trim() || ('Player '+(i+1)),
+      profession: document.getElementById('pprof'+i).value,
+      isAI: document.getElementById('pai'+i).value==='1'
+    });
+  }
+  const difficulty = document.getElementById('difficulty').value;
+  state = freshState(players, difficulty);
+  addLog(`🎮 Bagong laro para kina ${players.map(p=>p.name).join(', ')}.`);
+  saveGame(false);
+  hideAllScreens(); document.getElementById('gameScreen').classList.remove('hidden');
+  renderAll();
+  maybeRunAI();
+}
+async function continueGame(){
+  const saved = await loadGame();
+  if(!saved){ toast('Walang naka-save na laro.'); return; }
+  state = saved;
+  hideAllScreens(); document.getElementById('gameScreen').classList.remove('hidden');
+  renderAll();
+  toast('Na-load ang naka-save na laro.');
+  maybeRunAI();
+}
+function confirmExit(){
+  openModal(`
+    <div class="tag">Exit</div>
+    <h3>Bumalik sa Main Menu?</h3>
+    <p>Naka-save na ang iyong progress.</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Kanselahin</button>
+      <button class="btn-primary" onclick="saveGame(false); closeModal(); showMenu();">Oo, Bumalik</button>
+    </div>
+  `);
+}
+
+/* ---------------- Rendering ---------------- */
+function renderAll(){ renderBoard(); renderPlayersPanel(); renderLog(); renderActionButtons(); }
+
+function renderBoard(){
+  const board = document.getElementById('board');
+  board.innerHTML='';
+  const centerCell = document.createElement('div');
+  centerCell.className='center-cell';
+  centerCell.innerHTML = `
+    <div class="eyebrow" id="turnLabel"></div>
+    <div class="dice-row">
+      <div class="die mono" id="die1">–</div>
+      <div class="die mono" id="die2">–</div>
+    </div>
+    <div class="small" id="turnHint">I-click ang Roll Dice para magsimula.</div>
+  `;
+  TILES.forEach(t=>{
+    const pos = tileGridPos(t.i);
+    const el = document.createElement('div');
+    el.className = 'tile' + (CORNER_POS.has(t.i)?' corner':'');
+    el.style.gridRow = pos.row; el.style.gridColumn = pos.col;
+    el.id = 'tile'+t.i;
+    fillTile(el, t);
+    el.onclick = ()=> showTileInfo(t.i);
+    board.appendChild(el);
+  });
+  centerCell.style.gridRow='2/6'; centerCell.style.gridColumn='2/6';
+  board.appendChild(centerCell);
+}
+function tileIcon(t){
+  return {go:'🟢 GO', jail:'⛓️', parking:'🅿️', gotojail:'🚔', tax:'🧾', payroll:'💰', deduction:'📉'}[t.type] || '';
+}
+function fillTile(el, t){
+  const live = state.tiles[t.i];
+  let html='';
+  if(t.type==='property'){
+    html += `<div class="band" style="background:${GROUPS[t.group].color}"></div>`;
+    html += `<div class="name">${t.name}</div>`;
+    html += `<div class="price">${live.owner!==undefined ? '' : fmt(t.price)}</div>`;
+  } else {
+    html += `<div class="name">${tileIcon(t)}<br>${t.name}</div>`;
+  }
+  el.innerHTML = html;
+  el.classList.toggle('owned', t.type==='property' && live.owner!==undefined);
+  el.classList.toggle('mortgaged', t.type==='property' && live.mortgaged);
+  if(t.type==='property' && live.owner!==undefined){
+    const owner = state.players[live.owner];
+    let extra = document.createElement('div');
+    extra.style.cssText='position:absolute;top:2px;left:2px;width:8px;height:8px;border-radius:50%;background:'+owner.color;
+    el.appendChild(extra);
+  }
+  if(t.type==='property' && (live.houses>0 || live.hotel)){
+    const hdiv = document.createElement('div'); hdiv.className='houses';
+    if(live.hotel){ const h=document.createElement('div'); h.className='hotelmark'; hdiv.appendChild(h); }
+    else{ for(let i=0;i<live.houses;i++){ const h=document.createElement('div'); h.className='hmark'; hdiv.appendChild(h); } }
+    el.appendChild(hdiv);
+  }
+  // tokens
+  const here = state.players.filter(p=>!p.bankrupt && p.position===t.i);
+  if(here.length){
+    const tdiv = document.createElement('div'); tdiv.className='tokens';
+    here.forEach(p=>{ const tk=document.createElement('div'); tk.className='tok'; tk.style.background=p.color; tdiv.appendChild(tk); });
+    el.appendChild(tdiv);
+  }
+}
+function renderPlayersPanel(){
+  const wrap = document.getElementById('playersPanel');
+  wrap.innerHTML = `<div class="eyebrow" style="margin-bottom:8px;">Mga Manlalaro</div>`;
+  state.players.forEach((p,idx)=>{
+    const div = document.createElement('div');
+    div.className='player-card' + (idx===state.currentPlayerIndex?' active':'') + (p.bankrupt?' bankrupt':'');
+    div.innerHTML = `
+      <div class="swatch" style="background:${p.color}"></div>
+      <div style="flex:1;">
+        <div class="pname">${p.name} <span class="small">(${p.profession})</span></div>
+        <div class="pmoney">${fmt(p.money)} · ${p.properties.length} lupa</div>
+      </div>
+      ${p.inJail?'<span title="Nasa kulungan">⛓️</span>':''}
+    `;
+    wrap.appendChild(div);
+  });
+}
+function renderLog(){
+  const box = document.getElementById('logBox');
+  if(!box) return;
+  box.innerHTML = state.log.map(l=>`<div>${l}</div>`).join('');
+}
+function renderActionButtons(){
+  const wrap = document.getElementById('actionBtns');
+  const p = currentPlayer();
+  const rollBtn = document.getElementById('rollBtn');
+  wrap.innerHTML='';
+  const tile = state.tiles[p.position];
+
+  rollBtn.disabled = state.hasRolledThisTurn && !state.canRollAgain || state.gameOver || p.isAI;
+
+  const btns = [];
+  if(p.isAI){
+    wrap.innerHTML = `<div class="small">🤖 Kinukuha ni ${p.name} ang kanyang turn...</div>`;
+    return;
+  }
+  if(p.inJail){
+    btns.push(`<button class="warn" onclick="payBail()">💵 Bayaran ang Piyansa (${fmt(1000)})</button>`);
+  }
+  if(state.hasRolledThisTurn){
+    if(tile.type==='property' && tile.owner===undefined && !state.pendingAuction){
+      btns.push(`<button class="go" onclick="buyProperty()">🏠 Bilhin (${fmt(tile.price)})</button>`);
+      btns.push(`<button onclick="declineBuy()">❌ Huwag Bilhin</button>`);
+    }
+    if(tile.type==='property' && tile.owner===p.id){
+      btns.push(`<button onclick="openManage()">🏗️ Manage Property</button>`);
+    }
+    btns.push(`<button class="wide" onclick="endTurn()">➡️ Tapusin ang Turn</button>`);
+  }
+  wrap.innerHTML = btns.join('');
+  document.getElementById('turnLabel').textContent = (p.isAI?'🤖 ':'') + p.name + "'s Turn" + (p.inJail?' (JAIL)':'');
+}
+
+/* ---------------- Modal / toast helpers ---------------- */
+function openModal(html){
+  document.getElementById('modalRoot').innerHTML = `<div class="modal-bg" id="mbg"><div class="modal">${html}</div></div>`;
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+function toast(msg){
+  const id='t'+Date.now();
+  const div=document.createElement('div'); div.className='toast'; div.id=id; div.textContent=msg;
+  document.getElementById('toastRoot').appendChild(div);
+  setTimeout(()=>{ div.remove(); }, 2600);
+}
+
+/* ---------------- Core turn logic ---------------- */
+function rollDice(){
+  if(state.hasRolledThisTurn && !state.canRollAgain) return;
+  sfx('dice');
+  const p = currentPlayer();
+  const d1el=document.getElementById('die1'), d2el=document.getElementById('die2');
+  d1el.classList.add('rolling'); d2el.classList.add('rolling');
+  let ticks=0;
+  const iv = setInterval(()=>{
+    d1el.textContent = 1+Math.floor(Math.random()*6);
+    d2el.textContent = 1+Math.floor(Math.random()*6);
+    ticks++;
+    if(ticks>6){
+      clearInterval(iv);
+      d1el.classList.remove('rolling'); d2el.classList.remove('rolling');
+      const r1 = 1+Math.floor(Math.random()*6), r2 = 1+Math.floor(Math.random()*6);
+      d1el.textContent=r1; d2el.textContent=r2;
+      resolveRoll(r1,r2);
+    }
+  },90);
+}
+function resolveRoll(r1,r2){
+  const p = currentPlayer();
+  const isDouble = r1===r2;
+  state.hasRolledThisTurn = true;
+  state.canRollAgain = false;
+
+  if(p.inJail){
+    if(isDouble){
+      p.inJail=false; p.jailTurns=0;
+      addLog(`🔓 ${p.name} nag-roll ng doble (${r1},${r2}) at nakalabas sa kulungan!`);
+      sfx('success');
+    } else {
+      p.jailTurns++;
+      addLog(`⛓️ ${p.name} nabigong makalabas sa kulungan (${r1},${r2}).`);
+      if(p.jailTurns>=3){
+        p.money -= 1000; p.inJail=false; p.jailTurns=0;
+        addLog(`💸 ${p.name} pinilit na nagbayad ng ₱1,000 piyansa pagkatapos ng 3 pagtatangka.`);
+        checkBankruptcy(p);
+      } else {
+        renderAll();
+        setTimeout(()=>endTurn(true),700);
+        return;
+      }
+    }
+  }
+
+  const steps = r1+r2;
+  const oldPos = p.position;
+  const newPos = (oldPos+steps)%20;
+  // Bug fix: landing exactly ON go (newPos===0) must not ALSO trigger the "passed go" bonus —
+  // landOnTile() already awards it once for that case. Only count real pass-throughs.
+  const passedGo = newPos < oldPos && newPos !== 0;
+  addLog(`🎲 ${p.name} nag-roll ng ${r1}+${r2}=${steps}.`);
+  animateMove(p, oldPos, newPos, ()=>{
+    if(passedGo && !p.inJail){ handleGoSalary(p, true); }
+    landOnTile(p, newPos, isDouble);
+  });
+}
+function animateMove(p, from, to, cb){
+  let steps = (to-from+20)%20;
+  if(steps===0) steps=20;
+  let cur=from, count=0;
+  const iv = setInterval(()=>{
+    cur = (cur+1)%20; count++;
+    p.position = cur;
+    renderBoard();
+    if(count>=steps){ clearInterval(iv); cb(); }
+  },140);
+}
+function landOnTile(p, pos, isDouble){
+  const tdata = TILES[pos];
+  const live = state.tiles[pos];
+  state.lastIsDouble = isDouble; // remembered so async flows (buy/auction) can resume the doubles-reroll correctly
+  switch(tdata.type){
+    case 'go':
+      handleGoSalary(p, false);
+      afterLandResolved(isDouble);
+      break;
+    case 'property':
+      if(live.owner===undefined){
+        addLog(`📍 ${p.name} ay nakatapak sa ${tdata.name} (walang may-ari).`);
+        renderAll();
+        if(p.isAI){ setTimeout(()=>aiDecideBuy(tdata,live), 500); }
+      } else if(live.owner===p.id){
+        addLog(`📍 ${p.name} nakatapak sa sariling property (${tdata.name}).`);
+        afterLandResolved(isDouble);
+      } else {
+        payRent(p, tdata, live);
+        afterLandResolved(isDouble);
+      }
+      break;
+    case 'tax':
+      p.money -= tdata.amount;
+      addLog(`🧾 ${p.name} nagbayad ng ${tdata.name}: ${fmt(tdata.amount)} (deduction).`);
+      sfx('coin');
+      checkBankruptcy(p);
+      afterLandResolved(isDouble);
+      break;
+    case 'payroll':
+      applyCard(p, PAYROLL_CARDS, '💰 Payroll Card');
+      afterLandResolved(isDouble);
+      break;
+    case 'deduction':
+      applyCard(p, DEDUCTION_CARDS, '📉 Deduction Card');
+      afterLandResolved(isDouble);
+      break;
+    case 'jail':
+      addLog(`👀 ${p.name} ay nasa Jail (bisita lang).`);
+      afterLandResolved(isDouble);
+      break;
+    case 'parking':
+      const pot = state.freeParkingPot;
+      p.money += pot; state.freeParkingPot = 0;
+      addLog(`🅿️ ${p.name} nakakuha ng Free Parking pot: ${fmt(pot)}.`);
+      afterLandResolved(isDouble);
+      break;
+    case 'gotojail':
+      sendToJail(p);
+      afterLandResolved(false);
+      break;
+  }
+  renderAll();
+}
+function afterLandResolved(isDouble){
+  const p = currentPlayer();
+  if(isDouble && !p.inJail){
+    state.doublesStreak++;
+    if(state.doublesStreak>=3){
+      addLog(`🚔 ${p.name} nag-roll ng 3 sunod na doble — diretso sa Jail!`);
+      sendToJail(p);
+      state.doublesStreak=0;
+      state.hasRolledThisTurn=true; state.canRollAgain=false;
+    } else {
+      addLog(`✨ Doble! Roll ulit si ${p.name}.`);
+      state.hasRolledThisTurn=false; state.canRollAgain=true;
+    }
+  } else {
+    state.doublesStreak=0;
+  }
+  renderAll();
+  const cp = currentPlayer();
+  if(cp.isAI){ aiEndTurnSoon(); } else { maybeRunAI(); }
+}
+function handleGoSalary(p, isPassing){
+  addLog(isPassing ? `➡️ ${p.name} dumaan sa GO.` : `🏁 ${p.name} dumating sa GO.`);
+  const q = drawQuestion();
+  askQuestion(p, q, (correct)=>{
+    if(correct){
+      p.money += 2000;
+      p.stats.questionsCorrect++;
+      addLog(`✅ ${p.name} sumagot nang tama! Natanggap ang GO salary: ${fmt(2000)}.`);
+      sfx('success');
+    } else {
+      p.stats.questionsWrong++;
+      addLog(`❌ ${p.name} nagkamali sa tanong. Walang natanggap na sweldo.`);
+      sfx('error');
+    }
+    renderAll();
+  });
+}
+function askQuestion(p, q, cb){
+  if(p.isAI){
+    const correct = Math.random() < 0.65;
+    cb(correct);
+    return;
+  }
+  window.__pendingCB = cb;
+  window.__pendingCorrectIdx = q.a;
+  openModal(`
+    <div class="tag">${q.topic}</div>
+    <h3>Payroll Challenge — GO Salary</h3>
+    <p>${q.q}</p>
+    <div id="qchoices">${q.choices.map((c,i)=>`<button class="choice-btn" onclick="answerQuestionReal(${i})">${c}</button>`).join('')}</div>
+  `);
+}
+function answerQuestionReal(i){
+  const correct = i===window.__pendingCorrectIdx;
+  document.querySelectorAll('#qchoices .choice-btn').forEach((b,idx)=>{
+    b.disabled=true;
+    if(idx===window.__pendingCorrectIdx) b.classList.add('correct');
+    else if(idx===i && !correct) b.classList.add('wrong');
+  });
+  setTimeout(()=>{
+    closeModal();
+    const cb = window.__pendingCB; window.__pendingCB=null;
+    if(cb) cb(correct);
+  }, 700);
+}
+function applyCard(p, deck, label){
+  const card = deck[Math.floor(Math.random()*deck.length)];
+  p.money += card.amount;
+  addLog(`${label}: "${card.text}" (${fmt(card.amount)})`);
+  sfx(card.amount>=0?'coin':'error');
+  checkBankruptcy(p);
+}
+function sendToJail(p){
+  p.position = 5; p.inJail=true; p.jailTurns=0;
+  addLog(`🚔 ${p.name} ay napunta sa Jail!`);
+  sfx('jail');
+  renderBoard();
+}
+function payBail(){
+  const p = currentPlayer();
+  if(p.money<1000){ toast('Kulang ang pera para sa piyansa!'); return; }
+  p.money -= 1000; p.inJail=false; p.jailTurns=0;
+  addLog(`💵 ${p.name} nagbayad ng ₱1,000 piyansa at malaya na.`);
+  renderAll();
+}
+function payRent(p, tdata, live){
+  const owner = state.players[live.owner];
+  if(live.mortgaged){ addLog(`📍 ${p.name} nakatapak sa naka-mortgage na property ni ${owner.name}. Walang bayad.`); return; }
+  let rent = tdata.rent[live.houses] || tdata.rent[0];
+  if(live.hotel) rent = tdata.rent[4];
+  // full color-set, no houses -> double rent
+  if(live.houses===0 && !live.hotel && ownsFullGroup(owner, tdata.group)) rent *= 2;
+  rent = Math.min(rent, p.money + 999999); // rent can exceed money -> triggers bankruptcy flow below
+  p.money -= rent; owner.money += rent;
+  p.stats.rentPaid += rent; owner.stats.rentCollected += rent;
+  addLog(`💸 ${p.name} nagbayad ng renta na ${fmt(rent)} kay ${owner.name} (${tdata.name}).`);
+  sfx('coin');
+  checkBankruptcy(p);
+}
+function ownsFullGroup(owner, group){
+  const groupTiles = TILES.filter(t=>t.type==='property' && t.group===group);
+  return groupTiles.every(t=> state.tiles[t.i].owner===owner.id);
+}
+
+/* ---------------- Buying / Auction ---------------- */
+function buyProperty(){
+  const p = currentPlayer();
+  const pos = p.position;
+  const tdata = TILES[pos]; const live = state.tiles[pos];
+  if(p.money < tdata.price){ toast('Kulang ang pera!'); return; }
+  p.money -= tdata.price;
+  live.owner = p.id; live.houses=0; live.hotel=false; live.mortgaged=false;
+  p.properties.push(pos);
+  addLog(`🏠 ${p.name} bumili ng ${tdata.name} sa halagang ${fmt(tdata.price)}.`);
+  sfx('buy');
+  afterLandResolved(state.lastIsDouble);
+}
+function declineBuy(){
+  const p = currentPlayer();
+  const pos = p.position;
+  const tdata = TILES[pos];
+  addLog(`❌ ${p.name} hindi bumili ng ${tdata.name}. Nagsisimula ang Auction!`);
+  startAuction(pos);
+}
+function startAuction(pos){
+  const tdata = TILES[pos];
+  const bidders = state.players.filter(pl=>!pl.bankrupt);
+  state.pendingAuction = { pos, bids:{}, active: bidders.map(b=>b.id), currentBid:0, currentBidder:null, turnIdx:0 };
+  renderAuctionModal();
+}
+function renderAuctionModal(){
+  const a = state.pendingAuction;
+  const tdata = TILES[a.pos];
+  const activeIds = a.active;
+  if(activeIds.length<=1){
+    if(activeIds.length===1){
+      const winner = state.players.find(p=>p.id===activeIds[0]);
+      if(a.currentBid>0){
+        winner.money -= a.currentBid;
+        const live = state.tiles[a.pos];
+        live.owner = winner.id; live.houses=0; live.hotel=false; live.mortgaged=false;
+        winner.properties.push(a.pos);
+        addLog(`🔨 Nanalo si ${winner.name} sa auction ng ${tdata.name} sa halagang ${fmt(a.currentBid)}.`);
+      } else {
+        addLog(`🔨 Walang bumid sa ${tdata.name}. Nananatiling walang may-ari.`);
+      }
+    } else {
+      addLog(`🔨 Walang bumid sa ${tdata.name}.`);
+    }
+    state.pendingAuction = null;
+    closeModal();
+    afterLandResolved(state.lastIsDouble);
+    return;
+  }
+  const bidderId = activeIds[a.turnIdx % activeIds.length];
+  const bidder = state.players.find(p=>p.id===bidderId);
+  openModal(`
+    <div class="tag">Auction</div>
+    <h3>${tdata.name}</h3>
+    <p>Kasalukuyang pinakamataas na bid: <b class="mono">${fmt(a.currentBid)}</b> ${a.currentBidder!==null?('ni '+state.players.find(p=>p.id===a.currentBidder).name):''}</p>
+    <p>Turn ni <b>${bidder.name}${bidder.isAI?' 🤖':''}</b> — bidder cash: <span class="mono">${fmt(bidder.money)}</span></p>
+    <div class="modal-actions">
+      <button class="btn-secondary" ${bidder.isAI?'disabled':''} onclick="auctionPass(${bidderId})">Pass</button>
+      <button class="btn-primary" ${bidder.isAI?'disabled':''} onclick="auctionRaise(${bidderId})">Raise +${fmt(Math.max(50, Math.round(tdata.price*0.05)))}</button>
+    </div>
+  `);
+  // Bug fix: AI bidders used to leave the auction modal stuck forever waiting for a click
+  // that never came. AI now auto-decides after a short delay.
+  if(bidder.isAI){
+    setTimeout(()=>{
+      if(!state.pendingAuction) return; // auction may have ended already
+      const step = Math.max(50, Math.round(tdata.price*0.05));
+      const willingToPay = tdata.price * (0.6 + Math.random()*0.5);
+      if(a.currentBid + step <= bidder.money && a.currentBid + step <= willingToPay){ auctionRaise(bidderId); }
+      else { auctionPass(bidderId); }
+    }, 800);
+  }
+}
+function auctionRaise(bidderId){
+  const a = state.pendingAuction;
+  const tdata = TILES[a.pos];
+  const bidder = state.players.find(p=>p.id===bidderId);
+  const step = Math.max(50, Math.round(tdata.price*0.05));
+  const newBid = a.currentBid + step;
+  if(newBid > bidder.money){ toast('Kulang ang pera para dito!'); return; }
+  a.currentBid = newBid; a.currentBidder = bidderId;
+  sfx('click');
+  a.turnIdx++;
+  renderAuctionModal();
+}
+function auctionPass(bidderId){
+  const a = state.pendingAuction;
+  a.active = a.active.filter(id=>id!==bidderId);
+  a.turnIdx=0;
+  renderAuctionModal();
+}
+
+/* ---------------- Property management ---------------- */
+function openManage(){
+  const p = currentPlayer();
+  const pos = p.position; const tdata = TILES[pos]; const live = state.tiles[pos];
+  const groupTiles = TILES.filter(t=>t.type==='property' && t.group===tdata.group);
+  const fullSet = ownsFullGroup(p, tdata.group);
+  const evenOk = canBuildEvenly(p, tdata);
+  let html = `<div class="tag">${GROUPS[tdata.group].name} Group</div><h3>${tdata.name}</h3>`;
+  html += `<p>Houses: ${live.houses} ${live.hotel?'+ HOTEL':''} · ${live.mortgaged?'Naka-mortgage':'Hindi mortgaged'}</p>`;
+  html += `<div class="modal-actions" style="flex-wrap:wrap;">`;
+  html += `<button class="btn-primary" ${(!fullSet||live.hotel||!evenOk||p.money<tdata.houseCost)?'disabled':''} onclick="buildHouse(${pos})">🏗️ Magtayo ng Bahay (${fmt(tdata.houseCost)})</button>`;
+  html += `<button class="btn-secondary" ${(live.houses<4||live.hotel)?'disabled':''} onclick="buildHotel(${pos})">🏨 Gawing Hotel (${fmt(tdata.houseCost*2)})</button>`;
+  html += `<button class="btn-secondary" ${live.mortgaged||live.houses>0||live.hotel?'disabled':''} onclick="mortgageProperty(${pos})">🏦 I-mortgage (+${fmt(Math.round(tdata.price/2))})</button>`;
+  html += `<button class="btn-secondary" ${!live.mortgaged?'disabled':''} onclick="redeemMortgage(${pos})">💵 Bayaran ang Mortgage (${fmt(Math.round(tdata.price*0.55))})</button>`;
+  html += `<button class="btn-secondary" onclick="sellProperty(${pos})">💰 Ibenta sa Bangko (${fmt(Math.round(tdata.price*0.5))})</button>`;
+  html += `</div><div class="modal-actions"><button class="btn-secondary" style="flex:1;" onclick="closeModal()">Isara</button></div>`;
+  openModal(html);
+}
+function canBuildEvenly(p, tdata){
+  const groupTiles = TILES.filter(t=>t.type==='property' && t.group===tdata.group);
+  const counts = groupTiles.map(t=>state.tiles[t.i].houses);
+  const thisCount = state.tiles[tdata.i].houses;
+  return thisCount === Math.min(...counts);
+}
+function buildHouse(pos){
+  const p = currentPlayer(); const tdata=TILES[pos]; const live=state.tiles[pos];
+  if(p.money<tdata.houseCost) return;
+  p.money -= tdata.houseCost; live.houses++;
+  addLog(`🏗️ ${p.name} nagtayo ng bahay sa ${tdata.name} (#${live.houses}).`);
+  sfx('buy');
+  closeModal(); renderAll();
+}
+function buildHotel(pos){
+  const p = currentPlayer(); const tdata=TILES[pos]; const live=state.tiles[pos];
+  const cost = tdata.houseCost*2;
+  if(p.money<cost) return;
+  p.money -= cost; live.houses=0; live.hotel=true;
+  addLog(`🏨 ${p.name} nagpatayo ng Hotel sa ${tdata.name}.`);
+  sfx('buy');
+  closeModal(); renderAll();
+}
+function mortgageProperty(pos){
+  const p = currentPlayer(); const tdata=TILES[pos]; const live=state.tiles[pos];
+  live.mortgaged = true; p.money += Math.round(tdata.price/2);
+  addLog(`🏦 ${p.name} nag-mortgage ng ${tdata.name} (+${fmt(Math.round(tdata.price/2))}).`);
+  closeModal(); renderAll();
+}
+function redeemMortgage(pos){
+  const p = currentPlayer(); const tdata=TILES[pos]; const live=state.tiles[pos];
+  const cost = Math.round(tdata.price*0.55);
+  if(p.money<cost) return;
+  p.money -= cost; live.mortgaged=false;
+  addLog(`💵 ${p.name} binayaran ang mortgage ng ${tdata.name}.`);
+  closeModal(); renderAll();
+}
+function sellProperty(pos){
+  const p = currentPlayer(); const tdata=TILES[pos]; const live=state.tiles[pos];
+  p.money += Math.round(tdata.price*0.5);
+  p.properties = p.properties.filter(x=>x!==pos);
+  live.owner=undefined; live.houses=0; live.hotel=false; live.mortgaged=false;
+  addLog(`💰 ${p.name} ibinenta ang ${tdata.name} sa bangko.`);
+  closeModal(); renderAll();
+}
+function showTileInfo(pos){
+  const tdata = TILES[pos]; const live = state.tiles[pos];
+  if(tdata.type!=='property'){ toast(tdata.name); return; }
+  const ownerName = live.owner!==undefined ? state.players[live.owner].name : 'Wala';
+  toast(`${tdata.name} · Presyo ${fmt(tdata.price)} · May-ari: ${ownerName}`);
+}
+
+/* ---------------- Bankruptcy / win detection ---------------- */
+function checkBankruptcy(p){
+  if(p.money>=0) return;
+  // try auto-liquidate mortgageable / sellable assets before declaring bankrupt
+  let guard=0;
+  while(p.money<0 && guard<50){
+    guard++;
+    const unmortgaged = p.properties.map(pos=>state.tiles[pos]).find(l=>!l.mortgaged && l.houses===0 && !l.hotel);
+    if(unmortgaged){ unmortgaged.mortgaged=true; p.money += Math.round(TILES[unmortgaged.i].price/2); continue; }
+    const withHouses = p.properties.map(pos=>state.tiles[pos]).find(l=>l.houses>0 || l.hotel);
+    if(withHouses){
+      if(withHouses.hotel){ withHouses.hotel=false; withHouses.houses=4; p.money += TILES[withHouses.i].houseCost; }
+      else { withHouses.houses--; p.money += Math.round(TILES[withHouses.i].houseCost/2); }
+      continue;
+    }
+    break;
+  }
+  if(p.money<0){
+    p.bankrupt = true;
+    addLog(`💀 ${p.name} ay NABANGKAROTE at natanggal sa laro.`);
+    // release properties
+    p.properties.forEach(pos=>{ const l=state.tiles[pos]; l.owner=undefined; l.houses=0; l.hotel=false; l.mortgaged=false; });
+    p.properties=[];
+    sfx('error');
+    checkWin();
+  }
+}
+function checkWin(){
+  const alive = state.players.filter(p=>!p.bankrupt);
+  if(alive.length<=1 && state.players.length>1){
+    state.gameOver = true;
+    const winner = alive[0];
+    addLog(winner ? `🏆 ${winner.name} ang PANALO!` : `🏁 Tapos na ang laro.`);
+    sfx('win');
+    setTimeout(()=>showEndScreen(winner), 500);
+  }
+}
+function showEndScreen(winner){
+  openModal(`
+    <div class="tag">Game Over</div>
+    <h3>${winner? '🏆 '+winner.name+' Panalo!' : 'Tapos na ang Laro'}</h3>
+    <p>${winner? 'Sina '+winner.name+' ang huling natirang manlalaro na hindi nabangkarote.' : ''}</p>
+    <div class="modal-actions">
+      <button class="btn-primary" style="width:100%" onclick="closeModal(); showMenu();">Bumalik sa Menu</button>
+    </div>
+  `);
+}
+function showStats(){
+  let html = `<div class="tag">Statistics</div><h3>Buod ng Laro</h3>`;
+  state.players.forEach(p=>{
+    html += `<p><b style="color:${p.color}">${p.name}</b> — ${fmt(p.money)} · ${p.properties.length} lupa · Tama: ${p.stats.questionsCorrect} · Mali: ${p.stats.questionsWrong} · Renta natanggap: ${fmt(p.stats.rentCollected)}</p>`;
+  });
+  html += `<div class="modal-actions"><button class="btn-secondary" style="width:100%" onclick="closeModal()">Isara</button></div>`;
+  openModal(html);
+}
+
+/* ---------------- Turn end / AI ---------------- */
+function endTurn(fromJailFail){
+  closeModal();
+  const p = currentPlayer();
+  p.stats.turns++;
+  if(state.pendingAuction) return; // don't allow ending turn mid auction
+  state.hasRolledThisTurn=false; state.canRollAgain=false; state.doublesStreak=0;
+  let next = (state.currentPlayerIndex+1) % state.players.length;
+  let guard=0;
+  while(state.players[next].bankrupt && guard<state.players.length+1){ next=(next+1)%state.players.length; guard++; }
+  state.currentPlayerIndex = next;
+  addLog(`— ${state.players[next].name} naman ang turn —`);
+  saveGame(false);
+  renderAll();
+  document.getElementById('die1').textContent='–'; document.getElementById('die2').textContent='–';
+  if(!state.gameOver) maybeRunAI();
+}
+
+function maybeRunAI(){
+  if(state.gameOver) return;
+  const p = currentPlayer();
+  if(!p.isAI) return;
+  setTimeout(()=>{
+    if(state.gameOver) return;
+    if(p.inJail){
+      if(p.money>=1000 && Math.random()<0.5){ payBail(); }
+    }
+    if(!state.hasRolledThisTurn || state.canRollAgain){ rollDice(); }
+  }, 900);
+}
+function aiDecideBuy(tdata, live){
+  const p = currentPlayer();
+  if(!p.isAI) return;
+  // buyProperty()/declineBuy() each resume the shared afterLandResolved() flow themselves once
+  // the purchase or auction is settled, so no separate AI end-turn bookkeeping is needed here.
+  if(p.money > tdata.price * 1.4 && Math.random()<0.75){ buyProperty(); }
+  else { declineBuy(); }
+}
+function aiEndTurnSoon(){
+  const p = currentPlayer();
+  if(!p.isAI || state.pendingAuction) return;
+  setTimeout(()=>{
+    if(state.gameOver || state.pendingAuction) return;
+    if(state.canRollAgain){ maybeRunAI(); }
+    else { endTurn(); }
+  }, 700);
+}
+
+/* ---------------- Init ---------------- */
+window.addEventListener('click', ()=>{ ensureAudio(); }, {once:true});
+showMenu();
+</script>
+</body>
+</html>
