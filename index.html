@@ -3,1231 +3,564 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PisoUNO — Sequence, Series, at Pera</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Z-Score Attack: Battle of the Normal Curve</title>
 <style>
-:root{
-  --bg-deep:#0e3a2c;
-  --bg-felt:#124a37;
-  --paper:#f3edd8;
-  --paper-dim:#e7dfc2;
-  --ink:#1c2620;
-  --ink-soft:#3f4a41;
-  --gold:#c9a34e;
-  --gold-bright:#e0bd6c;
-  --red:#b6392f;
-  --blue:#1f5c8b;
-  --green:#2f7a4f;
-  --yellow:#c99a1f;
-  --wild-grad: conic-gradient(from 180deg, var(--red), var(--yellow), var(--green), var(--blue), var(--red));
-  --shadow: 0 10px 24px rgba(0,0,0,.35);
-  --radius: 14px;
-  font-size: 16px;
-}
-*{box-sizing:border-box;}
-@media (prefers-reduced-motion: reduce){ *{ animation: none !important; transition: none !important; } }
-html,body{height:100%;}
-body{
-  margin:0;
-  font-family:'Inter',sans-serif;
-  color:var(--paper);
-  background:
-    radial-gradient(ellipse at 20% -10%, rgba(255,255,255,.05), transparent 60%),
-    radial-gradient(ellipse at 100% 100%, rgba(0,0,0,.25), transparent 55%),
-    repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 40px),
-    var(--bg-felt);
-  min-height:100vh;
-  overflow-x:hidden;
-}
-h1,h2,h3,.display{font-family:'Fraunces',serif;}
-.mono{font-family:'IBM Plex Mono',monospace;}
-.screen{display:none; min-height:100vh; padding:20px;}
-.screen.active{display:flex; flex-direction:column;}
-.hidden{display:none !important;}
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
-/* ---------- SETUP SCREEN ---------- */
-#setup{align-items:center; justify-content:center;}
-.setup-card{
-  background:var(--paper); color:var(--ink); border-radius:20px; max-width:640px; width:100%;
-  padding:36px 34px 30px; box-shadow:var(--shadow); position:relative; overflow:hidden;
-}
-.setup-card::before{
-  content:""; position:absolute; top:0; left:0; right:0; height:10px;
-  background:repeating-linear-gradient(90deg, var(--gold) 0 14px, transparent 14px 24px);
-  opacity:.7;
-}
-.brand{display:flex; align-items:baseline; gap:10px; margin-bottom:2px;}
-.brand .coin{
-  display:inline-flex; align-items:center; justify-content:center;
-  width:44px;height:44px;border-radius:50%;
-  background:radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 60%, #8a6a2c 100%);
-  color:#3a2c0c; font-weight:800; font-family:'IBM Plex Mono',monospace; font-size:20px;
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,.35), 0 3px 6px rgba(0,0,0,.35);
-}
-.brand h1{font-size:2.3rem; margin:0; font-weight:900; letter-spacing:.5px;}
-.tagline{color:var(--ink-soft); margin:2px 0 22px; font-size:.98rem;}
-.legend{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 0 24px;}
-.legend-item{
-  display:flex; gap:10px; align-items:flex-start; background:var(--paper-dim);
-  border-radius:10px; padding:10px 12px; border-left:5px solid var(--c);
-}
-.legend-item .ic{font-size:1.3rem; line-height:1;}
-.legend-item b{display:block; font-size:.92rem;}
-.legend-item span{font-size:.78rem; color:var(--ink-soft);}
-label.field{display:block; margin:14px 0 6px; font-weight:600; font-size:.9rem; color:var(--ink-soft);}
-.row{display:flex; gap:10px; flex-wrap:wrap;}
-input[type=text], select{
-  font-family:'Inter'; font-size:.95rem; padding:9px 12px; border-radius:8px;
-  border:1.5px solid #d8cfa9; background:#fffdf6; color:var(--ink); flex:1; min-width:120px;
-}
-.chip-select{display:flex; gap:8px; flex-wrap:wrap;}
-.chip-select button{
-  padding:8px 14px; border-radius:20px; border:1.5px solid #d8cfa9; background:#fffdf6;
-  cursor:pointer; font-weight:600; font-size:.85rem; color:var(--ink-soft);
-}
-.chip-select button.active{background:var(--green); border-color:var(--green); color:#fff;}
-.players-block{margin-top:8px;}
-.player-row{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
-.player-row span.pnum{
-  width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:.8rem;
-  display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono';flex-shrink:0;
-}
-.btn{
-  border:none; cursor:pointer; font-family:'Inter'; font-weight:700; border-radius:10px;
-  padding:12px 20px; font-size:.95rem; transition:transform .1s ease, filter .15s ease;
-}
-.btn:hover{filter:brightness(1.08);}
-.btn:active{transform:scale(.97);}
-.btn-primary{background:var(--green); color:#fff; width:100%; margin-top:20px; font-size:1.05rem; padding:14px;}
-.btn-gold{background:var(--gold); color:#3a2c0c;}
-.btn-ghost{background:transparent; border:1.5px solid rgba(255,255,255,.4); color:var(--paper);}
-.btn-outline{background:transparent; border:1.5px solid #cbbf94; color:var(--ink-soft);}
-.btn-small{padding:7px 12px; font-size:.8rem; border-radius:8px;}
-.help-toggle{background:none; border:none; color:var(--blue); text-decoration:underline; cursor:pointer; font-size:.85rem; margin-top:14px; padding:0; font-family:'Inter'; font-weight:600;}
+  :root{
+    --bg: #0a0f1c;
+    --panel: #121a2b;
+    --panel-2: #17203a;
+    --line: #263252;
+    --blue: #4c8dff;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --text: #e7ecf5;
+    --muted: #8593ac;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: radial-gradient(1200px 600px at 50% -10%, #14203f 0%, var(--bg) 60%);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding:20px 14px 60px;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif; margin:0;}
+  .wrap{max-width:920px; margin:0 auto;}
 
-/* ---------- GAME SCREEN ---------- */
-#game{padding:12px 14px 18px;}
-.topbar{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
-.topbar .titlewrap{display:flex; align-items:center; gap:8px;}
-.titlewrap .coin{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 60%, #8a6a2c 100%); flex-shrink:0;}
-.titlewrap h2{margin:0; font-size:1.25rem; color:var(--paper);}
-.topbar .actions{display:flex; gap:8px; flex-wrap:wrap;}
-.topbar .btn{padding:8px 12px; font-size:.78rem;}
+  /* HEADER */
+  .header{text-align:center; margin-bottom:18px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em;
+    color:var(--blue); text-transform:uppercase; margin-bottom:6px;
+  }
+  .title{font-size:26px; font-weight:700;}
+  .subtitle{color:var(--muted); font-size:13px; margin-top:4px;}
 
-.opponents{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:6px 0 14px;}
-.opp-chip{
-  background:rgba(0,0,0,.22); border:1.5px solid rgba(255,255,255,.12); border-radius:12px;
-  padding:8px 12px; display:flex; align-items:center; gap:8px; font-size:.82rem; min-width:120px;
-}
-.opp-chip.active{border-color:var(--gold-bright); box-shadow:0 0 0 2px rgba(224,189,108,.3);}
-.opp-chip .stack{
-  width:20px;height:26px;border-radius:3px;
-  background:repeating-linear-gradient(135deg, #2a2a2a 0 3px, #3a3a3a 3px 6px);
-  border:1px solid rgba(255,255,255,.3); flex-shrink:0;
-}
-.opp-chip .info{display:flex; flex-direction:column; line-height:1.15;}
-.opp-chip .info b{font-size:.85rem;}
-.opp-chip .info small{color:#cfe0d4; font-size:.72rem;}
+  .curve-wrap{margin:14px auto 4px; max-width:520px;}
 
-.table{display:flex; align-items:center; justify-content:center; gap:26px; margin:10px 0 22px; flex-wrap:wrap;}
-.pile-wrap{display:flex; flex-direction:column; align-items:center; gap:6px;}
-.pile-label{font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; color:#cfe0d4;}
-.draw-pile{
-  width:92px;height:132px;border-radius:10px; cursor:pointer; position:relative;
-  background:
-    repeating-linear-gradient(135deg, #163d2e 0 6px, #1c4a37 6px 12px),
-    linear-gradient(160deg, #1c4a37, #0e3a2c);
-  border:2px solid rgba(255,255,255,.15); box-shadow:var(--shadow);
-  display:flex; align-items:center; justify-content:center;
-}
-.draw-pile .emblem{
-  width:44px;height:44px;border-radius:50%; background:radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 65%, #8a6a2c 100%);
-  display:flex;align-items:center;justify-content:center; color:#3a2c0c; font-weight:800; font-family:'IBM Plex Mono';font-size:20px;
-  box-shadow:inset 0 0 0 2px rgba(255,255,255,.3);
-}
-.draw-pile .count{
-  position:absolute; bottom:-10px; right:-10px; background:var(--gold); color:#3a2c0c; font-family:'IBM Plex Mono';
-  font-weight:700; font-size:.72rem; border-radius:50%; width:26px;height:26px; display:flex;align-items:center;justify-content:center;
-  border:2px solid var(--bg-felt);
-}
-.active-color-tag{display:flex; align-items:center; gap:6px; font-size:.78rem; color:#cfe0d4;}
-.dot{width:12px;height:12px;border-radius:50%; display:inline-block; border:1px solid rgba(255,255,255,.5);}
+  /* LAB PANELS */
+  .lab{
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:12px;
+  }
+  .lab-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .lab-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px;}
+  .lab-name.ai{color:var(--red);}
+  .lab-name.you{color:var(--green);}
+  .kp{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--amber);}
 
-.card{
-  width:92px;height:132px;border-radius:10px; position:relative; flex-shrink:0;
-  background:var(--paper); border:2px solid rgba(0,0,0,.2); box-shadow:var(--shadow);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  color:var(--ink); user-select:none; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease;
-}
-.card::before{
-  content:""; position:absolute; top:6px; left:8px; right:8px; height:0;
-  border-top:2px dashed rgba(0,0,0,.18);
-}
-.card .seal{
-  position:absolute; top:6px; left:6px; width:26px;height:26px;border-radius:50%;
-  display:flex; align-items:center; justify-content:center; font-size:.85rem;
-  background:#fffdf6; border:2px solid var(--accent, #333); box-shadow:0 1px 3px rgba(0,0,0,.25);
-}
-.card .catlabel{position:absolute; top:34px; left:0; right:0; text-align:center; font-size:.52rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); font-weight:700;}
-.card .big{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:2rem; color:var(--accent,#333); margin-top:8px;}
-.card .corner{position:absolute; font-family:'IBM Plex Mono'; font-size:.62rem; font-weight:700; color:var(--accent,#333);}
-.card .corner.br{bottom:6px; right:8px; transform:rotate(180deg);}
-.card .stamp{position:absolute; bottom:16px; left:0; right:0; text-align:center; font-size:.46rem; letter-spacing:.05em; color:rgba(0,0,0,.28); font-weight:700; transform:rotate(-8deg);}
-.card.playable:hover{transform:translateY(-8px); box-shadow:0 16px 28px rgba(0,0,0,.4);}
-.card.disabled{opacity:.55; cursor:not-allowed;}
-.card.disabled:hover{transform:none;}
-.card--red{--accent:var(--red);}
-.card--blue{--accent:var(--blue);}
-.card--green{--accent:var(--green);}
-.card--yellow{--accent:var(--yellow);}
-.card--wild{background:var(--paper);}
-.card--wild .big{background:var(--wild-grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
-.card-back{
-  width:92px;height:132px;border-radius:10px;
-  background:repeating-linear-gradient(135deg, #163d2e 0 6px, #1c4a37 6px 12px), linear-gradient(160deg,#1c4a37,#0e3a2c);
-  border:2px solid rgba(255,255,255,.15);
-}
+  .parts{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+  .part{
+    background:#0d1424; border:1px solid var(--line); border-radius:10px;
+    padding:8px 4px; text-align:center; position:relative; transition:.2s;
+    cursor:default;
+  }
+  .part.targetable{cursor:pointer; border-color:var(--blue);}
+  .part.targetable:hover{background:#152040; transform:translateY(-2px);}
+  .part.destroyed{opacity:.3; filter:grayscale(1);}
+  .part .icon{font-size:20px; display:block; margin-bottom:4px;}
+  .part .pname{font-size:9px; color:var(--muted); line-height:1.2; min-height:22px;}
+  .hp-dots{display:flex; justify-content:center; gap:3px; margin-top:5px;}
+  .hp-dot{width:6px; height:6px; border-radius:50%; background:var(--line);}
+  .hp-dot.filled{background:var(--green);}
+  .lab-name.ai ~ .parts .hp-dot.filled{background:var(--red);}
 
-.handzone{margin-top:auto;}
-.handzone-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;}
-.handzone-head h3{margin:0; font-size:1rem; color:var(--gold-bright);}
-.turnstate-msg{font-size:.78rem; color:#f0d9a0; background:rgba(0,0,0,.25); padding:4px 10px; border-radius:8px;}
-.hand{display:flex; gap:8px; overflow-x:auto; padding:10px 4px 16px; -webkit-overflow-scrolling:touch;}
-.hand::-webkit-scrollbar{height:6px;}
-.hand::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2); border-radius:4px;}
-.handzone-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:6px;}
+  /* LOG / STATUS */
+  .status{
+    text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    color:var(--muted); min-height:20px; margin:10px 0;
+  }
 
-/* ---------- MODALS ---------- */
-.overlay{
-  position:fixed; inset:0; background:rgba(6,20,14,.72); display:none;
-  align-items:center; justify-content:center; z-index:50; padding:16px; backdrop-filter:blur(2px);
-}
-.overlay.active{display:flex;}
-.modal{
-  background:var(--paper); color:var(--ink); border-radius:18px; max-width:480px; width:100%;
-  padding:26px 24px; box-shadow:0 20px 50px rgba(0,0,0,.5); max-height:88vh; overflow-y:auto;
-  position:relative;
-}
-.modal h3{margin:0 0 4px; font-size:1.2rem;}
-.q-tag{display:inline-flex; align-items:center; gap:6px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:4px 10px; border-radius:20px; color:#fff; margin-bottom:10px;}
-.q-text{font-size:1rem; line-height:1.5; margin:10px 0 16px; color:var(--ink);}
-.choice{
-  display:block; width:100%; text-align:left; background:#fffdf6; border:1.5px solid #d8cfa9; border-radius:10px;
-  padding:11px 14px; margin-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:.92rem; cursor:pointer; color:var(--ink);
-}
-.choice:hover{border-color:var(--green);}
-.choice.correct{background:#dff2e3; border-color:var(--green); font-weight:700;}
-.choice.wrong{background:#f6dede; border-color:var(--red);}
-.timerbar{height:6px; background:#d8cfa9; border-radius:3px; overflow:hidden; margin-bottom:14px;}
-.timerbar-fill{height:100%; background:var(--gold); width:100%; transition:width 1s linear;}
-.explain-box{background:var(--paper-dim); border-radius:10px; padding:12px 14px; margin-top:6px; font-size:.85rem; line-height:1.5;}
-.explain-box .formula{font-family:'IBM Plex Mono'; font-weight:700; color:var(--green); margin-bottom:4px;}
-.modal .btn-primary{margin-top:16px;}
-.colorpick{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;}
-.colorpick button{
-  padding:16px; border-radius:12px; border:none; cursor:pointer; font-weight:700; color:#fff; font-size:.95rem;
-  display:flex; flex-direction:column; align-items:center; gap:4px;
-}
-.uno-count{font-family:'IBM Plex Mono'; font-size:3rem; text-align:center; color:var(--red); font-weight:800; margin:6px 0 14px;}
-.toast-wrap{position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:80; display:flex; flex-direction:column; gap:8px; align-items:center;}
-.toast{background:var(--ink); color:#fff; padding:9px 16px; border-radius:20px; font-size:.82rem; box-shadow:0 6px 18px rgba(0,0,0,.4); opacity:0; animation:toastIn .25s ease forwards;}
-@keyframes toastIn{from{opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);}}
+  /* ACTIONS */
+  .actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:14px 0;}
+  button{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px;
+    border:none; border-radius:9px; padding:11px 18px; cursor:pointer;
+    transition:.15s; color:#08101f;
+  }
+  button:disabled{opacity:.35; cursor:not-allowed;}
+  .btn-attack{background:var(--blue); color:#fff;}
+  .btn-attack:hover:not(:disabled){background:#6ba0ff;}
+  .btn-defend{background:var(--green);}
+  .btn-defend:hover:not(:disabled){background:#5eeab0;}
+  .btn-repair{background:var(--amber);}
+  .btn-repair:hover:not(:disabled){background:#ffd061;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--blue);}
 
-.pass-screen{align-items:center; justify-content:center; text-align:center;}
-.pass-box{background:var(--paper); color:var(--ink); border-radius:20px; padding:44px 34px; max-width:420px; box-shadow:var(--shadow);}
-.pass-box h2{margin:0 0 10px;}
-.pass-box p{color:var(--ink-soft); margin-bottom:22px;}
+  /* CHALLENGE MODAL */
+  .overlay{
+    position:fixed; inset:0; background:rgba(4,7,15,.78); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:50; padding:16px;
+  }
+  .overlay.show{display:flex;}
+  .card{
+    background:linear-gradient(180deg,#161f38,#0f1626);
+    border:1px solid var(--line); border-radius:16px; max-width:480px; width:100%;
+    padding:22px 22px 20px; box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .card-tag{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+    letter-spacing:.1em; padding:3px 9px; border-radius:20px; margin-bottom:10px;
+  }
+  .tag-A{background:rgba(76,141,255,.15); color:var(--blue); border:1px solid rgba(76,141,255,.4);}
+  .tag-B{background:rgba(52,211,153,.15); color:var(--green); border:1px solid rgba(52,211,153,.4);}
+  .card-q{font-size:15.5px; line-height:1.5; margin-bottom:14px;}
+  .card-q .formula{
+    display:block; font-family:'IBM Plex Mono',monospace; background:#0a1120;
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin-top:8px; font-size:13.5px; color:var(--amber);
+  }
+  .opts{display:flex; flex-direction:column; gap:8px; margin-bottom:6px;}
+  .opt{
+    text-align:left; background:#0d1424; border:1px solid var(--line); color:var(--text);
+    padding:10px 12px; border-radius:9px; font-family:'IBM Plex Mono',monospace; font-size:13.5px;
+  }
+  .opt:hover:not(:disabled){border-color:var(--blue); background:#132043;}
+  .opt.correct{border-color:var(--green); background:rgba(52,211,153,.12); color:var(--green);}
+  .opt.wrong{border-color:var(--red); background:rgba(248,113,113,.12); color:var(--red);}
 
-.ledger table{width:100%; border-collapse:collapse; font-size:.85rem;}
-.ledger th, .ledger td{padding:8px 6px; text-align:left; border-bottom:1px solid #d8cfa9;}
-.ledger th{color:var(--ink-soft); font-size:.72rem; text-transform:uppercase; letter-spacing:.04em;}
-.bar-track{background:#e7dfc2; border-radius:6px; height:8px; overflow:hidden; width:100%;}
-.bar-fill{height:100%; background:var(--green);}
-.formula-list .fitem{margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid #d8cfa9;}
-.formula-list .fitem:last-child{border-bottom:none;}
-.formula-list .fitem h4{margin:0 0 4px; font-size:.9rem; display:flex; align-items:center; gap:6px;}
-.formula-list .fitem .f{font-family:'IBM Plex Mono'; font-weight:700; color:var(--green); font-size:.95rem; margin:4px 0;}
-.formula-list .fitem p{margin:2px 0 0; font-size:.8rem; color:var(--ink-soft); line-height:1.5;}
+  .feedback{margin-top:12px; padding:12px; border-radius:10px; background:#0a1120; border:1px solid var(--line); font-size:13px; color:var(--muted); display:none;}
+  .feedback.show{display:block;}
+  .feedback b{color:var(--text);}
+  .feedback .fb-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; display:block; margin-bottom:5px;}
+  .fb-title.ok{color:var(--green);}
+  .fb-title.no{color:var(--red);}
+  .continue-btn{margin-top:12px; width:100%; background:var(--blue); color:#fff; padding:11px;}
 
-.champion-box{text-align:center;}
-.champion-box .medal{font-size:3.4rem;}
-footer.credit{text-align:center; font-size:.68rem; color:rgba(255,255,255,.35); margin-top:10px;}
-@media (max-width:520px){
-  .card{width:76px;height:112px;}
-  .draw-pile,.card-back{width:76px;height:112px;}
-  .card .big{font-size:1.6rem;}
-  .brand h1{font-size:1.7rem;}
-}
+  /* GAME OVER */
+  .gameover{
+    position:fixed; inset:0; background:rgba(4,7,15,.9); display:none;
+    align-items:center; justify-content:center; z-index:60; text-align:center; padding:20px;
+  }
+  .gameover.show{display:flex;}
+  .go-title{font-size:30px; margin-bottom:8px;}
+  .go-sub{color:var(--muted); margin-bottom:18px;}
+
+  @media (max-width:520px){
+    .parts{grid-template-columns:repeat(5,1fr);}
+    .part .pname{font-size:7.5px;}
+    .title{font-size:21px;}
+  }
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="toast-wrap" id="toastWrap"></div>
-
-<!-- ============ SETUP SCREEN ============ -->
-<section id="setup" class="screen active">
-  <div class="setup-card">
-    <div class="brand"><span class="coin">₱</span><h1>PisoUNO</h1></div>
-    <p class="tagline">Isang laro ng sequence, series, at pananalapi — hulugan, imbestimento, at UNO strategy sa iisang baraha.</p>
-
-    <div class="legend">
-      <div class="legend-item" style="--c:var(--red)"><span class="ic">🏦</span><div><b>Pautang (Red)</b><span>Loans &amp; Mortgages — periodic payments</span></div></div>
-      <div class="legend-item" style="--c:var(--blue)"><span class="ic">📈</span><div><b>Pamumuhunan (Blue)</b><span>Investments — accumulated value</span></div></div>
-      <div class="legend-item" style="--c:var(--green)"><span class="ic">🔢</span><div><b>Sunod-sunod (Green)</b><span>Sequences — arithmetic &amp; geometric</span></div></div>
-      <div class="legend-item" style="--c:var(--yellow)"><span class="ic">Σ</span><div><b>Serye (Yellow)</b><span>Series — sum of terms</span></div></div>
-    </div>
-
-    <label class="field">Bilang ng Manlalaro (2–4)</label>
-    <div class="chip-select" id="playerCountChips">
-      <button data-n="2" class="active">2</button>
-      <button data-n="3">3</button>
-      <button data-n="4">4</button>
-    </div>
-
-    <div class="players-block" id="playerNamesWrap"></div>
-
-    <label class="field">Puntos para Manalo (Target Score)</label>
-    <div class="chip-select" id="targetChips">
-      <button data-t="1000">₱1,000</button>
-      <button data-t="3000" class="active">₱3,000</button>
-      <button data-t="5000">₱5,000</button>
-    </div>
-
-    <label class="field">Uri ng Laro</label>
-    <div class="chip-select" id="modeChips">
-      <button data-m="palaro" class="active">🎮 Palaro Mode (may timer, may parusa)</button>
-      <button data-m="klase">🎓 Klase Mode (walang timer, focus sa pag-aaral)</button>
-    </div>
-
-    <button class="btn btn-primary" id="startBtn">🎴 Simulan ang Laro</button>
-    <button class="help-toggle" id="howToBtn">Paano ito laruin? (How to play)</button>
-  </div>
-</section>
-
-<!-- ============ PASS SCREEN ============ -->
-<section id="passScreen" class="screen pass-screen">
-  <div class="pass-box">
-    <h2 id="passName">Ipasa kay ___</h2>
-    <p>Siguraduhing walang ibang nakakakita ng iyong kamay. Kapag handa ka na, i-tap ang buton sa ibaba.</p>
-    <button class="btn btn-primary" id="passReadyBtn" style="margin-top:0;">Handa na ako ✋</button>
-  </div>
-</section>
-
-<!-- ============ GAME SCREEN ============ -->
-<section id="game" class="screen">
-  <div class="topbar">
-    <div class="titlewrap"><span class="coin"></span><h2>PisoUNO</h2></div>
-    <div class="actions">
-      <button class="btn btn-gold" id="ledgerBtn">📒 Ledger</button>
-      <button class="btn btn-outline" id="formulaBtn">📐 Sanggunian</button>
-      <button class="btn btn-outline" id="reportBtn">📊 Ulat ng Guro</button>
-      <button class="btn btn-ghost" id="helpBtnGame">❓</button>
-    </div>
+  <div class="header">
+    <div class="eyebrow">Educational Strategy Card Game</div>
+    <div class="title">🔔 Z-SCORE ATTACK</div>
+    <div class="subtitle">Battle of the Normal Curve — Ipagtanggol ang iyong Lab, sirain ang kay AI!</div>
   </div>
 
-  <div class="opponents" id="opponents"></div>
-
-  <div class="table">
-    <div class="pile-wrap">
-      <span class="pile-label">Draw Pile</span>
-      <div class="draw-pile" id="drawPile"><span class="emblem">₱</span><span class="count" id="deckCount">0</span></div>
-    </div>
-    <div class="pile-wrap">
-      <span class="pile-label">Discard Pile</span>
-      <div id="discardTop"></div>
-      <span class="active-color-tag" id="activeColorTag"><span class="dot"></span> —</span>
-    </div>
+  <div class="curve-wrap">
+    <svg id="curveViz" viewBox="0 0 520 90" width="100%" height="90"></svg>
   </div>
 
-  <div class="handzone">
-    <div class="handzone-head">
-      <h3 id="handOwner">Kamay ni ___</h3>
-      <span class="turnstate-msg hidden" id="turnStateMsg"></span>
+  <!-- AI LAB -->
+  <div class="lab">
+    <div class="lab-head">
+      <div class="lab-name ai">🤖 AI Data Corruption Lab</div>
+      <div class="kp">KP: <span id="aiKP">0</span></div>
     </div>
-    <div class="hand" id="hand"></div>
-    <div class="handzone-actions">
-      <button class="btn btn-outline" id="endTurnBtn" style="display:none;">Tapusin ang Turn</button>
-    </div>
+    <div class="parts" id="aiParts"></div>
   </div>
-  <footer class="credit">PisoUNO · gawa para sa klase ng General Mathematics — sequences, series, at pananalapi</footer>
-</section>
 
-<!-- ============ OVERLAYS ============ -->
-<div class="overlay" id="questionOverlay">
-  <div class="modal">
-    <span class="q-tag" id="qTag">Kategorya</span>
-    <h3>Sagutin para i-play ang card</h3>
-    <div class="timerbar hidden" id="qTimerBar"><div class="timerbar-fill" id="qTimerFill"></div></div>
-    <div class="q-text" id="qText"></div>
-    <div id="qChoices"></div>
-    <div class="explain-box hidden" id="qExplain"></div>
-    <button class="btn btn-primary hidden" id="qContinueBtn">Ipagpatuloy</button>
+  <div class="status" id="statusLine">Ikaw ang unang gagalaw. Piliin ang aksyon mo sa ibaba.</div>
+
+  <!-- PLAYER LAB -->
+  <div class="lab">
+    <div class="lab-head">
+      <div class="lab-name you">🧑‍🔬 Your Statistics Lab</div>
+      <div class="kp">KP: <span id="playerKP">0</span></div>
+    </div>
+    <div class="parts" id="playerParts"></div>
+  </div>
+
+  <div class="actions" id="mainActions">
+    <button class="btn-attack" id="btnAttack">⚔️ Attack (piliin ang target)</button>
+    <button class="btn-defend" id="btnStudy">📖 Study Round (+prep, walang attack)</button>
+    <button class="btn-ghost" id="btnHowTo">❓ Paano Laruin</button>
+  </div>
+
+</div>
+
+<!-- CHALLENGE OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="card">
+    <span class="card-tag" id="cardTag">TYPE A</span>
+    <div class="card-q" id="cardQ"></div>
+    <div class="opts" id="cardOpts"></div>
+    <div class="feedback" id="feedback">
+      <span class="fb-title" id="fbTitle"></span>
+      <span id="fbBody"></span>
+    </div>
+    <button class="continue-btn" id="continueBtn" style="display:none;">Ituloy →</button>
   </div>
 </div>
 
-<div class="overlay" id="colorOverlay">
-  <div class="modal">
-    <h3>Pumili ng Susunod na Kulay/Kategorya</h3>
-    <p style="color:var(--ink-soft); font-size:.85rem;">Ito ang magiging batayan ng susunod na maaaring i-play na card.</p>
-    <div class="colorpick" id="colorPickButtons"></div>
-  </div>
-</div>
-
-<div class="overlay" id="unoOverlay">
-  <div class="modal" style="text-align:center;">
-    <h3 id="unoPlayerName">Isang card na lang!</h3>
-    <p style="color:var(--ink-soft);">Sabihin ang <b>UNO!</b> bago matapos ang countdown.</p>
-    <div class="uno-count" id="unoCountdown">5</div>
-    <button class="btn btn-primary" id="unoBtn" style="margin-top:0;">📣 UNO!</button>
-  </div>
-</div>
-
-<div class="overlay" id="bonusOverlay">
-  <div class="modal" style="text-align:center;">
-    <h3 id="bonusTitle"></h3>
-    <p id="bonusDesc" style="color:var(--ink-soft);"></p>
-    <div class="row" style="justify-content:center; margin-top:16px;">
-      <button class="btn btn-primary" id="bonusYes" style="margin-top:0;">Sagutin ang Tanong</button>
-      <button class="btn btn-outline" id="bonusNo">Draw na lang</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="roundOverlay">
-  <div class="modal ledger">
-    <h3 id="roundTitle">Tapos ang Round!</h3>
-    <div id="roundBody"></div>
-    <button class="btn btn-primary" id="roundContinueBtn">Susunod na Round</button>
-  </div>
-</div>
-
-<div class="overlay" id="championOverlay">
-  <div class="modal champion-box">
-    <div class="medal">🏆</div>
-    <h2 id="championName"></h2>
-    <p style="color:var(--ink-soft);">Panalo sa PisoUNO! Narito ang buong ulat ng laro:</p>
-    <div id="championBody" class="ledger" style="text-align:left;"></div>
-    <button class="btn btn-primary" id="restartBtn">Maglaro Ulit</button>
-  </div>
-</div>
-
-<div class="overlay" id="ledgerOverlay">
-  <div class="modal ledger">
-    <h3>📒 Ledger ng Puntos</h3>
-    <div id="ledgerBody"></div>
-    <button class="btn btn-outline" id="ledgerCloseBtn" style="margin-top:14px;">Isara</button>
-  </div>
-</div>
-
-<div class="overlay" id="reportOverlay">
-  <div class="modal ledger">
-    <h3>📊 Ulat ng Guro — Pag-unawa sa Bawat Kategorya</h3>
-    <p style="color:var(--ink-soft); font-size:.82rem;">Buod ng tamang sagot bawat estudyante, ayon sa kategorya. Magamit bilang mabilisang formative assessment.</p>
-    <div id="reportBody"></div>
-    <button class="btn btn-outline" id="reportCloseBtn" style="margin-top:14px;">Isara</button>
-  </div>
-</div>
-
-<div class="overlay" id="formulaOverlay">
-  <div class="modal">
-    <h3>📐 Sanggunian ng Formula</h3>
-    <div class="formula-list" id="formulaBody"></div>
-    <button class="btn btn-outline" id="formulaCloseBtn">Isara</button>
-  </div>
-</div>
-
-<div class="overlay" id="howtoOverlay">
-  <div class="modal">
-    <h3>Paano Laruin ang PisoUNO</h3>
-    <div class="explain-box" style="margin-bottom:10px;">
-      Ito ay UNO na may twist: bago mo i-play ang isang <b>number card</b>, sagutan mo muna ang tanong sa finance/sequence na naaayon sa kulay nito. Tama = maipapatong ang card. Mali = walang maipapatong, at may parusa depende sa mode.
-    </div>
-    <ul style="font-size:.85rem; line-height:1.7; color:var(--ink-soft); padding-left:18px;">
-      <li><b>Match:</b> parehong kulay, numero, o action symbol. Wild card — kahit kailan.</li>
-      <li><b>Skip:</b> laktawan ang susunod na manlalaro.</li>
-      <li><b>Reverse:</b> babaligtarin ang direksyon (parang Skip kapag 2 manlalaro lang).</li>
-      <li><b>+2 / Wild +4:</b> ang susunod na manlalaro ay bibitbit ng cards — pero puwede niyang sagutan ang bonus na tanong para mabawasan ito!</li>
-      <li><b>UNO!:</b> kapag natira kang 1 card, i-tap ang UNO button bago maubos ang countdown, kung hindi ay may +2 parusa.</li>
-      <li><b>Panalo:</b> ang unang maka-ubos ng kamay ang panalo sa round; kukunin niya ang value ng cards ng lahat bilang puntos (piso). Unang makarating sa target score ang kabuuang panalo.</li>
-    </ul>
-    <button class="btn btn-primary" id="howtoCloseBtn">Naiintindihan ko!</button>
+<!-- GAME OVER -->
+<div class="gameover" id="gameover">
+  <div>
+    <div class="go-title" id="goTitle">🎉 PANALO!</div>
+    <div class="go-sub" id="goSub">Nasira mo lahat ng AI lab parts.</div>
+    <button class="btn-attack" onclick="location.reload()">🔄 Maglaro Ulit</button>
   </div>
 </div>
 
 <script>
-/* ================= CONFIG / DATA ================= */
-const CATEGORIES = {
-  red:    { label:'Pautang',      sub:'Loans & Mortgages',  icon:'🏦' },
-  blue:   { label:'Pamumuhunan',  sub:'Investments',        icon:'📈' },
-  green:  { label:'Sunod-sunod',  sub:'Sequences',          icon:'🔢' },
-  yellow: { label:'Serye',        sub:'Series',             icon:'Σ'  }
-};
-const COLOR_KEYS = Object.keys(CATEGORIES);
-const NAMES = ['Maria','Jun','Ana','Paolo','Liza','Carlo','Rosa','Ben','Fe','Mark','Tessie','Dodong'];
+/* ---------------- DATA ---------------- */
+const PART_DEFS = [
+  {key:'curve', icon:'🔔', name:'Bell Curve'},
+  {key:'mean', icon:'📍', name:'Mean (μ)'},
+  {key:'sd', icon:'📏', name:'Std. Dev (σ)'},
+  {key:'sym', icon:'⚖️', name:'Symmetry'},
+  {key:'zconv', icon:'🎯', name:'Z-Converter'},
+];
+const HP_MAX = 2;
 
-const FORMULAS = [
-  { color:'green', title:'Arithmetic Sequence', f:'aₙ = a₁ + (n − 1)d', desc:'Hanap ng ika-n na termino kung alam ang unang termino (a₁) at karaniwang pagkakaiba (d).' },
-  { color:'green', title:'Geometric Sequence', f:'aₙ = a₁ · r^(n−1)', desc:'Hanap ng ika-n na termino kung alam ang a₁ at karaniwang ratio (r).' },
-  { color:'yellow', title:'Arithmetic Series', f:'Sₙ = n/2 [2a₁ + (n−1)d]', desc:'Kabuuan ng unang n na termino ng arithmetic sequence.' },
-  { color:'yellow', title:'Geometric Series', f:'Sₙ = a₁(1 − rⁿ)/(1 − r)', desc:'Kabuuan ng unang n na termino ng geometric sequence (r ≠ 1).' },
-  { color:'blue', title:'Compound Interest (Lump Sum)', f:'A = P(1 + i)ⁿ', desc:'Halaga ng puhunan (P) pagkatapos ng n panahon sa interes na i bawat panahon.' },
-  { color:'blue', title:'Future Value of Annuity', f:'FV = PMT[((1+i)ⁿ − 1)/i]', desc:'Kabuuang matitipon mula sa paulit-ulit na deposito (PMT) bawat panahon.' },
-  { color:'red', title:'Loan Payment (Amortization)', f:'PMT = PV·i / [1 − (1+i)^−n]', desc:'Buwanang/panahunang hulugan para bayaran ang utang na PV.' },
-  { color:'red', title:'Present Value of Loan', f:'PV = PMT[1 − (1+i)^−n] / i', desc:'Kasalukuyang halaga ng utang batay sa alam na hulugan (PMT).' },
+// TYPE A — Illustrate a normal random variable & characteristics
+const TYPE_A = [
+  {
+    q:"Sa isang perpektong normal distribution, ano ang relasyon ng mean, median, at mode?",
+    opts:["Magkakapantay silang tatlo","Ang mean ay laging pinakamataas","Ang mode ay laging nasa gilid","Walang fixed na relasyon"],
+    correct:0,
+    exp:"Sa normal distribution, ang mean, median, at mode ay nasa gitna at magkakapantay dahil symmetric ang curve."
+  },
+  {
+    q:"Alin sa mga sumusunod ang TAMANG hugis ng normal distribution?",
+    opts:["Skewed to the right","Skewed to the left","Symmetric, bell-shaped","Uniform / patag"],
+    correct:2,
+    exp:"Ang normal distribution ay symmetric at bell-shaped — magkatulad ang dalawang kalahati sa magkabilang gilid ng mean."
+  },
+  {
+    q:"Ayon sa Empirical Rule (68-95-99.7), ilang porsyento ng data ang nasa loob ng ±1 standard deviation mula sa mean?",
+    opts:["50%","68%","95%","99.7%"],
+    correct:1,
+    exp:"Ang 68% ng data ay nasa loob ng ±1σ mula sa mean — ito ang unang bahagi ng Empirical Rule."
+  },
+  {
+    q:"Ilang porsyento ng data ang sakop ng ±2 standard deviations mula sa mean?",
+    opts:["68%","75%","95%","99.7%"],
+    correct:2,
+    exp:"Ayon sa Empirical Rule, 95% ng data ang nasa loob ng ±2σ mula sa mean."
+  },
+  {
+    q:"Ang total area sa ilalim ng normal curve ay katumbas ng:",
+    opts:["0","0.5","1","Depende sa σ"],
+    correct:2,
+    exp:"Ang buong area sa ilalim ng anumang normal curve ay palaging katumbas ng 1 (o 100%) — ito ang kabuuang probability."
+  },
+  {
+    q:"Kung mas malaki ang standard deviation ng isang normal distribution, ano ang mangyayari sa hugis ng curve?",
+    opts:["Mas matangkad at makitid","Mas mababa at mas kalat (flat/wide)","Mababago ang mean","Mawawala ang symmetry"],
+    correct:1,
+    exp:"Mas malaking σ = mas kalat ang data, kaya mas flat at mas malapad ang curve. Mas maliit na σ = mas makitid at matangkad."
+  },
+  {
+    q:"Ang mean ng isang normal curve ang tumutukoy sa:",
+    opts:["Lapad ng curve","Gitna/center ng distribution","Bilang ng outliers","Skewness"],
+    correct:1,
+    exp:"Ang mean ang siyang center o balanse ng buong distribution — kung saan naka-align ang peak ng curve."
+  },
+  {
+    q:"Alin ang HINDI katangian ng normal random variable?",
+    opts:["Symmetric sa mean","May dalawang peaks (bimodal)","Continuous ang values","Ang curve ay hindi kailanman gumagalaw pababa sa x-axis"],
+    correct:1,
+    exp:"Ang normal distribution ay unimodal — iisa lang ang peak nito, hindi bimodal."
+  },
+  {
+    q:"Sa normal curve, ang mga 'tails' (dulo) nito ay:",
+    opts:["Umaabot sa infinity pero hindi kailanman humihipo sa x-axis","Direktang humihinto sa isang fixed point","Palaging pantay ang taas sa peak","Wala sa larawan ng normal curve"],
+    correct:0,
+    exp:"Ang mga tails ng normal curve ay 'asymptotic' — papalapit sila sa x-axis pero hindi ito hinihipo, hanggang infinity."
+  },
+  {
+    q:"Kapag inilarawan mo ang isang normal random variable gamit ang graph, ano ang dalawang parameter na kailangan mong tukuyin?",
+    opts:["Minimum at maximum","Mean at standard deviation","Median at range","Mode at frequency"],
+    correct:1,
+    exp:"Ang normal distribution ay ganap na natutukoy gamit lang ang dalawang parameter: ang mean (μ) at standard deviation (σ)."
+  },
 ];
 
-/* ================= HELPERS ================= */
-function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-function pick(arr){ return arr[randInt(0,arr.length-1)]; }
-function round2(x){ return Math.round(x*100)/100; }
-function fmtMoney(x){ return '₱' + Number(x).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2}); }
-function fmtNum(x){ return Math.round(x).toLocaleString('en-PH'); }
-function shuffle(arr){
-  const a = arr.slice();
-  for(let i=a.length-1;i>0;i--){ const j=randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; }
-  return a;
+// TYPE B — Convert a normal random variable to a z-score
+function zProblem(mu, sigma, x){
+  const z = (x - mu) / sigma;
+  return {mu, sigma, x, z: Math.round(z*100)/100};
 }
-function showToast(msg){
-  const wrap = document.getElementById('toastWrap');
-  const t = document.createElement('div');
-  t.className='toast'; t.textContent=msg;
-  wrap.appendChild(t);
-  setTimeout(()=>{ t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),320); }, 2200);
-}
-function switchScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-function openOverlay(id){ document.getElementById(id).classList.add('active'); }
-function closeOverlay(id){ document.getElementById(id).classList.remove('active'); }
-
-/* ================= QUESTION GENERATORS ================= */
-function nFromLevel(lvl, base, span){ return base + Math.floor(lvl/9*span); }
-
-function buildMC(qtext, correct, distractorCandidates, formula, steps, colorKey){
-  const isMoney = (colorKey==='blue'||colorKey==='red');
-  const fmt = v => isMoney ? fmtMoney(round2(v)) : fmtNum(v);
-  const correctR = round2(correct);
-  const correctLabel = fmt(correctR);
-  const usedLabels = new Set([correctLabel]);
-  const finalChoices = [{ label:correctLabel, isCorrect:true }];
-
-  const tryAdd = (v)=>{
-    if(finalChoices.length>=4) return;
-    const cand = Math.max(0.01, v);
-    const label = fmt(cand);
-    if(label===correctLabel || usedLabels.has(label)) return;
-    usedLabels.add(label);
-    finalChoices.push({ label, isCorrect:false });
-  };
-
-  distractorCandidates.forEach(v=>tryAdd(v));
-
-  let guard=0;
-  while(finalChoices.length<4 && guard<40){
-    guard++;
-    const jitter = correctR * (0.12 + Math.random()*0.45) * (Math.random()<0.5?1:-1);
-    tryAdd(correctR + jitter);
+const rawB = [
+  zProblem(80,10,95),
+  zProblem(50,5,60),
+  zProblem(100,15,130),
+  zProblem(70,8,62),
+  zProblem(60,12,60),
+  zProblem(45,9,27),
+  zProblem(90,6,84),
+  zProblem(120,20,140),
+  zProblem(35,7,49),
+  zProblem(65,10,50),
+];
+const TYPE_B = rawB.map(p=>{
+  const correctVal = p.z;
+  // generate 3 distractors close to correct
+  const distractSet = new Set([correctVal]);
+  while(distractSet.size < 4){
+    const delta = (Math.random()>0.5?1:-1) * (Math.round((Math.random()*1.5+0.3)*10)/10);
+    let d = Math.round((correctVal + delta)*100)/100;
+    if(d !== correctVal) distractSet.add(d);
   }
+  const opts = Array.from(distractSet).sort(()=>Math.random()-0.5);
   return {
-    qtext, formula, steps, colorKey,
-    choices: shuffle(finalChoices)
+    q:`Hanapin ang z-score. Mean (μ) = ${p.mu}, Standard Deviation (σ) = ${p.sigma}, Score (x) = ${p.x}.`,
+    formula:`z = (x − μ) / σ = (${p.x} − ${p.mu}) / ${p.sigma} = ${correctVal}`,
+    opts: opts.map(o=>o.toFixed(2)),
+    correct: opts.indexOf(correctVal),
+    exp:`Gamit ang formula na z = (x − μ) / σ: z = (${p.x} − ${p.mu}) / ${p.sigma} = ${correctVal}. ${correctVal>0?"Positibong z-score ibig sabihin nasa itaas ng mean ang score.":correctVal<0?"Negatibong z-score ibig sabihin nasa ibaba ng mean ang score.":"Zero z-score ibig sabihin eksaktong katumbas ng mean ang score."}`
   };
-}
+});
 
-function genSequenceQuestion(lvl){
-  const isGeo = Math.random() < 0.5;
-  let n = nFromLevel(lvl,3,7);
-  let a1,d,r,answer,qtext,formula,steps;
-  if(!isGeo){
-    a1 = randInt(1,12);
-    d = randInt(1, 3+Math.floor(lvl/2));
-    answer = a1 + (n-1)*d;
-    qtext = `Sa isang arithmetic sequence, a₁ = ${a1} at d = ${d}. Ano ang a${sub(n)} (ika-${n} na termino)?`;
-    formula = 'aₙ = a₁ + (n − 1)d';
-    steps = `a${n} = ${a1} + (${n}−1)(${d}) = ${a1} + ${(n-1)*d} = ${answer}`;
-    return buildMC(qtext, answer, [a1+n*d, a1+(n-1)*d+d, a1*d], formula, steps, 'green');
-  } else {
-    n = Math.min(n,7);
-    a1 = randInt(1,5);
-    r = pick([2,3]);
-    answer = a1 * Math.pow(r, n-1);
-    qtext = `Sa isang geometric sequence, a₁ = ${a1} at r = ${r}. Ano ang a${sub(n)}?`;
-    formula = 'aₙ = a₁ · r^(n−1)';
-    steps = `a${n} = ${a1} × ${r}^${n-1} = ${answer}`;
-    return buildMC(qtext, answer, [a1*Math.pow(r,n), a1+r*(n-1), answer+r], formula, steps, 'green');
-  }
-}
-function sub(n){ return n; }
+/* ---------------- STATE ---------------- */
+let state = {
+  player: PART_DEFS.map(p=>({...p, hp:HP_MAX})),
+  ai: PART_DEFS.map(p=>({...p, hp:HP_MAX})),
+  playerKP:0, aiKP:0,
+  usedA:[], usedB:[],
+  targetKey:null,
+  mode:null, // 'attack' | 'defend'
+  ended:false
+};
 
-function genSeriesQuestion(lvl){
-  const isGeo = Math.random() < 0.5;
-  let n = Math.min(nFromLevel(lvl,3,7), isGeo?6:12);
-  let a1,d,r,answer,qtext,formula,steps;
-  if(!isGeo){
-    a1 = randInt(1,10);
-    d = randInt(1, 3+Math.floor(lvl/2));
-    answer = n/2*(2*a1+(n-1)*d);
-    qtext = `Hanapin ang kabuuan (Sₙ) ng unang ${n} na termino ng arithmetic sequence: a₁ = ${a1}, d = ${d}.`;
-    formula = 'Sₙ = n/2 [2a₁ + (n−1)d]';
-    steps = `S${n} = ${n}/2[2(${a1})+(${n}−1)(${d})] = ${answer}`;
-    return buildMC(qtext, answer, [(n/2)*(2*a1+n*d), n*(a1+d), answer-d], formula, steps, 'yellow');
-  } else {
-    a1 = randInt(1,5);
-    r = pick([2,3]);
-    answer = a1*(1-Math.pow(r,n))/(1-r);
-    qtext = `Hanapin ang Sₙ ng unang ${n} na termino ng geometric sequence: a₁ = ${a1}, r = ${r}.`;
-    formula = 'Sₙ = a₁(1 − rⁿ)/(1 − r)';
-    steps = `S${n} = ${a1}(1−${r}^${n})/(1−${r}) = ${answer}`;
-    return buildMC(qtext, answer, [a1*(Math.pow(r,n)-1)/(r-1), a1*Math.pow(r,n), answer+a1], formula, steps, 'yellow');
-  }
-}
-
-function genInvestQuestion(lvl){
-  const name = pick(NAMES);
-  const useAnnuity = Math.random() < 0.5;
-  const n = nFromLevel(lvl,3,9);
-  let answer, qtext, formula, steps;
-  if(!useAnnuity){
-    const P = pick([5000,10000,15000,20000,25000]);
-    const i = pick([0.02,0.03,0.04,0.05,0.06]);
-    answer = P*Math.pow(1+i,n);
-    qtext = `Nag-invest si ${name} ng ${fmtMoney(P)} sa isang bangko na may interes na ${(i*100).toFixed(0)}% bawat taon (compounded annually). Magkano ang halaga nito pagkatapos ng ${n} taon?`;
-    formula = 'A = P(1 + i)ⁿ';
-    steps = `A = ${fmtMoney(P)}(1+${i})^${n} = ${fmtMoney(round2(answer))}`;
-  } else {
-    const PMT = pick([500,1000,1500,2000]);
-    const i = pick([0.01,0.015,0.02,0.025]);
-    answer = PMT*((Math.pow(1+i,n)-1)/i);
-    qtext = `Nagdedeposito si ${name} ng ${fmtMoney(PMT)} kada buwan sa isang investment na may interes na ${(i*100).toFixed(1)}% bawat buwan. Magkano ang matitipon niya (future value) pagkatapos ng ${n} buwan?`;
-    formula = 'FV = PMT[((1+i)ⁿ − 1)/i]';
-    steps = `FV = ${fmtMoney(PMT)}[((1+${i})^${n}−1)/${i}] = ${fmtMoney(round2(answer))}`;
-  }
-  return buildMC(qtext, round2(answer), [answer*1.15, answer*0.82, answer*1.3], formula, steps, 'blue');
-}
-
-function genLoanQuestion(lvl){
-  const name = pick(NAMES);
-  const findPMT = Math.random() < 0.5;
-  const n = nFromLevel(lvl,6,18);
-  const i = pick([0.01,0.015,0.02,0.025,0.03]);
-  let answer, qtext, formula, steps;
-  if(findPMT){
-    const PV = pick([20000,30000,50000,80000,100000]);
-    answer = PV*i/(1-Math.pow(1+i,-n));
-    qtext = `Umutang si ${name} ng ${fmtMoney(PV)}, babayaran sa ${n} buwanang hulugan sa interes na ${(i*100).toFixed(1)}% kada buwan. Magkano ang buwanang hulugan (PMT)?`;
-    formula = 'PMT = PV·i / [1 − (1+i)^−n]';
-    steps = `PMT = ${fmtMoney(PV)}(${i}) / [1−(1+${i})^−${n}] = ${fmtMoney(round2(answer))}`;
-  } else {
-    const PMT = pick([1000,1500,2500,3000,5000]);
-    answer = PMT*(1-Math.pow(1+i,-n))/i;
-    qtext = `Ang isang mortgage ay babayaran ng ${fmtMoney(PMT)} kada buwan sa loob ng ${n} buwan, sa interes na ${(i*100).toFixed(1)}% kada buwan. Magkano ang halaga ng utang (present value)?`;
-    formula = 'PV = PMT[1 − (1+i)^−n] / i';
-    steps = `PV = ${fmtMoney(PMT)}[1−(1+${i})^−${n}]/${i} = ${fmtMoney(round2(answer))}`;
-  }
-  return buildMC(qtext, round2(answer), [answer*1.18, answer*0.8, answer*1.32], formula, steps, 'red');
-}
-
-function genQuestion(color, lvl){
-  if(color==='green') return genSequenceQuestion(lvl);
-  if(color==='yellow') return genSeriesQuestion(lvl);
-  if(color==='blue') return genInvestQuestion(lvl);
-  if(color==='red') return genLoanQuestion(lvl);
-  return genSequenceQuestion(lvl);
-}
-
-/* ================= DECK ================= */
-function buildDeck(){
-  let deck=[]; let uid=0;
-  COLOR_KEYS.forEach(color=>{
-    deck.push({id:uid++, color, type:'number', value:0});
-    for(let v=1; v<=9; v++){
-      deck.push({id:uid++, color, type:'number', value:v});
-      deck.push({id:uid++, color, type:'number', value:v});
+/* ---------------- RENDER ---------------- */
+function renderParts(containerId, arr, targetable){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  arr.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'part' + (p.hp<=0?' destroyed':'') + (targetable && p.hp>0 ? ' targetable':'');
+    div.innerHTML = `
+      <span class="icon">${p.icon}</span>
+      <div class="pname">${p.name}</div>
+      <div class="hp-dots">${Array.from({length:HP_MAX}).map((_,i)=>`<span class="hp-dot ${i<p.hp?'filled':''}"></span>`).join('')}</div>
+    `;
+    if(targetable && p.hp>0){
+      div.onclick = ()=> startAttack(p.key);
     }
-    ['skip','reverse','draw2'].forEach(t=>{
-      deck.push({id:uid++, color, type:t});
-      deck.push({id:uid++, color, type:t});
-    });
+    el.appendChild(div);
   });
-  for(let i=0;i<4;i++){
-    deck.push({id:uid++, color:'wild', type:'wild'});
-    deck.push({id:uid++, color:'wild', type:'wild4'});
+}
+
+function renderAll(targetableAI=false){
+  renderParts('aiParts', state.ai, targetableAI);
+  renderParts('playerParts', state.player, false);
+  document.getElementById('playerKP').textContent = state.playerKP;
+  document.getElementById('aiKP').textContent = state.aiKP;
+  drawCurve();
+}
+
+function setStatus(msg){
+  document.getElementById('statusLine').textContent = msg;
+}
+
+function drawCurve(){
+  const totalPlayer = state.player.reduce((s,p)=>s+p.hp,0);
+  const totalAI = state.ai.reduce((s,p)=>s+p.hp,0);
+  const maxTotal = PART_DEFS.length*HP_MAX;
+  const health = (totalPlayer+totalAI)/(maxTotal*2); // 0..1
+  const sigma = 40 + (1-health)*60; // wider curve as health drops (more corrupted)
+  const svg = document.getElementById('curveViz');
+  const w=520,h=90,mid=w/2,base=80;
+  let path = `M0,${base} `;
+  for(let x=0;x<=w;x+=4){
+    const dx = x-mid;
+    const y = base - 60*Math.exp(-(dx*dx)/(2*sigma*sigma));
+    path += `L${x},${y.toFixed(1)} `;
   }
-  return deck;
+  const color = health>0.6?'#34d399':health>0.3?'#fbbf24':'#f87171';
+  svg.innerHTML = `
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" opacity="0.9"/>
+    <line x1="0" y1="${base}" x2="${w}" y2="${base}" stroke="#263252" stroke-width="1"/>
+  `;
 }
 
-/* ================= GAME STATE ================= */
-let G = null;
+/* ---------------- HOW TO ---------------- */
+document.getElementById('btnHowTo').onclick = ()=>{
+  alert(
+"PAANO LARUIN:\n\n"+
+"1. Pindutin ang 'Attack' pagkatapos ay piliin kung aling AI lab part ang tatamaan mo.\n"+
+"2. Sasagutan mo ang isang Challenge Card (Illustrate o Z-Score Conversion). Tama = tatamaan mo ang part. Mali = mabibigo ang atake.\n"+
+"3. Pagkatapos ng turn mo, sasalakay din ang AI sa isa mong part — sasagutan mo rin ang tanong para depensahan ito.\n"+
+"4. Ang 'Study Round' ay nag-sskip ng attack para lang makakuha ng 1 Knowledge Point kapag tama ang sagot mo — walang risk.\n"+
+"5. Panalo: sirain lahat ng 5 parts ng kalaban, O maunang makarating sa 10 Knowledge Points."
+  );
+};
 
-function cardPoints(card){
-  if(card.type==='number') return card.value*100;
-  if(card.type==='wild' || card.type==='wild4') return 500;
-  return 200;
-}
-function cardLabel(card){
-  if(card.type==='number') return `${CATEGORIES[card.color].label} ${card.value}`;
-  if(card.type==='wild') return 'Wild';
-  if(card.type==='wild4') return 'Wild +4';
-  if(card.type==='skip') return `${CATEGORIES[card.color].label} Skip`;
-  if(card.type==='reverse') return `${CATEGORIES[card.color].label} Reverse`;
-  if(card.type==='draw2') return `${CATEGORIES[card.color].label} +2`;
-}
-function topCard(){ return G.discard[G.discard.length-1]; }
-function nextIdx(i,dir){ const n=G.players.length; return (i+dir+n)%n; }
-function advance(steps){ for(let k=0;k<steps;k++){ G.turn = nextIdx(G.turn, G.dir); } }
-function hasMatchingColor(hand, color){ return hand.some(c=>c.color===color); }
+/* ---------------- ATTACK FLOW ---------------- */
+document.getElementById('btnAttack').onclick = ()=>{
+  setStatus("Piliin ang Lab Part ng AI na gusto mong atakehin.");
+  renderAll(true);
+};
 
-function canPlay(card){
-  const top = topCard();
-  if(card.color==='wild'){
-    if(card.type==='wild4'){
-      const hand = G.players[G.turn].hand;
-      return !hasMatchingColor(hand.filter(c=>c.id!==card.id), G.activeColor);
+document.getElementById('btnStudy').onclick = ()=>{
+  state.mode = 'study';
+  askChallenge();
+};
+
+function startAttack(key){
+  state.targetKey = key;
+  state.mode = 'attack';
+  renderAll(false);
+  askChallenge();
+}
+
+function pickQuestion(){
+  // alternate type A / type B, avoid repeats until exhausted
+  const useA = Math.random() < 0.5;
+  let pool = useA ? TYPE_A : TYPE_B;
+  let used = useA ? state.usedA : state.usedB;
+  if(used.length >= pool.length) used.length = 0;
+  let idx;
+  do { idx = Math.floor(Math.random()*pool.length); } while(used.includes(idx));
+  used.push(idx);
+  return {type: useA?'A':'B', q: pool[idx]};
+}
+
+function askChallenge(){
+  const {type, q} = pickQuestion();
+  state.currentType = type;
+  state.currentQ = q;
+  const tag = document.getElementById('cardTag');
+  tag.textContent = type==='A' ? 'TYPE A — ILLUSTRATE' : 'TYPE B — CONVERT TO Z-SCORE';
+  tag.className = 'card-tag ' + (type==='A'?'tag-A':'tag-B');
+  document.getElementById('cardQ').innerHTML = q.q + (type==='B' ? `<span class="formula">z = (x − μ) / σ</span>` : '');
+  const optsWrap = document.getElementById('cardOpts');
+  optsWrap.innerHTML='';
+  q.opts.forEach((optText,i)=>{
+    const b = document.createElement('button');
+    b.className='opt';
+    b.textContent = (type==='B' ? `z = ${optText}` : optText);
+    b.onclick = ()=> answer(i);
+    optsWrap.appendChild(b);
+  });
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('continueBtn').style.display='none';
+  document.getElementById('overlay').classList.add('show');
+}
+
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+
+function answer(i){
+  const q = state.currentQ;
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((b,idx)=>{
+    b.disabled = true;
+    if(idx===q.correct) b.classList.add('correct');
+    else if(idx===i && i!==q.correct) b.classList.add('wrong');
+  });
+  const correct = (i===q.correct);
+  const fb = document.getElementById('feedback');
+  const fbTitle = document.getElementById('fbTitle');
+  const fbBody = document.getElementById('fbBody');
+  fbTitle.textContent = correct ? '✔ Tama!' : '✘ Mali.';
+  fbTitle.className = 'fb-title ' + (correct?'ok':'no');
+  fbBody.innerHTML = q.exp;
+  fb.classList.add('show');
+  document.getElementById('continueBtn').style.display='block';
+  document.getElementById('continueBtn').onclick = ()=> resolveOutcome(correct);
+}
+
+function resolveOutcome(correct){
+  document.getElementById('overlay').classList.remove('show');
+
+  if(state.mode==='attack'){
+    if(correct){
+      const target = state.ai.find(p=>p.key===state.targetKey);
+      target.hp -= 1;
+      state.playerKP += 1;
+      setStatus(`💥 Tama! Na-damage mo ang ${target.icon} ${target.name} ng AI.`);
+    } else {
+      setStatus(`❌ Mali ang sagot — nabigo ang atake mo. Turn ng AI ngayon.`);
     }
+  } else if(state.mode==='study'){
+    if(correct){
+      state.playerKP += 1;
+      setStatus(`📖 Tama sa Study Round! +1 Knowledge Point, walang panganib.`);
+    } else {
+      setStatus(`📖 Mali sa Study Round, pero walang parusa. Turn ng AI ngayon.`);
+    }
+  }
+
+  renderAll(false);
+  if(checkGameOver()) return;
+
+  // proceed to AI turn after short delay
+  setTimeout(aiTurn, 900);
+}
+
+/* ---------------- AI TURN ---------------- */
+function aiTurn(){
+  if(state.ended) return;
+  const alive = state.player.filter(p=>p.hp>0);
+  if(alive.length===0){ checkGameOver(); return; }
+  const target = alive[Math.floor(Math.random()*alive.length)];
+  setStatus(`🤖 Inaatake ng AI ang iyong ${target.icon} ${target.name}! Ipagtanggol mo — sagutan ang tanong.`);
+  state.targetKey = target.key;
+  state.mode = 'defend';
+  askChallenge();
+  // override resolveOutcome behavior for defend handled below via mode check
+}
+
+// extend resolveOutcome for defend
+const origResolve = resolveOutcome;
+resolveOutcome = function(correct){
+  document.getElementById('overlay').classList.remove('show');
+  if(state.mode==='defend'){
+    if(correct){
+      state.playerKP += 0; // defense doesn't grant KP, just survival
+      setStatus(`🛡️ Successfully defended! Walang natamaang part.`);
+    } else {
+      const target = state.player.find(p=>p.key===state.targetKey);
+      target.hp -= 1;
+      state.aiKP += 1;
+      setStatus(`💥 Hindi na-block ang atake — na-damage ang iyong ${target.icon} ${target.name}.`);
+    }
+    renderAll(false);
+    if(checkGameOver()) return;
+    document.getElementById('statusLine').textContent += " Ikaw ulit ang gagalaw.";
+    return;
+  }
+  origResolve(correct);
+};
+
+/* ---------------- GAME OVER CHECK ---------------- */
+function checkGameOver(){
+  const aiDead = state.ai.every(p=>p.hp<=0);
+  const playerDead = state.player.every(p=>p.hp<=0);
+  const aiWinKP = state.aiKP >= 10;
+  const playerWinKP = state.playerKP >= 10;
+
+  if(aiDead || playerWinKP){
+    endGame(true, aiDead ? "Nasira mo ang lahat ng 5 lab parts ng AI!" : "Naabot mo ang 10 Knowledge Points!");
     return true;
   }
-  if(card.color===G.activeColor) return true;
-  if(card.type==='number' && top.type==='number' && card.value===top.value) return true;
-  if(card.type!=='number' && card.type===top.type) return true;
+  if(playerDead || aiWinKP){
+    endGame(false, playerDead ? "Nasira ng AI ang lahat ng lab parts mo." : "Naunang naka-10 Knowledge Points ang AI.");
+    return true;
+  }
   return false;
 }
 
-function ensureDeck(need){
-  let guard=0;
-  while(G.deck.length < need && guard<50){
-    guard++;
-    if(G.discard.length<=1) break;
-    const top = G.discard.pop();
-    const rest = G.discard;
-    G.discard = [top];
-    G.deck = shuffle(rest.concat(G.deck));
-  }
-}
-function drawCards(playerIdx, n){
-  ensureDeck(n);
-  const drawn=[];
-  for(let k=0;k<n && G.deck.length>0;k++){ drawn.push(G.deck.pop()); }
-  G.players[playerIdx].hand.push(...drawn);
-  return drawn;
-}
-function logStat(playerIdx, color, correct){
-  const st = G.players[playerIdx].stats[color];
-  st.total++; if(correct) st.correct++;
-  if(correct) G.players[playerIdx].learningPoints += 10;
+function endGame(won, reason){
+  state.ended = true;
+  document.getElementById('goTitle').textContent = won ? "🎉 PANALO!" : "💀 TALO";
+  document.getElementById('goSub').textContent = reason;
+  document.getElementById('gameover').classList.add('show');
 }
 
-/* ---------- SETUP ---------- */
-function initGame(names, target, mode){
-  G = {
-    players: names.map(n => ({
-      name:n, hand:[], score:0, learningPoints:0,
-      stats:{ red:{correct:0,total:0}, blue:{correct:0,total:0}, green:{correct:0,total:0}, yellow:{correct:0,total:0} }
-    })),
-    deck:[], discard:[], turn:0, dir:1, activeColor:'red',
-    target, mode, turnState:'normal', drawnCardId:null, unoDeclared:new Set()
-  };
-  G.deck = shuffle(buildDeck());
-  G.players.forEach((p,idx)=>{ drawCards(idx,7); });
-  setupFirstCard();
-  showPassScreenAndRender(true);
-}
-
-function setupFirstCard(){
-  let first = G.deck.pop();
-  let guard=0;
-  while(first.type==='wild4' && guard<50){ guard++; G.deck.unshift(first); G.deck=shuffle(G.deck); first=G.deck.pop(); }
-  G.discard=[first];
-  G.activeColor = first.color==='wild' ? pick(COLOR_KEYS) : first.color;
-  G.turn=0; G.dir=1;
-  if(first.type==='skip'){ advance(1); }
-  else if(first.type==='reverse'){ G.dir=-1; }
-  else if(first.type==='draw2'){ drawCards(0,2); advance(1); }
-}
-
-/* ---------- TURN FLOW ---------- */
-function attemptPlay(cardId){
-  if(G.awaitingOverlay) return;
-  const playerIdx = G.turn;
-  const hand = G.players[playerIdx].hand;
-  const card = hand.find(c=>c.id===cardId);
-  if(!card) return;
-
-  if(G.turnState==='drewOne' && card.id !== G.drawnCardId){
-    showToast('Isang beses ka lang pwedeng bumunot — i-play ang nabunot o tapusin ang turn.');
-    return;
-  }
-  if(!canPlay(card)){
-    showToast('Hindi tugma ang card na iyan.');
-    return;
-  }
-
-  if(card.type==='number'){
-    const q = genQuestion(card.color, card.value);
-    openQuestionModal(q, (correct)=>{
-      logStat(playerIdx, card.color, correct);
-      if(correct){ finalizePlay(playerIdx, card); }
-      else {
-        showToast(G.mode==='klase' ? 'Mali. Subukan ang ibang card.' : 'Mali! +1 parusang card.');
-        if(G.mode==='palaro'){ drawCards(playerIdx,1); }
-        G.turnState='normal';
-        renderAll();
-      }
-    });
-  } else if(card.color==='wild'){
-    openColorPicker((chosenColor)=>{ finalizePlay(playerIdx, card, chosenColor); });
-  } else {
-    finalizePlay(playerIdx, card);
-  }
-}
-
-function finalizePlay(playerIdx, card, chosenColor){
-  const hand = G.players[playerIdx].hand;
-  const idx = hand.findIndex(c=>c.id===card.id);
-  hand.splice(idx,1);
-  G.discard.push(card);
-  G.activeColor = (card.color==='wild') ? chosenColor : card.color;
-  G.turnState='normal'; G.drawnCardId=null;
-  renderAll();
-
-  if(hand.length===0){ handleRoundEnd(playerIdx); return; }
-
-  const afterUno = ()=> applyEffectAndAdvance(playerIdx, card);
-  if(hand.length===1 && G.mode==='palaro'){
-    showUnoPrompt(playerIdx, afterUno);
-  } else {
-    if(hand.length===1) showToast(`${G.players[playerIdx].name}: UNO! Isang card na lang.`);
-    afterUno();
-  }
-}
-
-function applyEffectAndAdvance(playerIdx, card){
-  switch(card.type){
-    case 'skip':
-      showToast(`Skip! Nalaktawan si ${G.players[nextIdx(G.turn,G.dir)].name}.`);
-      advance(2); showPassScreenAndRender(); break;
-    case 'reverse':
-      if(G.players.length===2){ advance(2); }
-      else { G.dir*=-1; advance(1); }
-      showToast('Reverse! Nagbago ang direksyon.');
-      showPassScreenAndRender(); break;
-    case 'draw2': {
-      const victim = nextIdx(G.turn, G.dir);
-      offerBonusChallenge(victim, 2, ()=>{ advance(2); showPassScreenAndRender(); });
-      break;
-    }
-    case 'wild4': {
-      const victim = nextIdx(G.turn, G.dir);
-      offerBonusChallenge(victim, 4, ()=>{ advance(2); showPassScreenAndRender(); });
-      break;
-    }
-    default:
-      advance(1); showPassScreenAndRender();
-  }
-}
-
-function offerBonusChallenge(victimIdx, amount, callback){
-  const victimName = G.players[victimIdx].name;
-  document.getElementById('bonusTitle').textContent = `${victimName}, mag-di-draw ka ng ${amount} cards!`;
-  document.getElementById('bonusDesc').textContent = `Gusto mo bang sagutin ang isang bonus na tanong? Kung tama, ${amount/2} na lang ang idi-draw mo.`;
-  openOverlay('bonusOverlay');
-  const yesBtn = document.getElementById('bonusYes');
-  const noBtn = document.getElementById('bonusNo');
-  const cleanup = ()=>{ yesBtn.onclick=null; noBtn.onclick=null; closeOverlay('bonusOverlay'); };
-  yesBtn.onclick = ()=>{
-    cleanup();
-    const q = genQuestion(pick(COLOR_KEYS), 5);
-    openQuestionModal(q, (correct)=>{
-      logStat(victimIdx, q.colorKey, correct);
-      if(correct){ drawCards(victimIdx, Math.ceil(amount/2)); showToast(`Tama! ${victimName} bumunot lang ng ${Math.ceil(amount/2)}.`); }
-      else { drawCards(victimIdx, amount); showToast(`Mali. ${victimName} bumunot ng buong ${amount}.`); }
-      callback();
-    });
-  };
-  noBtn.onclick = ()=>{
-    cleanup();
-    drawCards(victimIdx, amount);
-    showToast(`${victimName} bumunot ng ${amount} cards.`);
-    callback();
-  };
-}
-
-function showUnoPrompt(playerIdx, callback){
-  document.getElementById('unoPlayerName').textContent = `${G.players[playerIdx].name}: Isang card na lang!`;
-  let count=5;
-  document.getElementById('unoCountdown').textContent=count;
-  openOverlay('unoOverlay');
-  const btn = document.getElementById('unoBtn');
-  let finished=false;
-  const timer = setInterval(()=>{
-    count--;
-    if(count<=0){
-      clearInterval(timer);
-      if(!finished){
-        finished=true;
-        closeOverlay('unoOverlay');
-        drawCards(playerIdx,2);
-        showToast(`${G.players[playerIdx].name} nakalimutan ang UNO! +2 cards.`);
-        renderAll();
-        callback();
-      }
-    } else {
-      document.getElementById('unoCountdown').textContent=count;
-    }
-  },1000);
-  btn.onclick = ()=>{
-    if(finished) return;
-    finished=true;
-    clearInterval(timer);
-    closeOverlay('unoOverlay');
-    showToast(`${G.players[playerIdx].name}: UNO! Ligtas.`);
-    callback();
-  };
-}
-
-function onDrawPileClick(){
-  if(G.turnState==='drewOne'){ showToast('Isang beses lang bawat turn ang pagbunot.'); return; }
-  const playerIdx = G.turn;
-  const drawn = drawCards(playerIdx,1)[0];
-  if(!drawn){ showToast('Walang natitirang card sa deck.'); return; }
-  G.turnState='drewOne'; G.drawnCardId=drawn.id;
-  renderAll();
-  if(canPlay(drawn)){
-    showToast(`Nabunot: ${cardLabel(drawn)} — puwede mo itong i-play!`);
-  } else {
-    showToast('Hindi puwedeng i-play ang nabunot. Tapusin ang turn.');
-  }
-}
-
-function onEndTurnClick(){
-  G.turnState='normal'; G.drawnCardId=null;
-  advance(1);
-  showPassScreenAndRender();
-}
-
-/* ---------- ROUND / GAME END ---------- */
-function handleRoundEnd(winnerIdx){
-  let total=0;
-  const breakdown=[];
-  G.players.forEach((p,i)=>{
-    if(i===winnerIdx) return;
-    let sum=0;
-    p.hand.forEach(c=>sum+=cardPoints(c));
-    breakdown.push({name:p.name, cards:p.hand.length, value:sum});
-    total+=sum;
-  });
-  G.players[winnerIdx].score += total;
-
-  const body = document.getElementById('roundBody');
-  document.getElementById('roundTitle').textContent = `🎉 Panalo si ${G.players[winnerIdx].name} sa round na ito!`;
-  let html = `<table><tr><th>Manlalaro</th><th>Natitirang Cards</th><th>Halaga</th></tr>`;
-  breakdown.forEach(b=> html += `<tr><td>${b.name}</td><td>${b.cards}</td><td class="mono">${fmtMoney(b.value)}</td></tr>`);
-  html += `</table><p style="margin-top:12px;">Nakuha ni <b>${G.players[winnerIdx].name}</b>: <span class="mono" style="color:var(--green); font-weight:700;">${fmtMoney(total)}</span></p>`;
-  html += `<table style="margin-top:10px;"><tr><th>Manlalaro</th><th>Kabuuang Puntos</th></tr>`;
-  G.players.forEach(p=> html += `<tr><td>${p.name}</td><td class="mono">${fmtMoney(p.score)}</td></tr>`);
-  html += `</table>`;
-  body.innerHTML = html;
-  openOverlay('roundOverlay');
-
-  const champ = G.players.find(p=>p.score>=G.target);
-  document.getElementById('roundContinueBtn').onclick = ()=>{
-    closeOverlay('roundOverlay');
-    if(champ){ showChampion(champ); }
-    else { startNewRound(); }
-  };
-}
-
-function startNewRound(){
-  G.deck = shuffle(buildDeck());
-  G.discard=[];
-  G.players.forEach(p=>p.hand=[]);
-  G.players.forEach((p,idx)=>drawCards(idx,7));
-  setupFirstCard();
-  showPassScreenAndRender(true);
-}
-
-function showChampion(champ){
-  document.getElementById('championName').textContent = `${champ.name} ang Kampeon!`;
-  const body = document.getElementById('championBody');
-  let html = `<table><tr><th>Manlalaro</th><th>Puntos (₱)</th><th>Tamang Sagot</th></tr>`;
-  G.players.forEach(p=>{
-    let c=0,t=0;
-    COLOR_KEYS.forEach(k=>{ c+=p.stats[k].correct; t+=p.stats[k].total; });
-    html += `<tr><td>${p.name}</td><td class="mono">${fmtMoney(p.score)}</td><td class="mono">${c}/${t}</td></tr>`;
-  });
-  html += `</table>`;
-  body.innerHTML = html;
-  openOverlay('championOverlay');
-}
-
-/* ---------- MODAL: QUESTION ---------- */
-function openQuestionModal(q, onDone){
-  const tag = document.getElementById('qTag');
-  const cat = CATEGORIES[q.colorKey];
-  tag.textContent = `${cat.icon} ${cat.label} · ${cat.sub}`;
-  tag.style.background = q.colorKey==='red'?'var(--red)':q.colorKey==='blue'?'var(--blue)':q.colorKey==='green'?'var(--green)':'var(--yellow)';
-  document.getElementById('qText').textContent = q.qtext;
-  const choicesWrap = document.getElementById('qChoices');
-  choicesWrap.innerHTML='';
-  const explain = document.getElementById('qExplain');
-  explain.classList.add('hidden');
-  const contBtn = document.getElementById('qContinueBtn');
-  contBtn.classList.add('hidden');
-  const timerBar = document.getElementById('qTimerBar');
-  const timerFill = document.getElementById('qTimerFill');
-  let timerInterval=null;
-  let answered=false;
-
-  function finish(correct){
-    if(answered) return;
-    answered=true;
-    if(timerInterval) clearInterval(timerInterval);
-    timerBar.classList.add('hidden');
-    Array.from(choicesWrap.children).forEach(btn=>{
-      btn.disabled=true;
-      if(btn.dataset.correct==='true') btn.classList.add('correct');
-      else if(btn.classList.contains('picked')) btn.classList.add('wrong');
-    });
-    explain.classList.remove('hidden');
-    explain.innerHTML = `<div class="formula">${q.formula}</div><div>${q.steps}</div>`;
-    contBtn.classList.remove('hidden');
-    contBtn.onclick = ()=>{ closeOverlay('questionOverlay'); onDone(correct); };
-  }
-
-  q.choices.forEach(c=>{
-    const btn = document.createElement('button');
-    btn.className='choice'; btn.textContent=c.label; btn.dataset.correct=c.isCorrect;
-    btn.onclick = ()=>{ btn.classList.add('picked'); finish(c.isCorrect); };
-    choicesWrap.appendChild(btn);
-  });
-
-  if(G.mode==='palaro'){
-    timerBar.classList.remove('hidden');
-    let timeLeft=20;
-    timerFill.style.width='100%';
-    timerInterval = setInterval(()=>{
-      timeLeft--;
-      timerFill.style.width = Math.max(0,(timeLeft/20*100))+'%';
-      if(timeLeft<=0){ finish(false); }
-    },1000);
-  } else {
-    timerBar.classList.add('hidden');
-  }
-  openOverlay('questionOverlay');
-}
-
-/* ---------- MODAL: COLOR PICKER ---------- */
-function openColorPicker(callback){
-  const wrap = document.getElementById('colorPickButtons');
-  wrap.innerHTML='';
-  COLOR_KEYS.forEach(k=>{
-    const btn = document.createElement('button');
-    btn.style.background = `var(--${k})`;
-    btn.innerHTML = `<span style="font-size:1.4rem;">${CATEGORIES[k].icon}</span><span>${CATEGORIES[k].label}</span>`;
-    btn.onclick = ()=>{ closeOverlay('colorOverlay'); callback(k); };
-    wrap.appendChild(btn);
-  });
-  openOverlay('colorOverlay');
-}
-
-/* ---------- RENDER ---------- */
-function cardEl(card, opts){
-  opts = opts||{};
-  const el = document.createElement('div');
-  const colorClass = card.color==='wild' ? 'card--wild' : `card--${card.color}`;
-  el.className = `card ${colorClass}`;
-  if(opts.playable===false) el.classList.add('disabled');
-  if(opts.playable===true) el.classList.add('playable');
-
-  const seal = document.createElement('div');
-  seal.className='seal';
-  seal.textContent = card.color==='wild' ? '★' : CATEGORIES[card.color].icon;
-  el.appendChild(seal);
-
-  const catlabel = document.createElement('div');
-  catlabel.className='catlabel';
-  catlabel.textContent = card.color==='wild' ? 'WILD' : CATEGORIES[card.color].sub;
-  el.appendChild(catlabel);
-
-  const big = document.createElement('div');
-  big.className='big';
-  big.textContent = card.type==='number' ? card.value
-                  : card.type==='skip' ? '⛔'
-                  : card.type==='reverse' ? '🔁'
-                  : card.type==='draw2' ? '+2'
-                  : card.type==='wild' ? '★'
-                  : '+4';
-  el.appendChild(big);
-
-  const c1 = document.createElement('div'); c1.className='corner';
-  c1.style.top='6px'; c1.style.right='8px';
-  c1.textContent = card.type==='number'?card.value: card.type==='draw2'?'+2': card.type==='wild4'?'+4':'';
-  el.appendChild(c1);
-  const c2 = document.createElement('div'); c2.className='corner br';
-  c2.textContent = c1.textContent;
-  el.appendChild(c2);
-
-  if(card.type==='number'){
-    const stamp = document.createElement('div');
-    stamp.className='stamp'; stamp.textContent='SOLVE TO PLAY';
-    el.appendChild(stamp);
-  }
-  return el;
-}
-
-function renderAll(){
-  document.getElementById('deckCount').textContent = G.deck.length;
-  const top = topCard();
-  const discardWrap = document.getElementById('discardTop');
-  discardWrap.innerHTML='';
-  discardWrap.appendChild(cardEl(top, {playable:false}));
-
-  const tag = document.getElementById('activeColorTag');
-  const cat = CATEGORIES[G.activeColor];
-  tag.innerHTML = `<span class="dot" style="background:var(--${G.activeColor})"></span> ${cat.icon} ${cat.label}`;
-
-  const oppWrap = document.getElementById('opponents');
-  oppWrap.innerHTML='';
-  G.players.forEach((p,idx)=>{
-    const chip = document.createElement('div');
-    chip.className = 'opp-chip' + (idx===G.turn?' active':'');
-    chip.innerHTML = `<div class="stack"></div><div class="info"><b>${p.name}</b><small>${p.hand.length} cards · ${fmtMoney(p.score)}</small></div>`;
-    oppWrap.appendChild(chip);
-  });
-
-  const owner = G.players[G.turn];
-  document.getElementById('handOwner').textContent = `Kamay ni ${owner.name}`;
-  const handWrap = document.getElementById('hand');
-  handWrap.innerHTML='';
-  owner.hand.forEach(card=>{
-    let playable;
-    if(G.turnState==='drewOne'){ playable = (card.id===G.drawnCardId) && canPlay(card); }
-    else { playable = canPlay(card); }
-    const el = cardEl(card, {playable});
-    el.onclick = ()=>attemptPlay(card.id);
-    handWrap.appendChild(el);
-  });
-
-  const msg = document.getElementById('turnStateMsg');
-  const endBtn = document.getElementById('endTurnBtn');
-  if(G.turnState==='drewOne'){
-    msg.classList.remove('hidden');
-    msg.textContent = 'Nakabunot ka na — i-play ang nabunot o tapusin ang turn.';
-    endBtn.style.display='inline-block';
-    endBtn.onclick = onEndTurnClick;
-  } else {
-    msg.classList.add('hidden');
-    endBtn.style.display='none';
-  }
-}
-
-function showPassScreenAndRender(isFirst){
-  G.turnState='normal'; G.drawnCardId=null;
-  if(G.players.length>1){
-    switchScreen('passScreen');
-    document.getElementById('passName').textContent = `Ipasa kay ${G.players[G.turn].name}`;
-    document.getElementById('passReadyBtn').onclick = ()=>{
-      switchScreen('game');
-      renderAll();
-    };
-  } else {
-    switchScreen('game');
-    renderAll();
-  }
-}
-
-/* ---------- LEDGER / REPORT / FORMULA MODALS ---------- */
-function renderLedger(){
-  const body = document.getElementById('ledgerBody');
-  let html = `<table><tr><th>Manlalaro</th><th>Puntos (₱)</th><th>Kamay</th></tr>`;
-  G.players.forEach(p=> html += `<tr><td>${p.name}</td><td class="mono">${fmtMoney(p.score)}</td><td>${p.hand.length} cards</td></tr>`);
-  html += `</table><p style="margin-top:10px; font-size:.8rem; color:var(--ink-soft);">Target upang manalo: <b>${fmtMoney(G.target)}</b></p>`;
-  body.innerHTML = html;
-}
-function renderReport(){
-  const body = document.getElementById('reportBody');
-  let html='';
-  G.players.forEach(p=>{
-    html += `<div style="margin-bottom:16px;"><b>${p.name}</b> <span class="mono" style="color:var(--ink-soft); font-size:.78rem;">(Learning Points: ${p.learningPoints})</span>`;
-    COLOR_KEYS.forEach(k=>{
-      const st = p.stats[k];
-      const pct = st.total ? Math.round(st.correct/st.total*100) : 0;
-      html += `<div style="margin-top:6px; font-size:.8rem;">
-        <div style="display:flex; justify-content:space-between;"><span>${CATEGORIES[k].icon} ${CATEGORIES[k].label}</span><span class="mono">${st.correct}/${st.total} (${pct}%)</span></div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:var(--${k});"></div></div>
-      </div>`;
-    });
-    html += `</div>`;
-  });
-  body.innerHTML = html || '<p>Wala pang datos.</p>';
-}
-function renderFormulaSheet(){
-  const body = document.getElementById('formulaBody');
-  body.innerHTML = FORMULAS.map(f=>`
-    <div class="fitem">
-      <h4><span style="color:var(--${f.color});">${CATEGORIES[f.color].icon}</span> ${f.title}</h4>
-      <div class="f">${f.f}</div>
-      <p>${f.desc}</p>
-    </div>`).join('');
-}
-
-/* ================= SETUP SCREEN WIRING ================= */
-let selectedPlayerCount = 2;
-let selectedTarget = 3000;
-let selectedMode = 'palaro';
-
-function renderPlayerNameInputs(){
-  const wrap = document.getElementById('playerNamesWrap');
-  wrap.innerHTML='';
-  for(let i=0;i<selectedPlayerCount;i++){
-    const row = document.createElement('div');
-    row.className='player-row';
-    row.innerHTML = `<span class="pnum">${i+1}</span><input type="text" placeholder="Pangalan ng Manlalaro ${i+1}" value="${i===0?'Manlalaro 1':'Manlalaro '+(i+1)}" data-idx="${i}">`;
-    wrap.appendChild(row);
-  }
-}
-renderPlayerNameInputs();
-
-document.getElementById('playerCountChips').addEventListener('click', e=>{
-  const btn = e.target.closest('button'); if(!btn) return;
-  document.querySelectorAll('#playerCountChips button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedPlayerCount = parseInt(btn.dataset.n);
-  renderPlayerNameInputs();
-});
-document.getElementById('targetChips').addEventListener('click', e=>{
-  const btn = e.target.closest('button'); if(!btn) return;
-  document.querySelectorAll('#targetChips button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedTarget = parseInt(btn.dataset.t);
-});
-document.getElementById('modeChips').addEventListener('click', e=>{
-  const btn = e.target.closest('button'); if(!btn) return;
-  document.querySelectorAll('#modeChips button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedMode = btn.dataset.m;
-});
-document.getElementById('startBtn').addEventListener('click', ()=>{
-  const inputs = document.querySelectorAll('#playerNamesWrap input');
-  const names = Array.from(inputs).map((inp,i)=> inp.value.trim() || `Manlalaro ${i+1}`);
-  initGame(names, selectedTarget, selectedMode);
-});
-document.getElementById('howToBtn').addEventListener('click', ()=>openOverlay('howtoOverlay'));
-document.getElementById('howtoCloseBtn').addEventListener('click', ()=>closeOverlay('howtoOverlay'));
-document.getElementById('helpBtnGame').addEventListener('click', ()=>openOverlay('howtoOverlay'));
-
-document.getElementById('drawPile').addEventListener('click', onDrawPileClick);
-document.getElementById('ledgerBtn').addEventListener('click', ()=>{ renderLedger(); openOverlay('ledgerOverlay'); });
-document.getElementById('ledgerCloseBtn').addEventListener('click', ()=>closeOverlay('ledgerOverlay'));
-document.getElementById('reportBtn').addEventListener('click', ()=>{ renderReport(); openOverlay('reportOverlay'); });
-document.getElementById('reportCloseBtn').addEventListener('click', ()=>closeOverlay('reportOverlay'));
-document.getElementById('formulaBtn').addEventListener('click', ()=>{ renderFormulaSheet(); openOverlay('formulaOverlay'); });
-document.getElementById('formulaCloseBtn').addEventListener('click', ()=>closeOverlay('formulaOverlay'));
-document.getElementById('restartBtn').addEventListener('click', ()=>{
-  closeOverlay('championOverlay');
-  switchScreen('setup');
-});
+/* ---------------- INIT ---------------- */
+renderAll(false);
 </script>
 </body>
 </html>
