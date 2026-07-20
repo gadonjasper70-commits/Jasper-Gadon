@@ -1,1766 +1,1233 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Functions: Exploding Equations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PisoUNO — Sequence, Series, at Pera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#152922; --bg2:#1e3a2c; --board:#1a3327;
-  --paper:#f7f1e0; --paper-2:#efe6ce;
-  --ink:#22301c; --chalk:#f4f2e9;
-  --line: rgba(244,242,233,.14);
-  --line-strong: rgba(244,242,233,.28);
-  --accent-y:#f0c24b; --accent-y-ink:#4a3400;
-  --accent-b:#5aa9d6; --accent-b-ink:#0d2a3a;
-  --accent-r:#e5572f; --accent-r-ink:#3a0e02;
-  --accent-p:#a084d8; --accent-p-ink:#241a3a;
-  --accent-g:#7bc37a; --accent-g-ink:#123a11;
-  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --bg-deep:#0e3a2c;
+  --bg-felt:#124a37;
+  --paper:#f3edd8;
+  --paper-dim:#e7dfc2;
+  --ink:#1c2620;
+  --ink-soft:#3f4a41;
+  --gold:#c9a34e;
+  --gold-bright:#e0bd6c;
+  --red:#b6392f;
+  --blue:#1f5c8b;
+  --green:#2f7a4f;
+  --yellow:#c99a1f;
+  --wild-grad: conic-gradient(from 180deg, var(--red), var(--yellow), var(--green), var(--blue), var(--red));
+  --shadow: 0 10px 24px rgba(0,0,0,.35);
   --radius: 14px;
-  /* Self-contained font stacks — no network fonts, so this works fully offline (e.g. hosted on GitHub Pages, or opened as a local file). */
-  --font-display: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', Consolas, Menlo, monospace;
-}
-html[data-theme="light"]{
-  --bg:#efe6cb; --bg2:#e7dcbc; --board:#f3ead2;
-  --chalk:#22301c; --line: rgba(34,48,28,.16); --line-strong: rgba(34,48,28,.3);
+  font-size: 16px;
 }
 *{box-sizing:border-box;}
+@media (prefers-reduced-motion: reduce){ *{ animation: none !important; transition: none !important; } }
 html,body{height:100%;}
 body{
-  margin:0; background:
-    radial-gradient(ellipse at 20% -10%, var(--bg2), transparent 60%),
-    repeating-linear-gradient(0deg, transparent, transparent 38px, var(--line) 39px),
-    var(--bg);
-  color:var(--chalk); font-family:var(--font-body);
-  min-height:100vh; overflow-x:hidden;
+  margin:0;
+  font-family:'Inter',sans-serif;
+  color:var(--paper);
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(255,255,255,.05), transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgba(0,0,0,.25), transparent 55%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 40px),
+    var(--bg-felt);
+  min-height:100vh;
+  overflow-x:hidden;
 }
-h1,h2,h3, .display{ font-family:var(--font-display); font-weight:700; letter-spacing:.3px;}
-.mono{font-family:var(--font-mono);}
-button{font-family:var(--font-body); cursor:pointer;}
-::selection{ background:var(--accent-y); color:var(--accent-y-ink);}
+h1,h2,h3,.display{font-family:'Fraunces',serif;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.screen{display:none; min-height:100vh; padding:20px;}
+.screen.active{display:flex; flex-direction:column;}
+.hidden{display:none !important;}
 
-/* ---------- layout shells ---------- */
-.screen{ min-height:100vh; display:none; padding:20px; }
-.screen.active{ display:flex; flex-direction:column; align-items:center; }
-.wrap{ width:100%; max-width:1100px; margin:0 auto; }
+/* ---------- SETUP SCREEN ---------- */
+#setup{align-items:center; justify-content:center;}
+.setup-card{
+  background:var(--paper); color:var(--ink); border-radius:20px; max-width:640px; width:100%;
+  padding:36px 34px 30px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.setup-card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:10px;
+  background:repeating-linear-gradient(90deg, var(--gold) 0 14px, transparent 14px 24px);
+  opacity:.7;
+}
+.brand{display:flex; align-items:baseline; gap:10px; margin-bottom:2px;}
+.brand .coin{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 60%, #8a6a2c 100%);
+  color:#3a2c0c; font-weight:800; font-family:'IBM Plex Mono',monospace; font-size:20px;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.35), 0 3px 6px rgba(0,0,0,.35);
+}
+.brand h1{font-size:2.3rem; margin:0; font-weight:900; letter-spacing:.5px;}
+.tagline{color:var(--ink-soft); margin:2px 0 22px; font-size:.98rem;}
+.legend{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 0 24px;}
+.legend-item{
+  display:flex; gap:10px; align-items:flex-start; background:var(--paper-dim);
+  border-radius:10px; padding:10px 12px; border-left:5px solid var(--c);
+}
+.legend-item .ic{font-size:1.3rem; line-height:1;}
+.legend-item b{display:block; font-size:.92rem;}
+.legend-item span{font-size:.78rem; color:var(--ink-soft);}
+label.field{display:block; margin:14px 0 6px; font-weight:600; font-size:.9rem; color:var(--ink-soft);}
+.row{display:flex; gap:10px; flex-wrap:wrap;}
+input[type=text], select{
+  font-family:'Inter'; font-size:.95rem; padding:9px 12px; border-radius:8px;
+  border:1.5px solid #d8cfa9; background:#fffdf6; color:var(--ink); flex:1; min-width:120px;
+}
+.chip-select{display:flex; gap:8px; flex-wrap:wrap;}
+.chip-select button{
+  padding:8px 14px; border-radius:20px; border:1.5px solid #d8cfa9; background:#fffdf6;
+  cursor:pointer; font-weight:600; font-size:.85rem; color:var(--ink-soft);
+}
+.chip-select button.active{background:var(--green); border-color:var(--green); color:#fff;}
+.players-block{margin-top:8px;}
+.player-row{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
+.player-row span.pnum{
+  width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:.8rem;
+  display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono';flex-shrink:0;
+}
+.btn{
+  border:none; cursor:pointer; font-family:'Inter'; font-weight:700; border-radius:10px;
+  padding:12px 20px; font-size:.95rem; transition:transform .1s ease, filter .15s ease;
+}
+.btn:hover{filter:brightness(1.08);}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--green); color:#fff; width:100%; margin-top:20px; font-size:1.05rem; padding:14px;}
+.btn-gold{background:var(--gold); color:#3a2c0c;}
+.btn-ghost{background:transparent; border:1.5px solid rgba(255,255,255,.4); color:var(--paper);}
+.btn-outline{background:transparent; border:1.5px solid #cbbf94; color:var(--ink-soft);}
+.btn-small{padding:7px 12px; font-size:.8rem; border-radius:8px;}
+.help-toggle{background:none; border:none; color:var(--blue); text-decoration:underline; cursor:pointer; font-size:.85rem; margin-top:14px; padding:0; font-family:'Inter'; font-weight:600;}
 
-/* ---------- top bar ---------- */
-.topbar{ display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1100px; margin:0 auto 10px; }
-.brand{ display:flex; align-items:center; gap:10px; }
-.brand .glyph{ font-size:28px; color:var(--accent-y); text-shadow:0 0 18px rgba(240,194,75,.5);}
-.brand-name{ font-size:20px; }
-.icon-btn{ background:transparent; border:1px solid var(--line-strong); color:var(--chalk); width:38px;height:38px;border-radius:10px; display:flex;align-items:center;justify-content:center; font-size:16px;}
-.icon-btn:hover{ background:var(--line); }
-.toolbar{ display:flex; gap:8px; }
+/* ---------- GAME SCREEN ---------- */
+#game{padding:12px 14px 18px;}
+.topbar{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+.topbar .titlewrap{display:flex; align-items:center; gap:8px;}
+.titlewrap .coin{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 60%, #8a6a2c 100%); flex-shrink:0;}
+.titlewrap h2{margin:0; font-size:1.25rem; color:var(--paper);}
+.topbar .actions{display:flex; gap:8px; flex-wrap:wrap;}
+.topbar .btn{padding:8px 12px; font-size:.78rem;}
 
-/* ---------- start screen ---------- */
-.hero{ text-align:center; margin-top:6vh; }
-.hero .glyph-row{ font-size:44px; letter-spacing:10px; color:var(--accent-y); opacity:.85; margin-bottom:6px;}
-.title{ font-size:clamp(34px,7vw,64px); margin:0; line-height:1.05; }
-.title .accent{ color:var(--accent-r); }
-.subtitle{ font-family:var(--font-mono); opacity:.75; font-size:14px; margin-top:10px; letter-spacing:.5px; text-transform:uppercase;}
-.tagline{ max-width:560px; margin:18px auto 34px; opacity:.85; line-height:1.5; }
+.opponents{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:6px 0 14px;}
+.opp-chip{
+  background:rgba(0,0,0,.22); border:1.5px solid rgba(255,255,255,.12); border-radius:12px;
+  padding:8px 12px; display:flex; align-items:center; gap:8px; font-size:.82rem; min-width:120px;
+}
+.opp-chip.active{border-color:var(--gold-bright); box-shadow:0 0 0 2px rgba(224,189,108,.3);}
+.opp-chip .stack{
+  width:20px;height:26px;border-radius:3px;
+  background:repeating-linear-gradient(135deg, #2a2a2a 0 3px, #3a3a3a 3px 6px);
+  border:1px solid rgba(255,255,255,.3); flex-shrink:0;
+}
+.opp-chip .info{display:flex; flex-direction:column; line-height:1.15;}
+.opp-chip .info b{font-size:.85rem;}
+.opp-chip .info small{color:#cfe0d4; font-size:.72rem;}
 
-.menu-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; width:100%; max-width:760px; margin:0 auto; }
-.menu-card{ background:var(--board); border:1px solid var(--line-strong); border-radius:var(--radius); padding:20px; text-align:left; transition:.15s; box-shadow:var(--shadow); }
-.menu-card:hover{ transform:translateY(-3px); border-color:var(--accent-y); }
-.menu-card h3{ margin:6px 0 4px; font-size:20px; }
-.menu-card p{ margin:0; opacity:.7; font-size:13px; line-height:1.4;}
-.menu-card .em{ font-size:26px; }
-.menu-card button{ margin-top:14px; width:100%; }
+.table{display:flex; align-items:center; justify-content:center; gap:26px; margin:10px 0 22px; flex-wrap:wrap;}
+.pile-wrap{display:flex; flex-direction:column; align-items:center; gap:6px;}
+.pile-label{font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; color:#cfe0d4;}
+.draw-pile{
+  width:92px;height:132px;border-radius:10px; cursor:pointer; position:relative;
+  background:
+    repeating-linear-gradient(135deg, #163d2e 0 6px, #1c4a37 6px 12px),
+    linear-gradient(160deg, #1c4a37, #0e3a2c);
+  border:2px solid rgba(255,255,255,.15); box-shadow:var(--shadow);
+  display:flex; align-items:center; justify-content:center;
+}
+.draw-pile .emblem{
+  width:44px;height:44px;border-radius:50%; background:radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 65%, #8a6a2c 100%);
+  display:flex;align-items:center;justify-content:center; color:#3a2c0c; font-weight:800; font-family:'IBM Plex Mono';font-size:20px;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.3);
+}
+.draw-pile .count{
+  position:absolute; bottom:-10px; right:-10px; background:var(--gold); color:#3a2c0c; font-family:'IBM Plex Mono';
+  font-weight:700; font-size:.72rem; border-radius:50%; width:26px;height:26px; display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--bg-felt);
+}
+.active-color-tag{display:flex; align-items:center; gap:6px; font-size:.78rem; color:#cfe0d4;}
+.dot{width:12px;height:12px;border-radius:50%; display:inline-block; border:1px solid rgba(255,255,255,.5);}
 
-/* ---------- generic buttons ---------- */
-.btn{ background:var(--accent-y); color:var(--accent-y-ink); border:none; padding:11px 18px; border-radius:10px; font-weight:600; font-size:14px; box-shadow:0 4px 0 rgba(0,0,0,.25);}
-.btn:active{ transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.25);}
-.btn.secondary{ background:transparent; color:var(--chalk); border:1px solid var(--line-strong); box-shadow:none;}
-.btn.danger{ background:var(--accent-r); color:#fff2ec; }
-.btn.blue{ background:var(--accent-b); color:var(--accent-b-ink);}
-.btn.purple{ background:var(--accent-p); color:#fff;}
-.btn:disabled{ opacity:.35; cursor:not-allowed; }
-.btn-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-
-/* ---------- setup screen ---------- */
-.panel{ background:var(--board); border:1px solid var(--line-strong); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); width:100%; max-width:720px; margin:0 auto 16px;}
-.panel h2{ margin-top:0; font-size:22px; border-bottom:1px dashed var(--line-strong); padding-bottom:10px;}
-.seat-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); }
-.seat-row:last-child{border-bottom:none;}
-.seat-row label{ width:90px; font-family:var(--font-mono); font-size:13px; opacity:.8;}
-.seat-row input[type=text]{ flex:1; background:transparent; border:1px solid var(--line-strong); color:var(--chalk); padding:8px 10px; border-radius:8px; font-family:var(--font-body); }
-.seat-row select{ background:var(--bg); color:var(--chalk); border:1px solid var(--line-strong); padding:8px 10px; border-radius:8px; }
-.field-row{ display:flex; gap:14px; flex-wrap:wrap; margin:10px 0; }
-.field{ flex:1; min-width:180px; }
-.field label{ display:block; font-family:var(--font-mono); font-size:12px; opacity:.7; margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px;}
-.field select, .field input{ width:100%; background:var(--bg); color:var(--chalk); border:1px solid var(--line-strong); padding:9px 10px; border-radius:8px; }
-.chip-set{ display:flex; flex-wrap:wrap; gap:8px; }
-.chip{ border:1px solid var(--line-strong); padding:7px 12px; border-radius:999px; font-size:12px; font-family:var(--font-mono); opacity:.75; }
-.chip.on{ background:var(--accent-g); color:var(--accent-g-ink); border-color:var(--accent-g); opacity:1; font-weight:600;}
-.toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:8px 0; }
-textarea{ width:100%; background:var(--bg); color:var(--chalk); border:1px solid var(--line-strong); border-radius:8px; padding:10px; font-family:var(--font-mono); font-size:12px; min-height:80px;}
-
-/* ---------- game board ---------- */
-.board{ width:100%; max-width:1180px; }
-.opponents{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:16px; }
-.opp{ background:var(--board); border:1px solid var(--line-strong); border-radius:12px; padding:10px 14px; min-width:130px; text-align:center; position:relative; }
-.opp.active{ border-color:var(--accent-y); box-shadow:0 0 0 2px var(--accent-y) inset; }
-.opp.dead{ opacity:.35; filter:grayscale(1); }
-.opp .name{ font-weight:600; font-size:14px; }
-.opp .stat{ font-family:var(--font-mono); font-size:11px; opacity:.7; margin-top:3px;}
-.opp .badges{ display:flex; gap:4px; justify-content:center; margin-top:6px; flex-wrap:wrap;}
-.badge{ font-size:10px; background:var(--bg); border:1px solid var(--line-strong); border-radius:5px; padding:2px 5px; font-family:var(--font-mono);}
-
-.center-table{ display:flex; align-items:center; justify-content:center; gap:40px; margin:8px 0 20px; flex-wrap:wrap;}
-.pile{ text-align:center; }
-.pile .stack{ width:96px; height:132px; border-radius:10px; position:relative; margin:0 auto 8px; }
-.pile .stack .card-back{ position:absolute; inset:0; border-radius:10px; background:linear-gradient(135deg,var(--bg2),var(--board)); border:2px solid var(--line-strong); display:flex; align-items:center; justify-content:center; font-size:26px; color:var(--accent-y); box-shadow:var(--shadow);}
-.pile .stack .card-back:nth-child(1){ transform:translate(4px,4px); opacity:.5;}
-.pile .stack .card-back:nth-child(2){ transform:translate(2px,2px); opacity:.75;}
-.pile .label{ font-family:var(--font-mono); font-size:11px; opacity:.75; text-transform:uppercase; letter-spacing:.5px;}
-.pile .count{ font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--accent-y);}
-.discard-top{ width:96px;height:132px; margin:0 auto 8px; }
-
-.log{ background:var(--board); border:1px solid var(--line-strong); border-radius:12px; padding:10px 14px; max-height:110px; overflow-y:auto; font-family:var(--font-mono); font-size:12px; opacity:.85; width:100%; max-width:720px; margin:0 auto 16px;}
-.log div{ padding:2px 0; border-bottom:1px dotted var(--line);}
-.log div:last-child{border-bottom:none;}
-
-.hand-area{ margin-top:10px; }
-.hand-title{ text-align:center; font-family:var(--font-mono); font-size:12px; opacity:.7; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;}
-.hand{ display:flex; justify-content:center; flex-wrap:wrap; padding:10px 0 20px; perspective:800px; }
-
-/* ---------- card ---------- */
 .card{
-  width:118px; height:164px; border-radius:11px; position:relative; cursor:pointer;
-  background:var(--paper); color:var(--ink); box-shadow:var(--shadow);
-  border:2px solid rgba(0,0,0,.15);
-  margin-left:-26px; transition:transform .15s, box-shadow .15s, margin .15s;
-  display:flex; flex-direction:column; padding:9px; overflow:hidden;
-  flex-shrink:0;
+  width:92px;height:132px;border-radius:10px; position:relative; flex-shrink:0;
+  background:var(--paper); border:2px solid rgba(0,0,0,.2); box-shadow:var(--shadow);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:var(--ink); user-select:none; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease;
 }
-.card:first-child{ margin-left:0; }
-.card:hover{ transform:translateY(-16px) scale(1.03); z-index:5; box-shadow:0 16px 30px rgba(0,0,0,.4); }
-.card.mini{ width:78px; height:108px; margin:0; }
-.card.selected{ transform:translateY(-20px); box-shadow:0 0 0 3px var(--accent-y), 0 16px 30px rgba(0,0,0,.4); }
-.card .ctype{ font-family:var(--font-mono); font-size:8.5px; text-transform:uppercase; letter-spacing:.6px; opacity:.65; }
-.card .cicon{ font-size:30px; text-align:center; margin:2px 0; }
-.card .cname{ font-family:var(--font-display); font-weight:700; font-size:13.5px; line-height:1.1; text-align:center; }
-.card .cflavor{ font-size:9px; opacity:.6; text-align:center; margin-top:auto; font-style:italic; line-height:1.2;}
-.card.type-EXPLODE{ background:linear-gradient(160deg,#3a0e02,#1c0700); color:#ffe9df; border-color:var(--accent-r);}
-.card.type-EXPLODE .ctype{opacity:.8;}
-.card.type-DEFUSE{ background:linear-gradient(160deg,var(--paper),#e3f3e0); border-color:var(--accent-g);}
-.card.type-NOPE{ background:linear-gradient(160deg,var(--paper),#efe3fb); border-color:var(--accent-p);}
-.card.type-ATTACK{ background:linear-gradient(160deg,var(--paper),#fbe9df); border-color:var(--accent-r);}
-.card.type-CHALLENGE{ background:linear-gradient(160deg,var(--paper),#e2f0fa); border-color:var(--accent-b);}
-.card-back-face{ background:linear-gradient(135deg,var(--bg2),var(--board)); border:2px solid var(--line-strong); border-radius:11px; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--accent-y); font-size:26px;}
+.card::before{
+  content:""; position:absolute; top:6px; left:8px; right:8px; height:0;
+  border-top:2px dashed rgba(0,0,0,.18);
+}
+.card .seal{
+  position:absolute; top:6px; left:6px; width:26px;height:26px;border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:.85rem;
+  background:#fffdf6; border:2px solid var(--accent, #333); box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+.card .catlabel{position:absolute; top:34px; left:0; right:0; text-align:center; font-size:.52rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); font-weight:700;}
+.card .big{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:2rem; color:var(--accent,#333); margin-top:8px;}
+.card .corner{position:absolute; font-family:'IBM Plex Mono'; font-size:.62rem; font-weight:700; color:var(--accent,#333);}
+.card .corner.br{bottom:6px; right:8px; transform:rotate(180deg);}
+.card .stamp{position:absolute; bottom:16px; left:0; right:0; text-align:center; font-size:.46rem; letter-spacing:.05em; color:rgba(0,0,0,.28); font-weight:700; transform:rotate(-8deg);}
+.card.playable:hover{transform:translateY(-8px); box-shadow:0 16px 28px rgba(0,0,0,.4);}
+.card.disabled{opacity:.55; cursor:not-allowed;}
+.card.disabled:hover{transform:none;}
+.card--red{--accent:var(--red);}
+.card--blue{--accent:var(--blue);}
+.card--green{--accent:var(--green);}
+.card--yellow{--accent:var(--yellow);}
+.card--wild{background:var(--paper);}
+.card--wild .big{background:var(--wild-grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.card-back{
+  width:92px;height:132px;border-radius:10px;
+  background:repeating-linear-gradient(135deg, #163d2e 0 6px, #1c4a37 6px 12px), linear-gradient(160deg,#1c4a37,#0e3a2c);
+  border:2px solid rgba(255,255,255,.15);
+}
 
-.action-bar{ display:flex; justify-content:center; gap:10px; margin-top:6px; flex-wrap:wrap; }
+.handzone{margin-top:auto;}
+.handzone-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;}
+.handzone-head h3{margin:0; font-size:1rem; color:var(--gold-bright);}
+.turnstate-msg{font-size:.78rem; color:#f0d9a0; background:rgba(0,0,0,.25); padding:4px 10px; border-radius:8px;}
+.hand{display:flex; gap:8px; overflow-x:auto; padding:10px 4px 16px; -webkit-overflow-scrolling:touch;}
+.hand::-webkit-scrollbar{height:6px;}
+.hand::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2); border-radius:4px;}
+.handzone-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:6px;}
 
-/* ---------- modal ---------- */
-.modal-overlay{ position:fixed; inset:0; background:rgba(10,15,10,.72); display:none; align-items:center; justify-content:center; z-index:50; padding:16px;}
-.modal-overlay.active{ display:flex; }
-.modal{ background:var(--board); border:1px solid var(--line-strong); border-radius:16px; padding:24px; width:100%; max-width:520px; box-shadow:var(--shadow); max-height:90vh; overflow-y:auto; }
-.modal h3{ margin-top:0; }
-.qmeta{ font-family:var(--font-mono); font-size:11px; opacity:.65; text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between;}
-.qprompt{ font-size:17px; line-height:1.5; margin:14px 0; }
-.qprompt .math{ font-family:var(--font-mono); background:rgba(255,255,255,.06); padding:1px 5px; border-radius:5px;}
-.choices{ display:grid; gap:8px; }
-.choice-btn{ background:var(--bg); border:1px solid var(--line-strong); color:var(--chalk); padding:12px; border-radius:9px; text-align:left; font-size:14px;}
-.choice-btn:hover{ border-color:var(--accent-y);}
-.choice-btn.correct{ background:var(--accent-g); color:var(--accent-g-ink); border-color:var(--accent-g);}
-.choice-btn.wrong{ background:var(--accent-r); color:#fff; border-color:var(--accent-r);}
-.timer-bar{ height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-bottom:10px;}
-.timer-fill{ height:100%; background:var(--accent-y); width:100%; transition:width .1s linear;}
-.feedback{ margin-top:10px; font-size:14px; padding:10px 12px; border-radius:8px; }
-.feedback.ok{ background:rgba(123,195,122,.18); color:var(--accent-g);}
-.feedback.no{ background:rgba(229,87,47,.18); color:var(--accent-r);}
+/* ---------- MODALS ---------- */
+.overlay{
+  position:fixed; inset:0; background:rgba(6,20,14,.72); display:none;
+  align-items:center; justify-content:center; z-index:50; padding:16px; backdrop-filter:blur(2px);
+}
+.overlay.active{display:flex;}
+.modal{
+  background:var(--paper); color:var(--ink); border-radius:18px; max-width:480px; width:100%;
+  padding:26px 24px; box-shadow:0 20px 50px rgba(0,0,0,.5); max-height:88vh; overflow-y:auto;
+  position:relative;
+}
+.modal h3{margin:0 0 4px; font-size:1.2rem;}
+.q-tag{display:inline-flex; align-items:center; gap:6px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:4px 10px; border-radius:20px; color:#fff; margin-bottom:10px;}
+.q-text{font-size:1rem; line-height:1.5; margin:10px 0 16px; color:var(--ink);}
+.choice{
+  display:block; width:100%; text-align:left; background:#fffdf6; border:1.5px solid #d8cfa9; border-radius:10px;
+  padding:11px 14px; margin-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:.92rem; cursor:pointer; color:var(--ink);
+}
+.choice:hover{border-color:var(--green);}
+.choice.correct{background:#dff2e3; border-color:var(--green); font-weight:700;}
+.choice.wrong{background:#f6dede; border-color:var(--red);}
+.timerbar{height:6px; background:#d8cfa9; border-radius:3px; overflow:hidden; margin-bottom:14px;}
+.timerbar-fill{height:100%; background:var(--gold); width:100%; transition:width 1s linear;}
+.explain-box{background:var(--paper-dim); border-radius:10px; padding:12px 14px; margin-top:6px; font-size:.85rem; line-height:1.5;}
+.explain-box .formula{font-family:'IBM Plex Mono'; font-weight:700; color:var(--green); margin-bottom:4px;}
+.modal .btn-primary{margin-top:16px;}
+.colorpick{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;}
+.colorpick button{
+  padding:16px; border-radius:12px; border:none; cursor:pointer; font-weight:700; color:#fff; font-size:.95rem;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.uno-count{font-family:'IBM Plex Mono'; font-size:3rem; text-align:center; color:var(--red); font-weight:800; margin:6px 0 14px;}
+.toast-wrap{position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:80; display:flex; flex-direction:column; gap:8px; align-items:center;}
+.toast{background:var(--ink); color:#fff; padding:9px 16px; border-radius:20px; font-size:.82rem; box-shadow:0 6px 18px rgba(0,0,0,.4); opacity:0; animation:toastIn .25s ease forwards;}
+@keyframes toastIn{from{opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);}}
 
-/* ---------- toast ---------- */
-.toast-zone{ position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:60; display:flex; flex-direction:column; gap:8px; align-items:center; }
-.toast{ background:var(--board); border:1px solid var(--accent-y); color:var(--chalk); padding:10px 16px; border-radius:10px; font-size:13px; box-shadow:var(--shadow); display:flex; gap:10px; align-items:center; animation:slidein .2s ease; }
-@keyframes slidein{ from{ opacity:0; transform:translateY(-10px);} to{opacity:1; transform:translateY(0);} }
+.pass-screen{align-items:center; justify-content:center; text-align:center;}
+.pass-box{background:var(--paper); color:var(--ink); border-radius:20px; padding:44px 34px; max-width:420px; box-shadow:var(--shadow);}
+.pass-box h2{margin:0 0 10px;}
+.pass-box p{color:var(--ink-soft); margin-bottom:22px;}
 
-/* ---------- explosion particles ---------- */
-#fxCanvas{ position:fixed; inset:0; pointer-events:none; z-index:70; }
-.shake{ animation: shakeAnim .5s; }
-@keyframes shakeAnim{ 0%,100%{transform:translate(0,0);} 20%{transform:translate(-8px,4px);} 40%{transform:translate(7px,-5px);} 60%{transform:translate(-6px,-3px);} 80%{transform:translate(5px,4px);} }
+.ledger table{width:100%; border-collapse:collapse; font-size:.85rem;}
+.ledger th, .ledger td{padding:8px 6px; text-align:left; border-bottom:1px solid #d8cfa9;}
+.ledger th{color:var(--ink-soft); font-size:.72rem; text-transform:uppercase; letter-spacing:.04em;}
+.bar-track{background:#e7dfc2; border-radius:6px; height:8px; overflow:hidden; width:100%;}
+.bar-fill{height:100%; background:var(--green);}
+.formula-list .fitem{margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid #d8cfa9;}
+.formula-list .fitem:last-child{border-bottom:none;}
+.formula-list .fitem h4{margin:0 0 4px; font-size:.9rem; display:flex; align-items:center; gap:6px;}
+.formula-list .fitem .f{font-family:'IBM Plex Mono'; font-weight:700; color:var(--green); font-size:.95rem; margin:4px 0;}
+.formula-list .fitem p{margin:2px 0 0; font-size:.8rem; color:var(--ink-soft); line-height:1.5;}
 
-/* ---------- achievements/stats ---------- */
-.grid-cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; width:100%; }
-.ach{ background:var(--board); border:1px solid var(--line-strong); border-radius:12px; padding:14px; opacity:.4; }
-.ach.unlocked{ opacity:1; border-color:var(--accent-y); }
-.ach .em{ font-size:24px; }
-.ach h4{ margin:6px 0 2px; font-size:14px;}
-.ach p{ margin:0; font-size:11px; opacity:.7;}
-.stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; width:100%; margin-bottom:20px;}
-.stat-box{ background:var(--board); border:1px solid var(--line-strong); border-radius:12px; padding:16px; text-align:center;}
-.stat-box .num{ font-size:26px; font-family:var(--font-mono); font-weight:700; color:var(--accent-y);}
-.stat-box .lbl{ font-size:11px; opacity:.7; text-transform:uppercase; letter-spacing:.5px; margin-top:4px;}
-.bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12px; }
-.bar-row .lbl{ width:120px; font-family:var(--font-mono); opacity:.8;}
-.bar-track{ flex:1; height:10px; background:var(--line); border-radius:5px; overflow:hidden;}
-.bar-fill{ height:100%; background:var(--accent-b); }
-
-footer.credits{ margin-top:30px; opacity:.4; font-size:11px; font-family:var(--font-mono); text-align:center; }
-
-@media (max-width:640px){
-  .card{ width:92px; height:130px; margin-left:-32px; }
-  .card:first-child{margin-left:0;}
-  .card .cicon{font-size:22px;}
-  .card .cname{font-size:11px;}
-  .title{font-size:32px;}
+.champion-box{text-align:center;}
+.champion-box .medal{font-size:3.4rem;}
+footer.credit{text-align:center; font-size:.68rem; color:rgba(255,255,255,.35); margin-top:10px;}
+@media (max-width:520px){
+  .card{width:76px;height:112px;}
+  .draw-pile,.card-back{width:76px;height:112px;}
+  .card .big{font-size:1.6rem;}
+  .brand h1{font-size:1.7rem;}
 }
 </style>
 </head>
 <body>
-<canvas id="fxCanvas"></canvas>
-<div class="toast-zone" id="toastZone"></div>
 
-<!-- ================= PASS-DEVICE PRIVACY SCREEN ================= -->
-<div class="modal-overlay" id="passOverlay" style="z-index:80;">
-  <div class="modal" style="text-align:center;">
-    <div style="font-size:52px;" id="passGlyph">🧮</div>
-    <h3 id="passName">Player's Turn</h3>
-    <p>Pass the device to this player. Tap below when they're ready to see their hand.</p>
-    <button class="btn" style="width:100%;margin-top:10px;" id="passReadyBtn">I'm Ready</button>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ============ SETUP SCREEN ============ -->
+<section id="setup" class="screen active">
+  <div class="setup-card">
+    <div class="brand"><span class="coin">₱</span><h1>PisoUNO</h1></div>
+    <p class="tagline">Isang laro ng sequence, series, at pananalapi — hulugan, imbestimento, at UNO strategy sa iisang baraha.</p>
+
+    <div class="legend">
+      <div class="legend-item" style="--c:var(--red)"><span class="ic">🏦</span><div><b>Pautang (Red)</b><span>Loans &amp; Mortgages — periodic payments</span></div></div>
+      <div class="legend-item" style="--c:var(--blue)"><span class="ic">📈</span><div><b>Pamumuhunan (Blue)</b><span>Investments — accumulated value</span></div></div>
+      <div class="legend-item" style="--c:var(--green)"><span class="ic">🔢</span><div><b>Sunod-sunod (Green)</b><span>Sequences — arithmetic &amp; geometric</span></div></div>
+      <div class="legend-item" style="--c:var(--yellow)"><span class="ic">Σ</span><div><b>Serye (Yellow)</b><span>Series — sum of terms</span></div></div>
+    </div>
+
+    <label class="field">Bilang ng Manlalaro (2–4)</label>
+    <div class="chip-select" id="playerCountChips">
+      <button data-n="2" class="active">2</button>
+      <button data-n="3">3</button>
+      <button data-n="4">4</button>
+    </div>
+
+    <div class="players-block" id="playerNamesWrap"></div>
+
+    <label class="field">Puntos para Manalo (Target Score)</label>
+    <div class="chip-select" id="targetChips">
+      <button data-t="1000">₱1,000</button>
+      <button data-t="3000" class="active">₱3,000</button>
+      <button data-t="5000">₱5,000</button>
+    </div>
+
+    <label class="field">Uri ng Laro</label>
+    <div class="chip-select" id="modeChips">
+      <button data-m="palaro" class="active">🎮 Palaro Mode (may timer, may parusa)</button>
+      <button data-m="klase">🎓 Klase Mode (walang timer, focus sa pag-aaral)</button>
+    </div>
+
+    <button class="btn btn-primary" id="startBtn">🎴 Simulan ang Laro</button>
+    <button class="help-toggle" id="howToBtn">Paano ito laruin? (How to play)</button>
   </div>
-</div>
+</section>
 
-<!-- ================= START SCREEN ================= -->
-<div class="screen active" id="screen-start">
+<!-- ============ PASS SCREEN ============ -->
+<section id="passScreen" class="screen pass-screen">
+  <div class="pass-box">
+    <h2 id="passName">Ipasa kay ___</h2>
+    <p>Siguraduhing walang ibang nakakakita ng iyong kamay. Kapag handa ka na, i-tap ang buton sa ibaba.</p>
+    <button class="btn btn-primary" id="passReadyBtn" style="margin-top:0;">Handa na ako ✋</button>
+  </div>
+</section>
+
+<!-- ============ GAME SCREEN ============ -->
+<section id="game" class="screen">
   <div class="topbar">
-    <div class="brand"><span class="glyph">ƒ</span><span class="brand-name display">Exploding Equations</span></div>
-    <div class="toolbar">
-      <button class="icon-btn" onclick="goto('screen-rules')" title="How To Play">?</button>
-      <button class="icon-btn" onclick="toggleTheme()" title="Toggle light/dark">◑</button>
-      <button class="icon-btn" onclick="goto('screen-achievements')" title="Achievements">★</button>
-      <button class="icon-btn" onclick="goto('screen-stats')" title="Stats">▤</button>
+    <div class="titlewrap"><span class="coin"></span><h2>PisoUNO</h2></div>
+    <div class="actions">
+      <button class="btn btn-gold" id="ledgerBtn">📒 Ledger</button>
+      <button class="btn btn-outline" id="formulaBtn">📐 Sanggunian</button>
+      <button class="btn btn-outline" id="reportBtn">📊 Ulat ng Guro</button>
+      <button class="btn btn-ghost" id="helpBtnGame">❓</button>
     </div>
   </div>
-  <div class="hero">
-    <div class="glyph-row">ƒ(x) √x |x| x²</div>
-    <h1 class="title">FUNCTIONS: <span class="accent">EXPLODING</span> EQUATIONS</h1>
-    <div class="subtitle mono">A draw-and-survive strategy card game &middot; Grade 11 General Mathematics &middot; Functions</div>
-    <p class="tagline">Draw carefully. One card in the deck is an Exploding Equation — an undefined, broken function that eliminates you on the spot, unless you're holding a Function Repair card. Play action cards, dodge quizzes, and outlast the class.</p>
-  </div>
-  <div class="menu-grid">
-    <div class="menu-card">
-      <div class="em">🎮</div><h3>Play a Match</h3>
-      <p>2–6 players, any mix of humans and AI. Pass-and-play or solo vs the computer.</p>
-      <button class="btn" onclick="goto('screen-setup')">Set Up Match</button>
-    </div>
-    <div class="menu-card">
-      <div class="em">📝</div><h3>Practice Mode</h3>
-      <p>No cards, no elimination — just a rapid quiz drill across every Functions topic.</p>
-      <button class="btn blue" onclick="startPractice()">Start Drilling</button>
-    </div>
-    <div class="menu-card">
-      <div class="em">🧑‍🏫</div><h3>Teacher Mode</h3>
-      <p>Choose competencies, set the wrong-answer penalty, import a question set, run the class.</p>
-      <button class="btn purple" onclick="goto('screen-teacher')">Open Teacher Panel</button>
-    </div>
-  </div>
-  <div class="btn-row" style="margin-top:8px;" id="continueRow"></div>
-  <footer class="credits">HTML5 &middot; CSS3 &middot; Vanilla JS &middot; LocalStorage &middot; no build step, no server</footer>
-</div>
 
-<!-- ================= RULES / HOW TO PLAY ================= -->
-<div class="screen" id="screen-rules">
-  <div class="topbar wrap"><button class="icon-btn" onclick="goto('screen-start')">←</button><h2 style="margin:0;">How To Play</h2><span></span></div>
-  <div class="panel">
-    <h2>Goal</h2>
-    <p style="font-size:13.5px;line-height:1.6;">Be the last player who hasn't exploded.</p>
-    <h2>Your Turn</h2>
-    <p style="font-size:13.5px;line-height:1.6;">Play as many action cards from your hand as you like, then draw one card from the deck to end your turn (some cards let you skip the draw or force extra turns onto someone else).</p>
-    <h2>Exploding Equation 💥</h2>
-    <p style="font-size:13.5px;line-height:1.6;">If you draw one, you're eliminated immediately — <b>unless</b> you're holding a Function Repair (Defuse) card, which auto-saves you and slides the bomb back into the deck.</p>
-    <h2>Action Cards</h2>
-    <p style="font-size:13.5px;line-height:1.6;">
-      <b>⏭️ Skip</b> — end your turn without drawing.<br>
-      <b>⚔️ Attack</b> — end your turn; the next player must take 2 turns.<br>
-      <b>🔀 Shuffle</b> — shuffle the draw pile.<br>
-      <b>🔮 See the Future</b> — privately peek at the top 3 cards of the draw pile.<br>
-      <b>🤝 Favor</b> — force an opponent to hand you a card of their choice.<br>
-      <b>🃏 Steal</b> — take a random card from an opponent's hand.<br>
-      <b>❓ Challenge</b> — force an opponent to answer a Functions question or suffer a penalty.<br>
-      <b>✋ Nope</b> — cancel another player's action card before it takes effect. Any player holding a Nope card gets a brief window to play it after an action is announced.
-    </p>
-    <h2>Local Multiplayer</h2>
-    <p style="font-size:13.5px;line-height:1.6;">This is pass-and-play on one device. When the turn passes to a different human player, a privacy screen appears so opponents don't see each other's hands until they tap "I'm Ready."</p>
-    <h2>Teacher Mode</h2>
-    <p style="font-size:13.5px;line-height:1.6;">Focus on specific competencies, choose the wrong-answer penalty, import a custom question bank, and review classroom mastery stats.</p>
-  </div>
-  <button class="btn secondary" onclick="goto('screen-start')">← Back to Menu</button>
-</div>
+  <div class="opponents" id="opponents"></div>
 
-<!-- ================= SETUP SCREEN ================= -->
-<div class="screen" id="screen-setup">
-  <div class="topbar wrap"><button class="icon-btn" onclick="goto('screen-start')">←</button><h2 style="margin:0;">Set Up Match</h2><span></span></div>
-  <div class="panel">
-    <h2>Players (2–6)</h2>
-    <div id="seatRows"></div>
-    <div class="btn-row" style="margin-top:12px;">
-      <button class="btn secondary" onclick="addSeat()">+ Add Player</button>
-      <button class="btn secondary" onclick="removeSeat()">− Remove Player</button>
+  <div class="table">
+    <div class="pile-wrap">
+      <span class="pile-label">Draw Pile</span>
+      <div class="draw-pile" id="drawPile"><span class="emblem">₱</span><span class="count" id="deckCount">0</span></div>
+    </div>
+    <div class="pile-wrap">
+      <span class="pile-label">Discard Pile</span>
+      <div id="discardTop"></div>
+      <span class="active-color-tag" id="activeColorTag"><span class="dot"></span> —</span>
     </div>
   </div>
-  <div class="panel">
-    <h2>Rules &amp; Difficulty</h2>
-    <div class="field-row">
-      <div class="field"><label>Default AI Difficulty</label>
-        <select id="aiDifficulty"><option>Easy</option><option selected>Medium</option><option>Hard</option><option>Expert</option></select>
-      </div>
-      <div class="field"><label>Wrong-Answer Penalty</label>
-        <select id="penaltyMode"><option value="fail">Action Fails</option><option value="draw" selected>Draw Extra Card</option><option value="skip">Lose Next Turn</option></select>
-      </div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Question Difficulty</label>
-        <select id="qDifficulty"><option>Easy</option><option selected>Medium</option><option>Hard</option></select>
-      </div>
-      <div class="field"><label>Answer Timer</label>
-        <select id="timerMode"><option value="0">Off</option><option value="20">20 sec</option><option value="30" selected>30 sec</option><option value="45">45 sec</option></select>
-      </div>
-    </div>
-    <div class="toggle-row"><span>Bonus Pop Quiz on draw (extra reward for correct answers)</span>
-      <input type="checkbox" id="popQuiz" checked></div>
-  </div>
-  <button class="btn" style="font-size:16px;padding:14px 28px;" onclick="launchGame()">🔥 Start Match</button>
-</div>
 
-<!-- ================= TEACHER SCREEN ================= -->
-<div class="screen" id="screen-teacher">
-  <div class="topbar wrap"><button class="icon-btn" onclick="goto('screen-start')">←</button><h2 style="margin:0;">Teacher Panel</h2><span></span></div>
-  <div class="panel">
-    <h2>Competencies / Categories in Play</h2>
-    <div class="chip-set" id="categoryChips"></div>
-  </div>
-  <div class="panel">
-    <h2>Custom Question Bank (optional)</h2>
-    <p style="font-size:12px;opacity:.7;margin-top:-6px;">Paste CSV or one JSON object per line: <span class="mono">category,difficulty,question,answer</span> or <span class="mono">{"category":"reallife","difficulty":"medium","prompt":"...","type":"numeric","answer":32}</span></p>
-    <textarea id="customBank" placeholder="reallife,easy,Convert 20°C to °F.,68"></textarea>
-    <div class="btn-row" style="margin-top:10px;">
-      <button class="btn secondary" onclick="importCustomBank()">Import</button>
-      <button class="btn secondary" onclick="document.getElementById('customBank').value=''">Clear</button>
+  <div class="handzone">
+    <div class="handzone-head">
+      <h3 id="handOwner">Kamay ni ___</h3>
+      <span class="turnstate-msg hidden" id="turnStateMsg"></span>
     </div>
-    <div id="importMsg" style="font-size:12px;margin-top:8px;opacity:.8;"></div>
-  </div>
-  <div class="panel">
-    <h2>Classroom Mastery (this device)</h2>
-    <div id="masteryBars"></div>
-  </div>
-  <button class="btn" onclick="goto('screen-setup')">Proceed to Match Setup →</button>
-</div>
-
-<!-- ================= GAME SCREEN ================= -->
-<div class="screen" id="screen-game">
-  <div class="topbar wrap">
-    <button class="icon-btn" onclick="confirmQuit()">←</button>
-    <div class="mono" style="font-size:12px;opacity:.75;" id="turnIndicator">Turn</div>
-    <div class="toolbar">
-      <button class="icon-btn" id="soundToggleBtn" onclick="toggleSound()" title="Mute/unmute">🔊</button>
-      <button class="icon-btn" onclick="toggleTheme()">◑</button>
+    <div class="hand" id="hand"></div>
+    <div class="handzone-actions">
+      <button class="btn btn-outline" id="endTurnBtn" style="display:none;">Tapusin ang Turn</button>
     </div>
   </div>
-  <div class="board wrap">
-    <div class="opponents" id="opponentsRow"></div>
-    <div class="center-table">
-      <div class="pile">
-        <div class="stack"><div class="card-back"></div><div class="card-back"></div><div class="card-back">ƒ</div></div>
-        <div class="label mono">Draw Pile</div>
-        <div class="count" id="drawCount">0</div>
-      </div>
-      <div class="pile">
-        <div id="discardTop"></div>
-        <div class="label mono">Discard</div>
-        <div class="count" id="discardCount">0</div>
-      </div>
-    </div>
-    <div class="log mono" id="gameLog"></div>
-    <div class="hand-area">
-      <div class="hand-title">Your Hand <span id="youLabel"></span></div>
-      <div class="hand" id="yourHand"></div>
-      <div class="action-bar">
-        <button class="btn" id="playBtn" onclick="playSelectedCard()" disabled>Play Selected</button>
-        <button class="btn danger" id="drawBtn" onclick="humanDraw()">Draw Card</button>
-      </div>
-      <p style="text-align:center;font-size:11px;opacity:.55;margin-top:6px;">Holding a Nope card? You'll be prompted automatically when another player targets you.</p>
-    </div>
-  </div>
-</div>
+  <footer class="credit">PisoUNO · gawa para sa klase ng General Mathematics — sequences, series, at pananalapi</footer>
+</section>
 
-<!-- ================= END SCREEN ================= -->
-<div class="screen" id="screen-end">
-  <div class="hero">
-    <div class="glyph-row" id="endGlyph">ƒ(x)</div>
-    <h1 class="title" id="endTitle">Game Over</h1>
-    <p class="tagline" id="endSub"></p>
-  </div>
-  <div class="btn-row">
-    <button class="btn" onclick="goto('screen-setup')">Play Again</button>
-    <button class="btn secondary" onclick="goto('screen-stats')">View Stats</button>
-    <button class="btn secondary" onclick="goto('screen-start')">Main Menu</button>
-  </div>
-</div>
-
-<!-- ================= PRACTICE SCREEN ================= -->
-<div class="screen" id="screen-practice">
-  <div class="topbar wrap"><button class="icon-btn" onclick="goto('screen-start')">←</button><h2 style="margin:0;">Practice Mode</h2><span></span></div>
-  <div class="stat-grid" style="max-width:560px;">
-    <div class="stat-box"><div class="num" id="pracScore">0</div><div class="lbl">Correct</div></div>
-    <div class="stat-box"><div class="num" id="pracStreak">0</div><div class="lbl">Streak</div></div>
-    <div class="stat-box"><div class="num" id="pracTotal">0</div><div class="lbl">Answered</div></div>
-  </div>
-  <div class="panel" id="pracPanel" style="max-width:560px;"></div>
-  <button class="btn secondary" onclick="goto('screen-start')">End Session</button>
-</div>
-
-<!-- ================= ACHIEVEMENTS ================= -->
-<div class="screen" id="screen-achievements">
-  <div class="topbar wrap"><button class="icon-btn" onclick="goto('screen-start')">←</button><h2 style="margin:0;">Achievements</h2><span></span></div>
-  <div class="grid-cards wrap" id="achGrid"></div>
-</div>
-
-<!-- ================= STATS ================= -->
-<div class="screen" id="screen-stats">
-  <div class="topbar wrap"><button class="icon-btn" onclick="goto('screen-start')">←</button><h2 style="margin:0;">Educational Analytics</h2><span></span></div>
-  <div class="stat-grid wrap" id="statBoxes"></div>
-  <div class="panel wrap">
-    <h2>Mastery by Topic</h2>
-    <div id="statMastery"></div>
-  </div>
-  <button class="btn secondary" onclick="resetStats()">Reset All Data</button>
-</div>
-
-<!-- ================= QUESTION MODAL ================= -->
-<div class="modal-overlay" id="qModal">
+<!-- ============ OVERLAYS ============ -->
+<div class="overlay" id="questionOverlay">
   <div class="modal">
-    <div class="qmeta"><span id="qCatLabel">Category</span><span id="qDiffLabel">Medium</span></div>
-    <div class="timer-bar" id="qTimerBar" style="display:none;"><div class="timer-fill" id="qTimerFill"></div></div>
-    <h3 id="qHeadline">Function Challenge</h3>
-    <div class="qprompt" id="qPrompt"></div>
-    <div class="choices" id="qChoices"></div>
-    <div class="feedback" id="qFeedback" style="display:none;"></div>
-    <div class="btn-row" style="margin-top:14px; justify-content:flex-end;">
-      <button class="btn" id="qContinueBtn" style="display:none;" onclick="closeQuestionModal()">Continue</button>
+    <span class="q-tag" id="qTag">Kategorya</span>
+    <h3>Sagutin para i-play ang card</h3>
+    <div class="timerbar hidden" id="qTimerBar"><div class="timerbar-fill" id="qTimerFill"></div></div>
+    <div class="q-text" id="qText"></div>
+    <div id="qChoices"></div>
+    <div class="explain-box hidden" id="qExplain"></div>
+    <button class="btn btn-primary hidden" id="qContinueBtn">Ipagpatuloy</button>
+  </div>
+</div>
+
+<div class="overlay" id="colorOverlay">
+  <div class="modal">
+    <h3>Pumili ng Susunod na Kulay/Kategorya</h3>
+    <p style="color:var(--ink-soft); font-size:.85rem;">Ito ang magiging batayan ng susunod na maaaring i-play na card.</p>
+    <div class="colorpick" id="colorPickButtons"></div>
+  </div>
+</div>
+
+<div class="overlay" id="unoOverlay">
+  <div class="modal" style="text-align:center;">
+    <h3 id="unoPlayerName">Isang card na lang!</h3>
+    <p style="color:var(--ink-soft);">Sabihin ang <b>UNO!</b> bago matapos ang countdown.</p>
+    <div class="uno-count" id="unoCountdown">5</div>
+    <button class="btn btn-primary" id="unoBtn" style="margin-top:0;">📣 UNO!</button>
+  </div>
+</div>
+
+<div class="overlay" id="bonusOverlay">
+  <div class="modal" style="text-align:center;">
+    <h3 id="bonusTitle"></h3>
+    <p id="bonusDesc" style="color:var(--ink-soft);"></p>
+    <div class="row" style="justify-content:center; margin-top:16px;">
+      <button class="btn btn-primary" id="bonusYes" style="margin-top:0;">Sagutin ang Tanong</button>
+      <button class="btn btn-outline" id="bonusNo">Draw na lang</button>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="roundOverlay">
+  <div class="modal ledger">
+    <h3 id="roundTitle">Tapos ang Round!</h3>
+    <div id="roundBody"></div>
+    <button class="btn btn-primary" id="roundContinueBtn">Susunod na Round</button>
+  </div>
+</div>
+
+<div class="overlay" id="championOverlay">
+  <div class="modal champion-box">
+    <div class="medal">🏆</div>
+    <h2 id="championName"></h2>
+    <p style="color:var(--ink-soft);">Panalo sa PisoUNO! Narito ang buong ulat ng laro:</p>
+    <div id="championBody" class="ledger" style="text-align:left;"></div>
+    <button class="btn btn-primary" id="restartBtn">Maglaro Ulit</button>
+  </div>
+</div>
+
+<div class="overlay" id="ledgerOverlay">
+  <div class="modal ledger">
+    <h3>📒 Ledger ng Puntos</h3>
+    <div id="ledgerBody"></div>
+    <button class="btn btn-outline" id="ledgerCloseBtn" style="margin-top:14px;">Isara</button>
+  </div>
+</div>
+
+<div class="overlay" id="reportOverlay">
+  <div class="modal ledger">
+    <h3>📊 Ulat ng Guro — Pag-unawa sa Bawat Kategorya</h3>
+    <p style="color:var(--ink-soft); font-size:.82rem;">Buod ng tamang sagot bawat estudyante, ayon sa kategorya. Magamit bilang mabilisang formative assessment.</p>
+    <div id="reportBody"></div>
+    <button class="btn btn-outline" id="reportCloseBtn" style="margin-top:14px;">Isara</button>
+  </div>
+</div>
+
+<div class="overlay" id="formulaOverlay">
+  <div class="modal">
+    <h3>📐 Sanggunian ng Formula</h3>
+    <div class="formula-list" id="formulaBody"></div>
+    <button class="btn btn-outline" id="formulaCloseBtn">Isara</button>
+  </div>
+</div>
+
+<div class="overlay" id="howtoOverlay">
+  <div class="modal">
+    <h3>Paano Laruin ang PisoUNO</h3>
+    <div class="explain-box" style="margin-bottom:10px;">
+      Ito ay UNO na may twist: bago mo i-play ang isang <b>number card</b>, sagutan mo muna ang tanong sa finance/sequence na naaayon sa kulay nito. Tama = maipapatong ang card. Mali = walang maipapatong, at may parusa depende sa mode.
+    </div>
+    <ul style="font-size:.85rem; line-height:1.7; color:var(--ink-soft); padding-left:18px;">
+      <li><b>Match:</b> parehong kulay, numero, o action symbol. Wild card — kahit kailan.</li>
+      <li><b>Skip:</b> laktawan ang susunod na manlalaro.</li>
+      <li><b>Reverse:</b> babaligtarin ang direksyon (parang Skip kapag 2 manlalaro lang).</li>
+      <li><b>+2 / Wild +4:</b> ang susunod na manlalaro ay bibitbit ng cards — pero puwede niyang sagutan ang bonus na tanong para mabawasan ito!</li>
+      <li><b>UNO!:</b> kapag natira kang 1 card, i-tap ang UNO button bago maubos ang countdown, kung hindi ay may +2 parusa.</li>
+      <li><b>Panalo:</b> ang unang maka-ubos ng kamay ang panalo sa round; kukunin niya ang value ng cards ng lahat bilang puntos (piso). Unang makarating sa target score ang kabuuang panalo.</li>
+    </ul>
+    <button class="btn btn-primary" id="howtoCloseBtn">Naiintindihan ko!</button>
   </div>
 </div>
 
 <script>
-/* =========================================================================
-   FUNCTIONS: EXPLODING EQUATIONS
-   Single-file HTML5 educational strategy card game.
-   ========================================================================= */
+/* ================= CONFIG / DATA ================= */
+const CATEGORIES = {
+  red:    { label:'Pautang',      sub:'Loans & Mortgages',  icon:'🏦' },
+  blue:   { label:'Pamumuhunan',  sub:'Investments',        icon:'📈' },
+  green:  { label:'Sunod-sunod',  sub:'Sequences',          icon:'🔢' },
+  yellow: { label:'Serye',        sub:'Series',             icon:'Σ'  }
+};
+const COLOR_KEYS = Object.keys(CATEGORIES);
+const NAMES = ['Maria','Jun','Ana','Paolo','Liza','Carlo','Rosa','Ben','Fe','Mark','Tessie','Dodong'];
 
-/* ---------------------------- utilities --------------------------------- */
-const $ = id => document.getElementById(id);
-function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-function randf(min,max,dec=1){ const v = Math.random()*(max-min)+min; return Math.round(v*10**dec)/10**dec; }
-function choice(arr){ return arr[rand(0,arr.length-1)]; }
-function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=rand(0,i); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
-function uid(){ return Math.random().toString(36).slice(2,10); }
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+const FORMULAS = [
+  { color:'green', title:'Arithmetic Sequence', f:'aₙ = a₁ + (n − 1)d', desc:'Hanap ng ika-n na termino kung alam ang unang termino (a₁) at karaniwang pagkakaiba (d).' },
+  { color:'green', title:'Geometric Sequence', f:'aₙ = a₁ · r^(n−1)', desc:'Hanap ng ika-n na termino kung alam ang a₁ at karaniwang ratio (r).' },
+  { color:'yellow', title:'Arithmetic Series', f:'Sₙ = n/2 [2a₁ + (n−1)d]', desc:'Kabuuan ng unang n na termino ng arithmetic sequence.' },
+  { color:'yellow', title:'Geometric Series', f:'Sₙ = a₁(1 − rⁿ)/(1 − r)', desc:'Kabuuan ng unang n na termino ng geometric sequence (r ≠ 1).' },
+  { color:'blue', title:'Compound Interest (Lump Sum)', f:'A = P(1 + i)ⁿ', desc:'Halaga ng puhunan (P) pagkatapos ng n panahon sa interes na i bawat panahon.' },
+  { color:'blue', title:'Future Value of Annuity', f:'FV = PMT[((1+i)ⁿ − 1)/i]', desc:'Kabuuang matitipon mula sa paulit-ulit na deposito (PMT) bawat panahon.' },
+  { color:'red', title:'Loan Payment (Amortization)', f:'PMT = PV·i / [1 − (1+i)^−n]', desc:'Buwanang/panahunang hulugan para bayaran ang utang na PV.' },
+  { color:'red', title:'Present Value of Loan', f:'PV = PMT[1 − (1+i)^−n] / i', desc:'Kasalukuyang halaga ng utang batay sa alam na hulugan (PMT).' },
+];
 
-/* ---------------------------- theme -------------------------------------- */
-function toggleTheme(){
-  const html = document.documentElement;
-  const cur = html.getAttribute('data-theme');
-  html.setAttribute('data-theme', cur==='light' ? 'dark' : 'light');
-  localStorage.setItem('fee_theme', html.getAttribute('data-theme'));
+/* ================= HELPERS ================= */
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[randInt(0,arr.length-1)]; }
+function round2(x){ return Math.round(x*100)/100; }
+function fmtMoney(x){ return '₱' + Number(x).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtNum(x){ return Math.round(x).toLocaleString('en-PH'); }
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
 }
-(function initTheme(){
-  const saved = localStorage.getItem('fee_theme');
-  if(saved==='light') document.documentElement.setAttribute('data-theme','light');
-})();
-
-/* ---------------------------- screen nav ---------------------------------*/
-function goto(id){
+function showToast(msg){
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),320); }, 2200);
+}
+function switchScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  $(id).classList.add('active');
-  if(id==='screen-achievements') renderAchievements();
-  if(id==='screen-stats') renderStats();
-  if(id==='screen-teacher'){ renderCategoryChips(); renderMasteryBars(); }
-  if(id==='screen-setup') renderSeatRows();
-  if(id==='screen-start') renderContinueRow();
+  document.getElementById(id).classList.add('active');
 }
-function renderContinueRow(){
-  const row = $('continueRow');
-  if(!row) return;
-  let hasSave = false;
-  try{ hasSave = !!localStorage.getItem('fee_save'); }catch(e){}
-  row.innerHTML = hasSave
-    ? `<button class="btn secondary" onclick="continueSavedMatch()">📂 Continue Saved Match</button>`
-    : '';
-}
+function openOverlay(id){ document.getElementById(id).classList.add('active'); }
+function closeOverlay(id){ document.getElementById(id).classList.remove('active'); }
 
-/* ---------------------------- sound (WebAudio synth, no files) ---------- */
-let soundEnabled = (function(){
-  try{ return localStorage.getItem('fee_sound')!=='off'; }catch(e){ return true; }
-})();
-function toggleSound(){
-  soundEnabled = !soundEnabled;
-  try{ localStorage.setItem('fee_sound', soundEnabled?'on':'off'); }catch(e){}
-  const btn = $('soundToggleBtn');
-  if(btn) btn.textContent = soundEnabled? '🔊' : '🔇';
-}
-const Sound = (function(){
-  let ctx;
-  function ac(){ if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)(); return ctx; }
-  function tone(freq, dur, type='sine', vol=.18, delay=0){
-    if(!soundEnabled) return;
-    try{
-      const c = ac(); const o = c.createOscillator(); const g = c.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.value = vol;
-      o.connect(g); g.connect(c.destination);
-      const t0 = c.currentTime + delay;
-      g.gain.setValueAtTime(vol, t0);
-      g.gain.exponentialRampToValueAtTime(0.001, t0+dur);
-      o.start(t0); o.stop(t0+dur+0.02);
-    }catch(e){}
+/* ================= QUESTION GENERATORS ================= */
+function nFromLevel(lvl, base, span){ return base + Math.floor(lvl/9*span); }
+
+function buildMC(qtext, correct, distractorCandidates, formula, steps, colorKey){
+  const isMoney = (colorKey==='blue'||colorKey==='red');
+  const fmt = v => isMoney ? fmtMoney(round2(v)) : fmtNum(v);
+  const correctR = round2(correct);
+  const correctLabel = fmt(correctR);
+  const usedLabels = new Set([correctLabel]);
+  const finalChoices = [{ label:correctLabel, isCorrect:true }];
+
+  const tryAdd = (v)=>{
+    if(finalChoices.length>=4) return;
+    const cand = Math.max(0.01, v);
+    const label = fmt(cand);
+    if(label===correctLabel || usedLabels.has(label)) return;
+    usedLabels.add(label);
+    finalChoices.push({ label, isCorrect:false });
+  };
+
+  distractorCandidates.forEach(v=>tryAdd(v));
+
+  let guard=0;
+  while(finalChoices.length<4 && guard<40){
+    guard++;
+    const jitter = correctR * (0.12 + Math.random()*0.45) * (Math.random()<0.5?1:-1);
+    tryAdd(correctR + jitter);
   }
   return {
-    click: ()=>tone(520,.06,'square',.08),
-    flip: ()=>tone(300,.08,'triangle',.12),
-    correct: ()=>{tone(660,.12,'sine',.15); tone(880,.14,'sine',.15,.08);},
-    wrong: ()=>{tone(180,.22,'sawtooth',.14);},
-    explode: ()=>{tone(90,.5,'sawtooth',.25); tone(60,.6,'square',.2,.05);},
-    win: ()=>{[523,659,784,1046].forEach((f,i)=>tone(f,.25,'sine',.15,i*.12));},
-    lose: ()=>{[392,349,311,262].forEach((f,i)=>tone(f,.3,'sine',.13,i*.14));},
-    achievement: ()=>{tone(784,.1,'sine',.15); tone(988,.16,'sine',.15,.1);}
+    qtext, formula, steps, colorKey,
+    choices: shuffle(finalChoices)
   };
-})();
-
-/* ---------------------------- toasts -------------------------------------*/
-function toast(msg, ms=2600){
-  const el = document.createElement('div');
-  el.className='toast'; el.textContent = msg;
-  $('toastZone').appendChild(el);
-  setTimeout(()=>el.remove(), ms);
 }
 
-/* ---------------------------- explosion FX -------------------------------*/
-const fxCanvas = $('fxCanvas'); const fxCtx = fxCanvas.getContext('2d');
-function resizeFx(){ fxCanvas.width = innerWidth; fxCanvas.height = innerHeight; }
-window.addEventListener('resize', resizeFx); resizeFx();
-function explosionFx(){
-  Sound.explode();
-  document.body.classList.add('shake');
-  setTimeout(()=>document.body.classList.remove('shake'),500);
-  const particles = [];
-  const cx = fxCanvas.width/2, cy = fxCanvas.height/2;
-  const colors = ['#e5572f','#f0c24b','#f4f2e9','#a084d8'];
-  for(let i=0;i<90;i++){
-    const ang = Math.random()*Math.PI*2, spd = Math.random()*9+2;
-    particles.push({x:cx,y:cy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,life:1,color:choice(colors),size:Math.random()*5+2});
+function genSequenceQuestion(lvl){
+  const isGeo = Math.random() < 0.5;
+  let n = nFromLevel(lvl,3,7);
+  let a1,d,r,answer,qtext,formula,steps;
+  if(!isGeo){
+    a1 = randInt(1,12);
+    d = randInt(1, 3+Math.floor(lvl/2));
+    answer = a1 + (n-1)*d;
+    qtext = `Sa isang arithmetic sequence, a₁ = ${a1} at d = ${d}. Ano ang a${sub(n)} (ika-${n} na termino)?`;
+    formula = 'aₙ = a₁ + (n − 1)d';
+    steps = `a${n} = ${a1} + (${n}−1)(${d}) = ${a1} + ${(n-1)*d} = ${answer}`;
+    return buildMC(qtext, answer, [a1+n*d, a1+(n-1)*d+d, a1*d], formula, steps, 'green');
+  } else {
+    n = Math.min(n,7);
+    a1 = randInt(1,5);
+    r = pick([2,3]);
+    answer = a1 * Math.pow(r, n-1);
+    qtext = `Sa isang geometric sequence, a₁ = ${a1} at r = ${r}. Ano ang a${sub(n)}?`;
+    formula = 'aₙ = a₁ · r^(n−1)';
+    steps = `a${n} = ${a1} × ${r}^${n-1} = ${answer}`;
+    return buildMC(qtext, answer, [a1*Math.pow(r,n), a1+r*(n-1), answer+r], formula, steps, 'green');
   }
-  let frame=0;
-  function step(){
-    fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);
-    frame++;
-    if(frame<18){
-      fxCtx.fillStyle = `rgba(229,87,47,${0.5 - frame*0.02})`;
-      fxCtx.beginPath(); fxCtx.arc(cx,cy,frame*14,0,Math.PI*2); fxCtx.fill();
+}
+function sub(n){ return n; }
+
+function genSeriesQuestion(lvl){
+  const isGeo = Math.random() < 0.5;
+  let n = Math.min(nFromLevel(lvl,3,7), isGeo?6:12);
+  let a1,d,r,answer,qtext,formula,steps;
+  if(!isGeo){
+    a1 = randInt(1,10);
+    d = randInt(1, 3+Math.floor(lvl/2));
+    answer = n/2*(2*a1+(n-1)*d);
+    qtext = `Hanapin ang kabuuan (Sₙ) ng unang ${n} na termino ng arithmetic sequence: a₁ = ${a1}, d = ${d}.`;
+    formula = 'Sₙ = n/2 [2a₁ + (n−1)d]';
+    steps = `S${n} = ${n}/2[2(${a1})+(${n}−1)(${d})] = ${answer}`;
+    return buildMC(qtext, answer, [(n/2)*(2*a1+n*d), n*(a1+d), answer-d], formula, steps, 'yellow');
+  } else {
+    a1 = randInt(1,5);
+    r = pick([2,3]);
+    answer = a1*(1-Math.pow(r,n))/(1-r);
+    qtext = `Hanapin ang Sₙ ng unang ${n} na termino ng geometric sequence: a₁ = ${a1}, r = ${r}.`;
+    formula = 'Sₙ = a₁(1 − rⁿ)/(1 − r)';
+    steps = `S${n} = ${a1}(1−${r}^${n})/(1−${r}) = ${answer}`;
+    return buildMC(qtext, answer, [a1*(Math.pow(r,n)-1)/(r-1), a1*Math.pow(r,n), answer+a1], formula, steps, 'yellow');
+  }
+}
+
+function genInvestQuestion(lvl){
+  const name = pick(NAMES);
+  const useAnnuity = Math.random() < 0.5;
+  const n = nFromLevel(lvl,3,9);
+  let answer, qtext, formula, steps;
+  if(!useAnnuity){
+    const P = pick([5000,10000,15000,20000,25000]);
+    const i = pick([0.02,0.03,0.04,0.05,0.06]);
+    answer = P*Math.pow(1+i,n);
+    qtext = `Nag-invest si ${name} ng ${fmtMoney(P)} sa isang bangko na may interes na ${(i*100).toFixed(0)}% bawat taon (compounded annually). Magkano ang halaga nito pagkatapos ng ${n} taon?`;
+    formula = 'A = P(1 + i)ⁿ';
+    steps = `A = ${fmtMoney(P)}(1+${i})^${n} = ${fmtMoney(round2(answer))}`;
+  } else {
+    const PMT = pick([500,1000,1500,2000]);
+    const i = pick([0.01,0.015,0.02,0.025]);
+    answer = PMT*((Math.pow(1+i,n)-1)/i);
+    qtext = `Nagdedeposito si ${name} ng ${fmtMoney(PMT)} kada buwan sa isang investment na may interes na ${(i*100).toFixed(1)}% bawat buwan. Magkano ang matitipon niya (future value) pagkatapos ng ${n} buwan?`;
+    formula = 'FV = PMT[((1+i)ⁿ − 1)/i]';
+    steps = `FV = ${fmtMoney(PMT)}[((1+${i})^${n}−1)/${i}] = ${fmtMoney(round2(answer))}`;
+  }
+  return buildMC(qtext, round2(answer), [answer*1.15, answer*0.82, answer*1.3], formula, steps, 'blue');
+}
+
+function genLoanQuestion(lvl){
+  const name = pick(NAMES);
+  const findPMT = Math.random() < 0.5;
+  const n = nFromLevel(lvl,6,18);
+  const i = pick([0.01,0.015,0.02,0.025,0.03]);
+  let answer, qtext, formula, steps;
+  if(findPMT){
+    const PV = pick([20000,30000,50000,80000,100000]);
+    answer = PV*i/(1-Math.pow(1+i,-n));
+    qtext = `Umutang si ${name} ng ${fmtMoney(PV)}, babayaran sa ${n} buwanang hulugan sa interes na ${(i*100).toFixed(1)}% kada buwan. Magkano ang buwanang hulugan (PMT)?`;
+    formula = 'PMT = PV·i / [1 − (1+i)^−n]';
+    steps = `PMT = ${fmtMoney(PV)}(${i}) / [1−(1+${i})^−${n}] = ${fmtMoney(round2(answer))}`;
+  } else {
+    const PMT = pick([1000,1500,2500,3000,5000]);
+    answer = PMT*(1-Math.pow(1+i,-n))/i;
+    qtext = `Ang isang mortgage ay babayaran ng ${fmtMoney(PMT)} kada buwan sa loob ng ${n} buwan, sa interes na ${(i*100).toFixed(1)}% kada buwan. Magkano ang halaga ng utang (present value)?`;
+    formula = 'PV = PMT[1 − (1+i)^−n] / i';
+    steps = `PV = ${fmtMoney(PMT)}[1−(1+${i})^−${n}]/${i} = ${fmtMoney(round2(answer))}`;
+  }
+  return buildMC(qtext, round2(answer), [answer*1.18, answer*0.8, answer*1.32], formula, steps, 'red');
+}
+
+function genQuestion(color, lvl){
+  if(color==='green') return genSequenceQuestion(lvl);
+  if(color==='yellow') return genSeriesQuestion(lvl);
+  if(color==='blue') return genInvestQuestion(lvl);
+  if(color==='red') return genLoanQuestion(lvl);
+  return genSequenceQuestion(lvl);
+}
+
+/* ================= DECK ================= */
+function buildDeck(){
+  let deck=[]; let uid=0;
+  COLOR_KEYS.forEach(color=>{
+    deck.push({id:uid++, color, type:'number', value:0});
+    for(let v=1; v<=9; v++){
+      deck.push({id:uid++, color, type:'number', value:v});
+      deck.push({id:uid++, color, type:'number', value:v});
     }
-    particles.forEach(p=>{
-      p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life-=0.012;
-      if(p.life>0){
-        fxCtx.globalAlpha = Math.max(p.life,0);
-        fxCtx.fillStyle = p.color;
-        fxCtx.fillRect(p.x,p.y,p.size,p.size);
-      }
+    ['skip','reverse','draw2'].forEach(t=>{
+      deck.push({id:uid++, color, type:t});
+      deck.push({id:uid++, color, type:t});
     });
-    fxCtx.globalAlpha=1;
-    if(frame<120) requestAnimationFrame(step);
-    else fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);
-  }
-  step();
-}
-
-/* =========================================================================
-   QUESTION ENGINE
-   ========================================================================= */
-const CATEGORY_INFO = {
-  evaluate:   {label:"Evaluate a Function", em:"ƒ(k)"},
-  domain:     {label:"Find the Domain", em:"dom"},
-  range:      {label:"Find the Range", em:"rng"},
-  relation:   {label:"Is it a Function?", em:"∈?"},
-  classify:   {label:"Identify the Graph", em:"⟨~⟩"},
-  inverse:    {label:"Determine the Inverse", em:"ƒ⁻¹"},
-  composite:  {label:"Composite Function", em:"∘"},
-  transform:  {label:"Function Transformation", em:"⇢"},
-  reallife:   {label:"Real-Life Application", em:"°C↔°F"}
-};
-let ACTIVE_CATEGORIES = Object.keys(CATEGORY_INFO); // teacher can narrow this
-let CUSTOM_QUESTIONS = JSON.parse(localStorage.getItem('fee_custom')||'[]');
-
-function fnString(a,b,form='linear'){
-  if(form==='linear'){
-    let s='f(x) = ';
-    s += (a===1?'':a===-1?'-':a)+'x';
-    if(b>0) s+= ' + '+b; else if(b<0) s+=' - '+Math.abs(b);
-    return s;
-  }
-}
-function evalLinear(a,b,x){ return a*x+b; }
-
-function genEvaluate(diff){
-  const range = diff==='easy'? [1,6] : diff==='medium' ? [-8,8] : [-12,12];
-  let a = choice([-3,-2,2,3,4,-4].filter(v=>diff!=='easy'||Math.abs(v)<=3)) || 2;
-  if(diff==='easy') a = choice([1,2,3]);
-  const b = rand(range[0],range[1]);
-  const x = rand(diff==='hard'?-6:-4, diff==='hard'?6:5);
-  const quad = diff!=='easy' && Math.random()<0.35;
-  let prompt, answer;
-  if(quad){
-    const c = rand(-5,5);
-    prompt = `Given f(x) = ${a}x² ${b>=0?'+':'-'} ${Math.abs(b)}x ${c>=0?'+':'-'} ${Math.abs(c)}, find f(${x}).`;
-    answer = a*x*x + b*x + c;
-  } else {
-    prompt = `Given ${fnString(a,b)}, find f(${x}).`;
-    answer = evalLinear(a,b,x);
-  }
-  return {prompt, type:'numeric', answer, tolerance:0};
-}
-function genDomain(diff){
-  const forms = diff==='easy'
-    ? [ {desc:(a,b)=>`f(x) = ${a}x + ${b}`, dom:'All real numbers'} ]
-    : [
-      {gen:()=>{const a=rand(1,4);return {desc:`f(x) = ${a}x + ${rand(-5,5)}`, dom:'All real numbers'};}},
-      {gen:()=>{const k=rand(1,7);return {desc:`f(x) = 1 / (x - ${k})`, dom:`All real numbers except x = ${k}`};}},
-      {gen:()=>{const k=rand(1,9);return {desc:`f(x) = \u221A(x - ${k})`, dom:`x \u2265 ${k}`};}},
-      {gen:()=>{const k=rand(1,9);return {desc:`f(x) = \u221A(${k} - x)`, dom:`x \u2264 ${k}`};}},
-      {gen:()=>{const k=rand(1,7);return {desc:`f(x) = \u221B(x - ${k})`, dom:'All real numbers'};}},
-    ];
-  const set = diff==='easy'? forms : forms;
-  const pick = set[rand(0,set.length-1)];
-  const item = pick.gen ? pick.gen() : {desc: pick.desc(rand(1,4),rand(-5,5)), dom: pick.dom};
-  const distractors = shuffle([
-    'All real numbers', 'x \u2265 0', 'x > 0', `All real numbers except x = ${rand(1,9)}`,
-    `x \u2265 ${rand(1,9)}`, `x \u2264 ${rand(1,9)}`
-  ].filter(d=>d!==item.dom)).slice(0,3);
-  const choices = shuffle([item.dom, ...distractors]);
-  return {prompt:`What is the domain of ${item.desc}?`, type:'mc', choices, answer:item.dom};
-}
-function genRange(diff){
-  const opts = [
-    ()=>{const a=rand(1,3), h=rand(-4,4), k=rand(-6,6); const sign = Math.random()<0.5?1:-1;
-      return {desc:`f(x) = ${sign*a===1?'':sign*a}(x ${h>=0?'-':'+'} ${Math.abs(h)})\u00B2 ${k>=0?'+':'-'} ${Math.abs(k)}`, rng: sign>0?`y \u2265 ${k}`:`y \u2264 ${k}`};},
-    ()=>{const k=rand(-5,5); return {desc:`f(x) = \u221A(x) ${k>=0?'+':'-'} ${Math.abs(k)}`, rng:`y \u2265 ${k}`};},
-    ()=>{const k=rand(-5,5); return {desc:`f(x) = |x| ${k>=0?'+':'-'} ${Math.abs(k)}`, rng:`y \u2265 ${k}`};},
-    ()=>{const a=rand(1,4),b=rand(-5,5); return {desc:`f(x) = ${a}x + ${b}`, rng:'All real numbers'};},
-  ];
-  const item = choice(opts)();
-  const distractors = shuffle([
-    'All real numbers', `y \u2265 ${rand(-5,5)}`, `y \u2264 ${rand(-5,5)}`, `y > ${rand(-5,5)}`
-  ].filter(d=>d!==item.rng)).slice(0,3);
-  const choices = shuffle([item.rng, ...distractors]);
-  return {prompt:`What is the range of ${item.desc}?`, type:'mc', choices, answer:item.rng};
-}
-function genRelation(diff){
-  const n = diff==='easy'?3:4;
-  const xs = shuffle([1,2,3,4,5,6,7,8].slice(0,n+2));
-  const isFunc = Math.random()<0.5;
-  let pairs = [];
-  if(isFunc){
-    for(let i=0;i<n;i++) pairs.push([xs[i], rand(-5,5)]);
-  } else {
-    for(let i=0;i<n;i++) pairs.push([xs[i], rand(-5,5)]);
-    const dup = choice(pairs.slice(0,n-1));
-    pairs.push([dup[0], rand(-5,5)]);
-  }
-  shuffle(pairs);
-  const setStr = '{' + pairs.map(p=>`(${p[0]}, ${p[1]})`).join(', ') + '}';
-  return {prompt:`Is this relation a function?\n${setStr}`, type:'mc', choices:['Yes, it is a function','No, it is not a function'],
-    answer: isFunc? 'Yes, it is a function' : 'No, it is not a function'};
-}
-function genClassify(diff){
-  const types = [
-    {name:'Linear', desc:(a,b)=>`f(x) = ${a}x ${b>=0?'+':'-'} ${Math.abs(b)}`},
-    {name:'Quadratic', desc:(a,b)=>`f(x) = ${a}x\u00B2 ${b>=0?'+':'-'} ${Math.abs(b)}x + ${rand(-5,5)}`},
-    {name:'Absolute Value', desc:(a,b)=>`f(x) = ${a===1?'':a}|x ${b>=0?'-':'+'} ${Math.abs(b)}|`},
-    {name:'Square Root', desc:(a,b)=>`f(x) = ${a===1?'':a}\u221A(x ${b>=0?'-':'+'} ${Math.abs(b)})`},
-    {name:'Cube Root', desc:(a,b)=>`f(x) = ${a===1?'':a}\u221B(x ${b>=0?'-':'+'} ${Math.abs(b)})`},
-  ];
-  const t = choice(types);
-  const a = rand(1,3), b = rand(-6,6);
-  const desc = t.desc(a,b);
-  const choices = shuffle(types.map(tt=>tt.name));
-  return {prompt:`Classify this function based on its equation:\n${desc}`, type:'mc', choices, answer:t.name};
-}
-function genInverse(diff){
-  const a = choice([1,2,3,4,-2,-3].filter(v=>diff!=='easy'||v>0));
-  const b = rand(-8,8);
-  const correct = `f\u207B\u00B9(x) = (x ${b>=0?'-':'+'} ${Math.abs(b)}) / ${a}`;
-  const distractors = shuffle([
-    `f\u207B\u00B9(x) = (x ${b>=0?'+':'-'} ${Math.abs(b)}) / ${a}`,
-    `f\u207B\u00B9(x) = ${a}x ${b>=0?'-':'+'} ${Math.abs(b)}`,
-    `f\u207B\u00B9(x) = (x ${b>=0?'-':'+'} ${Math.abs(b)}) / ${-a}`,
-  ]);
-  const choices = shuffle([correct, ...distractors]);
-  return {prompt:`Find the inverse of ${fnString(a,b)}.`, type:'mc', choices, answer:correct};
-}
-function genComposite(diff){
-  const a1=rand(1,3), b1=rand(-5,5), a2=rand(1,3), b2=rand(-5,5);
-  const x = rand(-4,4);
-  const gVal = a2*x+b2;
-  const answer = a1*gVal+b1;
-  return {prompt:`Given f(x) = ${a1}x ${b1>=0?'+':'-'} ${Math.abs(b1)} and g(x) = ${a2}x ${b2>=0?'+':'-'} ${Math.abs(b2)}, find (f\u2218g)(${x}).`,
-    type:'numeric', answer, tolerance:0};
-}
-function genTransform(diff){
-  const h = rand(1,6), k = rand(-6,6), sign1=choice(['left','right']), sign2 = k>=0?'up':'down';
-  const base = choice(['x\u00B2','|x|','\u221Ax']);
-  const parts = [];
-  const desc = `The parent function f(x) = ${base} is shifted ${h} units ${sign1} and ${Math.abs(k)} units ${sign2}.`;
-  const shiftedX = sign1==='right'? `x - ${h}` : `x + ${h}`;
-  const correct = `g(x) = ${base.replace('x',`(${shiftedX})`)} ${k>=0?'+':'-'} ${Math.abs(k)}`;
-  const wrong1 = `g(x) = ${base.replace('x',`(${sign1==='right'? 'x + '+h : 'x - '+h})`)} ${k>=0?'+':'-'} ${Math.abs(k)}`;
-  const wrong2 = `g(x) = ${base.replace('x',`(${shiftedX})`)} ${k>=0?'-':'+'} ${Math.abs(k)}`;
-  const choices = shuffle([correct, wrong1, wrong2]);
-  return {prompt:`${desc}\nWhich equation represents the transformed function g(x)?`, type:'mc', choices, answer:correct};
-}
-function genRealLife(diff){
-  const kind = choice(['c2f','f2c','recipe','storage']);
-  if(kind==='c2f'){
-    const c = diff==='easy'? choice([0,10,20,25,30,100]) : rand(-10,45);
-    const ans = Math.round((c*9/5+32)*10)/10;
-    return {prompt:`A weather report reads ${c}\u00B0C. Convert this to \u00B0Fahrenheit (F = 9/5 \u00B7 C + 32). Round to 1 decimal.`, type:'numeric', answer:ans, tolerance:0.5};
-  } else if(kind==='f2c'){
-    const f = diff==='easy'? choice([32,50,68,98.6,212]) : rand(20,120);
-    const ans = Math.round(((f-32)*5/9)*10)/10;
-    return {prompt:`An oven thermometer reads ${f}\u00B0F. Convert this to \u00B0Celsius (C = 5/9 \u00B7 (F - 32)). Round to 1 decimal.`, type:'numeric', answer:ans, tolerance:0.5};
-  } else if(kind==='recipe'){
-    const c = rand(150,220);
-    const ans = Math.round((c*9/5+32));
-    return {prompt:`A recipe calls for a baking temperature of ${c}\u00B0C. What is that in \u00B0Fahrenheit? Round to the nearest whole number.`, type:'numeric', answer:ans, tolerance:2};
-  } else {
-    const f = rand(-10,40);
-    const ans = Math.round(((f-32)*5/9));
-    return {prompt:`A cold-storage unit is set to ${f}\u00B0F for food safety. Convert this to \u00B0Celsius, rounded to the nearest whole number.`, type:'numeric', answer:ans, tolerance:2};
-  }
-}
-const GENERATORS = {
-  evaluate:genEvaluate, domain:genDomain, range:genRange, relation:genRelation,
-  classify:genClassify, inverse:genInverse, composite:genComposite, transform:genTransform, reallife:genRealLife
-};
-
-function getQuestion(category, difficulty){
-  difficulty = (difficulty||'medium').toLowerCase();
-  // 30% chance to use a teacher custom question for this category if available
-  const custom = CUSTOM_QUESTIONS.filter(q=>q.category===category);
-  if(custom.length && Math.random()<0.3){
-    const q = choice(custom);
-    return {prompt:q.prompt, type:q.type||'numeric', answer:q.answer, choices:q.choices, tolerance:q.tolerance||0, custom:true};
-  }
-  const gen = GENERATORS[category] || GENERATORS.evaluate;
-  return gen(difficulty);
-}
-function checkAnswer(q, userAnswer){
-  if(q.type==='numeric'){
-    const num = parseFloat(userAnswer);
-    if(isNaN(num)) return false;
-    return Math.abs(num - q.answer) <= (q.tolerance||0.01)+0.0001;
-  }
-  return userAnswer === q.answer;
-}
-
-/* =========================================================================
-   CARD DEFINITIONS
-   ========================================================================= */
-const CARD_LIBRARY = {
-  EXPLODE:   [["Division by Zero","the deck's darkest secret"],["Undefined Function","f(x) simply breaks"],["Broken Function","every input fails"],["Impossible Domain","nothing is allowed in"],["Invalid Relation","not a function at all"]],
-  DEFUSE:    [["Teacher Assistance","a calm voice explains it all"],["Formula Sheet","every identity, right here"],["Graph Repair","re-draws the curve"],["Calculator","batteries included"],["Function Repair","patches the equation"],["Algebra Rewrite","simplifies the disaster"]],
-  SKIP:      [["Class Suspension","no class, no draw"],["Skip Homework","teacher says it's fine"],["Excused","step out, skip the draw"]],
-  ATTACK:    [["Surprise Quiz","next player takes two turns"],["Board Work","double duty at the board"],["Oral Recitation","called up, twice in a row"]],
-  SHUFFLE:   [["Variable Shuffle","mix up the unknowns"],["Graph Shuffle","re-plot the pile"],["Random Generator","true chaos, freshly seeded"]],
-  FUTURE:    [["Predict the Graph","peek 3 cards ahead"],["Function Scanner","scans the next 3 draws"],["Future Analyzer","models what's coming"]],
-  FAVOR:     [["Borrow Notes","ask a classmate for help"],["Peer Tutor","request one card"],["Group Study","trade knowledge for cards"]],
-  NOPE:      [["Wrong Solution","that action doesn't check out"],["Teacher Says No","overruled"],["Invalid Answer","cancelled on the spot"]],
-  STEAL:     [["Borrow Calculator","take it without asking"],["Copy Notes","grab a random page"],["Exchange Notebook","a surprise swap"]],
-};
-const CHALLENGE_DEFS = [
-  {cat:'evaluate', name:'Pop Quiz: Evaluate', flavor:'plug it in, solve it out'},
-  {cat:'domain', name:'Pop Quiz: Domain', flavor:'what can x actually be?'},
-  {cat:'range', name:'Pop Quiz: Range', flavor:'what can f(x) become?'},
-  {cat:'relation', name:'Pop Quiz: Is it a Function?', flavor:'one input, one output?'},
-  {cat:'classify', name:'Pop Quiz: Identify the Graph', flavor:'name that curve'},
-  {cat:'inverse', name:'Pop Quiz: Inverse', flavor:'undo the function'},
-  {cat:'composite', name:'Pop Quiz: Composite', flavor:'functions inside functions'},
-  {cat:'transform', name:'Pop Quiz: Transformation', flavor:'shifted, stretched, flipped'},
-];
-
-function makeCard(type, name, flavor, extra={}){
-  return Object.assign({id:uid(), type, name, flavor}, extra);
-}
-function buildDeck(numPlayers){
-  let deck = [];
-  // BUGFIX: these action-card counts used to be fixed constants sized for a
-  // 2–4 player game. With 5–6 players now supported, dealing a 7-card hand
-  // to everyone needs more cards than the fixed counts provided — the deck
-  // would run dry mid-deal and silently push `undefined` into hands,
-  // breaking rendering and gameplay. Counts now scale with player count so
-  // there's always a full deal plus a real draw pile left over.
-  const n = Math.max(2, numPlayers||2);
-  const counts = {SKIP:n, ATTACK:n, SHUFFLE:n, FUTURE:n+1, FAVOR:n, NOPE:n+1, STEAL:n};
-  Object.entries(counts).forEach(([type,count])=>{
-    for(let i=0;i<count;i++){
-      const [name,flavor] = CARD_LIBRARY[type][i % CARD_LIBRARY[type].length];
-      deck.push(makeCard(type, name, flavor));
-    }
   });
-  CHALLENGE_DEFS.forEach(def=>{
-    deck.push(makeCard('CHALLENGE', def.name, def.flavor, {category:def.cat}));
-  });
-  shuffle(deck);
-  // defuse: one guaranteed per player handed out separately, plus a couple extra circulating
-  const extraDefuse = Math.max(0, numPlayers>2 ? 2 : 1);
-  const defuseCards = [];
-  for(let i=0;i<extraDefuse;i++){
-    const [name,flavor]=choice(CARD_LIBRARY.DEFUSE);
-    defuseCards.push(makeCard('DEFUSE',name,flavor));
+  for(let i=0;i<4;i++){
+    deck.push({id:uid++, color:'wild', type:'wild'});
+    deck.push({id:uid++, color:'wild', type:'wild4'});
   }
-  deck.push(...defuseCards);
-  shuffle(deck);
   return deck;
 }
-function drawnDefuse(){ const [name,flavor]=choice(CARD_LIBRARY.DEFUSE); return makeCard('DEFUSE',name,flavor); }
-function drawnExplode(){ const [name,flavor]=choice(CARD_LIBRARY.EXPLODE); return makeCard('EXPLODE',name,flavor); }
 
-const TYPE_ICON = {EXPLODE:'💥', DEFUSE:'🛡️', SKIP:'⏭️', ATTACK:'⚔️', SHUFFLE:'🔀', FUTURE:'🔮', FAVOR:'🤝', NOPE:'✋', STEAL:'🃏', CHALLENGE:'❓'};
+/* ================= GAME STATE ================= */
+let G = null;
 
-function cardEl(card, {mini=false, faceDown=false}={}){
-  const d = document.createElement('div');
-  if(faceDown){ d.className='card-back-face'+(mini?' mini':''); d.style.width= mini?'78px':'118px'; d.style.height = mini?'108px':'164px'; d.innerHTML='ƒ'; return d; }
-  d.className = `card type-${card.type}`+(mini?' mini':'');
-  d.dataset.id = card.id;
-  d.innerHTML = `
-    <div class="ctype">${card.type}</div>
-    <div class="cicon">${TYPE_ICON[card.type]||'✦'}</div>
-    <div class="cname">${card.name}</div>
-    <div class="cflavor">${card.flavor}</div>`;
-  return d;
+function cardPoints(card){
+  if(card.type==='number') return card.value*100;
+  if(card.type==='wild' || card.type==='wild4') return 500;
+  return 200;
 }
+function cardLabel(card){
+  if(card.type==='number') return `${CATEGORIES[card.color].label} ${card.value}`;
+  if(card.type==='wild') return 'Wild';
+  if(card.type==='wild4') return 'Wild +4';
+  if(card.type==='skip') return `${CATEGORIES[card.color].label} Skip`;
+  if(card.type==='reverse') return `${CATEGORIES[card.color].label} Reverse`;
+  if(card.type==='draw2') return `${CATEGORIES[card.color].label} +2`;
+}
+function topCard(){ return G.discard[G.discard.length-1]; }
+function nextIdx(i,dir){ const n=G.players.length; return (i+dir+n)%n; }
+function advance(steps){ for(let k=0;k<steps;k++){ G.turn = nextIdx(G.turn, G.dir); } }
+function hasMatchingColor(hand, color){ return hand.some(c=>c.color===color); }
 
-/* =========================================================================
-   GAME STATE
-   ========================================================================= */
-let G = null; // active game state
-let SETTINGS = {};
-
-function renderSeatRows(){
-  const box = $('seatRows');
-  if(!G || !G.seatConfig) G = {seatConfig:[
-    {name:'You', type:'human', diff:'Medium'},
-    {name:'AI - Aria', type:'ai', diff:'Medium'},
-  ]};
-  box.innerHTML = G.seatConfig.map((s,i)=>`
-    <div class="seat-row">
-      <label>Seat ${i+1}</label>
-      <input type="text" value="${s.name}" onchange="G.seatConfig[${i}].name=this.value">
-      <select onchange="G.seatConfig[${i}].type=this.value; renderSeatRows();">
-        <option value="human" ${s.type==='human'?'selected':''}>Human</option>
-        <option value="ai" ${s.type==='ai'?'selected':''}>AI</option>
-      </select>
-      ${s.type==='ai' ? `<select onchange="G.seatConfig[${i}].diff=this.value">
-        ${['Easy','Medium','Hard','Expert'].map(d=>`<option ${s.diff===d?'selected':''}>${d}</option>`).join('')}
-      </select>` : ''}
-    </div>`).join('');
-}
-function addSeat(){
-  if(G.seatConfig.length>=6){toast('Maximum 6 players.');return;}
-  const defaultDiff = ($('aiDifficulty') && $('aiDifficulty').value) || 'Medium';
-  G.seatConfig.push({name:'AI - '+choice(['Nova','Theo','Kira','Milo','Zed','Juno','Reyna']), type:'ai', diff:defaultDiff});
-  renderSeatRows();
-}
-function removeSeat(){
-  if(G.seatConfig.length<=2){toast('Minimum 2 players.');return;}
-  G.seatConfig.pop(); renderSeatRows();
-}
-
-function renderCategoryChips(){
-  $('categoryChips').innerHTML = Object.entries(CATEGORY_INFO).map(([key,info])=>`
-    <div class="chip ${ACTIVE_CATEGORIES.includes(key)?'on':''}" onclick="toggleCategory('${key}')">${info.label}</div>
-  `).join('');
-}
-function toggleCategory(key){
-  if(ACTIVE_CATEGORIES.includes(key)){
-    if(ACTIVE_CATEGORIES.length<=1){toast('Keep at least one category active.');return;}
-    ACTIVE_CATEGORIES = ACTIVE_CATEGORIES.filter(k=>k!==key);
-  } else ACTIVE_CATEGORIES.push(key);
-  renderCategoryChips();
-}
-function importCustomBank(){
-  const raw = $('customBank').value.trim();
-  if(!raw){ $('importMsg').textContent='Nothing to import.'; return; }
-  let added = 0;
-  raw.split('\n').forEach(line=>{
-    line = line.trim(); if(!line) return;
-    try{
-      if(line.startsWith('{')){
-        const obj = JSON.parse(line);
-        CUSTOM_QUESTIONS.push({category:obj.category, difficulty:obj.difficulty||'medium', prompt:obj.prompt, type:obj.type||'numeric', answer:obj.answer, choices:obj.choices, tolerance:obj.tolerance||0});
-        added++;
-      } else {
-        const parts = line.split(',');
-        if(parts.length>=4){
-          const [category,difficulty,prompt,...ansParts] = parts;
-          const answerRaw = ansParts.join(',').trim();
-          const numAns = parseFloat(answerRaw);
-          CUSTOM_QUESTIONS.push({category:category.trim(), difficulty:difficulty.trim(), prompt:prompt.trim(), type:isNaN(numAns)?'text':'numeric', answer:isNaN(numAns)?answerRaw:numAns, tolerance:0.5});
-          added++;
-        }
-      }
-    }catch(e){/* skip malformed line */}
-  });
-  localStorage.setItem('fee_custom', JSON.stringify(CUSTOM_QUESTIONS));
-  $('importMsg').textContent = `Imported ${added} question(s). Total custom bank: ${CUSTOM_QUESTIONS.length}.`;
-}
-
-/* ---------------- stats/analytics storage --------------------------------*/
-function loadStats(){
-  return JSON.parse(localStorage.getItem('fee_stats')||JSON.stringify({
-    gamesPlayed:0, wins:0, losses:0, questionsAnswered:0, correct:0,
-    perCategory:{}, achievements:{}, totalResponseTime:0
-  }));
-}
-function saveStats(s){ localStorage.setItem('fee_stats', JSON.stringify(s)); }
-function recordAnswer(category, correct, ms){
-  const s = loadStats();
-  s.questionsAnswered++; if(correct) s.correct++;
-  s.totalResponseTime += ms||0;
-  if(!s.perCategory[category]) s.perCategory[category]={correct:0,total:0};
-  s.perCategory[category].total++; if(correct) s.perCategory[category].correct++;
-  saveStats(s);
-  checkAchievements(s);
-}
-function recordGameResult(won){
-  const s = loadStats();
-  s.gamesPlayed++; if(won) s.wins++; else s.losses++;
-  saveStats(s);
-  checkAchievements(s);
-}
-const ACHIEVEMENTS = [
-  {id:'function_master', em:'🧮', name:'Function Master', desc:'Answer 25 questions correctly', check:s=>s.correct>=25},
-  {id:'domain_expert', em:'📐', name:'Domain Expert', desc:'10 correct Domain answers', check:s=>(s.perCategory.domain?.correct||0)>=10},
-  {id:'range_genius', em:'📏', name:'Range Genius', desc:'10 correct Range answers', check:s=>(s.perCategory.range?.correct||0)>=10},
-  {id:'graph_wizard', em:'📈', name:'Graph Wizard', desc:'10 correct graph classifications', check:s=>(s.perCategory.classify?.correct||0)>=10},
-  {id:'inverse_master', em:'🔁', name:'Inverse Master', desc:'10 correct Inverse answers', check:s=>(s.perCategory.inverse?.correct||0)>=10},
-  {id:'perfect_survivor', em:'🏆', name:'Perfect Survivor', desc:'Win a match without using Function Repair', check:(s,ctx)=>ctx&&ctx.wonWithoutDefuse},
-  {id:'lucky_student', em:'🍀', name:'Lucky Student', desc:'Survive drawing 3 cards in a row without a bomb after only 1 safe card remained', check:(s,ctx)=>ctx&&ctx.luckySurvival},
-  {id:'quiz_champion', em:'🎓', name:'Quiz Champion', desc:'Answer 50 questions total', check:s=>s.questionsAnswered>=50},
-  {id:'math_strategist', em:'♟️', name:'Math Strategist', desc:'Win 5 matches', check:s=>s.wins>=5},
-];
-function checkAchievements(s, ctx){
-  let unlocked = [];
-  ACHIEVEMENTS.forEach(a=>{
-    if(!s.achievements[a.id] && a.check(s, ctx)){
-      s.achievements[a.id]=true; unlocked.push(a);
+function canPlay(card){
+  const top = topCard();
+  if(card.color==='wild'){
+    if(card.type==='wild4'){
+      const hand = G.players[G.turn].hand;
+      return !hasMatchingColor(hand.filter(c=>c.id!==card.id), G.activeColor);
     }
-  });
-  if(unlocked.length){ saveStats(s); unlocked.forEach(a=>{ Sound.achievement(); toast('🏅 Achievement unlocked: '+a.name); }); }
+    return true;
+  }
+  if(card.color===G.activeColor) return true;
+  if(card.type==='number' && top.type==='number' && card.value===top.value) return true;
+  if(card.type!=='number' && card.type===top.type) return true;
+  return false;
 }
-function renderAchievements(){
-  const s = loadStats();
-  $('achGrid').innerHTML = ACHIEVEMENTS.map(a=>`
-    <div class="ach ${s.achievements[a.id]?'unlocked':''}">
-      <div class="em">${a.em}</div>
-      <h4>${a.name}</h4>
-      <p>${a.desc}</p>
-    </div>`).join('');
-}
-function renderStats(){
-  const s = loadStats();
-  const acc = s.questionsAnswered? Math.round(100*s.correct/s.questionsAnswered) : 0;
-  const avgRt = s.questionsAnswered? Math.round(s.totalResponseTime/s.questionsAnswered/1000*10)/10 : 0;
-  $('statBoxes').innerHTML = `
-    <div class="stat-box"><div class="num">${s.gamesPlayed}</div><div class="lbl">Games Played</div></div>
-    <div class="stat-box"><div class="num">${s.wins}</div><div class="lbl">Wins</div></div>
-    <div class="stat-box"><div class="num">${s.losses}</div><div class="lbl">Losses</div></div>
-    <div class="stat-box"><div class="num">${s.questionsAnswered}</div><div class="lbl">Questions Answered</div></div>
-    <div class="stat-box"><div class="num">${acc}%</div><div class="lbl">Accuracy</div></div>
-    <div class="stat-box"><div class="num">${avgRt}s</div><div class="lbl">Avg Response Time</div></div>`;
-  renderMasteryBars('statMastery', s);
-}
-function renderMasteryBars(targetId='masteryBars', statsObj){
-  const s = statsObj || loadStats();
-  const el = $(targetId); if(!el) return;
-  el.innerHTML = Object.entries(CATEGORY_INFO).map(([key,info])=>{
-    const d = s.perCategory[key]||{correct:0,total:0};
-    const pct = d.total? Math.round(100*d.correct/d.total) : 0;
-    return `<div class="bar-row"><div class="lbl">${info.label}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="mono">${pct}% (${d.correct}/${d.total})</span></div>`;
-  }).join('');
-}
-function resetStats(){
-  if(confirm('Reset all saved stats and achievements on this device?')){
-    localStorage.removeItem('fee_stats'); renderStats(); toast('Stats reset.');
+
+function ensureDeck(need){
+  let guard=0;
+  while(G.deck.length < need && guard<50){
+    guard++;
+    if(G.discard.length<=1) break;
+    const top = G.discard.pop();
+    const rest = G.discard;
+    G.discard = [top];
+    G.deck = shuffle(rest.concat(G.deck));
   }
 }
-
-/* =========================================================================
-   MATCH SETUP + LAUNCH
-   ========================================================================= */
-function launchGame(){
-  const seatConfig = G.seatConfig;
-  SETTINGS = {
-    aiDefault: $('aiDifficulty').value,
-    penalty: $('penaltyMode').value,
-    qDifficulty: $('qDifficulty').value.toLowerCase(),
-    timer: parseInt($('timerMode').value),
-    popQuiz: $('popQuiz').checked,
-  };
-  initMatch(seatConfig);
-  goto('screen-game');
+function drawCards(playerIdx, n){
+  ensureDeck(n);
+  const drawn=[];
+  for(let k=0;k<n && G.deck.length>0;k++){ drawn.push(G.deck.pop()); }
+  G.players[playerIdx].hand.push(...drawn);
+  return drawn;
+}
+function logStat(playerIdx, color, correct){
+  const st = G.players[playerIdx].stats[color];
+  st.total++; if(correct) st.correct++;
+  if(correct) G.players[playerIdx].learningPoints += 10;
 }
 
-function initMatch(seatConfig){
-  const players = seatConfig.map((s,i)=>({
-    id:i, name:s.name || (s.type==='human'?'Player '+(i+1):'AI '+(i+1)),
-    type:s.type, difficulty: (s.diff||SETTINGS.aiDefault||'Medium'),
-    hand:[], alive:true, usedDefuse:false, knownFuture:[], skips:0, forcedTurns:1,
-  }));
-  const deck = buildDeck(players.length);
-  players.forEach(p=>{ p.hand.push(drawnDefuse()); });
-  // Defensive: with buildDeck() now scaling with player count this shouldn't
-  // run dry, but guard against ever pushing `undefined` into a hand if the
-  // deck is smaller than expected for any reason.
-  const startingHandSize = Math.min(7, Math.floor(deck.length / players.length));
-  for(let i=0;i<startingHandSize;i++){ players.forEach(p=>{ const c=deck.pop(); if(c) p.hand.push(c); }); }
-  const bombs = players.length-1;
-  for(let i=0;i<bombs;i++) deck.push(drawnExplode());
-  shuffle(deck);
+/* ---------- SETUP ---------- */
+function initGame(names, target, mode){
   G = {
-    players, deck, discard:[], turn:0, log:[], over:false,
-    pendingNope:null, seatConfig, lastRevealedId:null,
+    players: names.map(n => ({
+      name:n, hand:[], score:0, learningPoints:0,
+      stats:{ red:{correct:0,total:0}, blue:{correct:0,total:0}, green:{correct:0,total:0}, yellow:{correct:0,total:0} }
+    })),
+    deck:[], discard:[], turn:0, dir:1, activeColor:'red',
+    target, mode, turnState:'normal', drawnCardId:null, unoDeclared:new Set()
   };
-  logMsg(`Match started with ${players.length} players. ${bombs} Exploding Equation(s) hidden in the deck.`);
-  renderBoard();
-  runTurnLoop();
-}
-function currentPlayer(){ return G.players[G.turn]; }
-function alivePlayers(){ return G.players.filter(p=>p.alive); }
-function nextAliveIndex(from){
-  let i = from;
-  for(let n=0;n<G.players.length;n++){
-    i = (i+1) % G.players.length;
-    if(G.players[i].alive) return i;
-  }
-  return from;
-}
-function logMsg(msg){
-  G.log.unshift(msg);
-  if(G.log.length>40) G.log.pop();
-  const el = $('gameLog');
-  if(el) el.innerHTML = G.log.map(l=>`<div>${l}</div>`).join('');
+  G.deck = shuffle(buildDeck());
+  G.players.forEach((p,idx)=>{ drawCards(idx,7); });
+  setupFirstCard();
+  showPassScreenAndRender(true);
 }
 
-/* ---------------------------- rendering ----------------------------------*/
-function renderBoard(){
-  if(!G) return;
-  $('drawCount').textContent = G.deck.length;
-  $('discardCount').textContent = G.discard.length;
-  const discEl = $('discardTop'); discEl.innerHTML='';
-  if(G.discard.length) discEl.appendChild(cardEl(G.discard[G.discard.length-1], {mini:true}));
-
-  const opp = $('opponentsRow'); opp.innerHTML='';
-  G.players.forEach((p,i)=>{
-    const isCurrent = i===G.turn;
-    const div = document.createElement('div');
-    div.className = 'opp'+(isCurrent?' active':'')+(!p.alive?' dead':'');
-    // Only reveal a Defuse-count badge for AI seats. Showing it for other human
-    // players would leak hidden information between hotseat opponents.
-    const badge = (p.type==='ai' && p.hand.some(c=>c.type==='DEFUSE'))
-      ? '<span class="badge">🛡️ x'+p.hand.filter(c=>c.type==='DEFUSE').length+'</span>' : '';
-    div.innerHTML = `<div class="name">${p.name}${p.type==='ai'?' 🤖':''}</div>
-      <div class="stat mono">${p.alive? p.hand.length+' cards' : '💥 eliminated'}</div>
-      <div class="badges">${badge}</div>`;
-    opp.appendChild(div);
-  });
-
-  // BUGFIX: previously this always grabbed the *first* alive human player,
-  // so in hotseat games with 2+ human seats, only the first human could ever
-  // see their hand or take a turn. It must track whichever human currently
-  // has the turn.
-  const active = currentPlayer();
-  const you = (active && active.type==='human' && active.alive) ? active : null;
-  const handEl = $('yourHand'); handEl.innerHTML='';
-  $('youLabel').textContent = you? `(${you.name})` : '(spectating)';
-  if(you){
-    you.hand.forEach(c=>{
-      const el = cardEl(c);
-      el.onclick = ()=>selectCard(c.id);
-      if(G.selectedCardId===c.id) el.classList.add('selected');
-      handEl.appendChild(el);
-    });
-  }
-  $('turnIndicator').textContent = G.over? 'Match complete' : `Turn: ${currentPlayer()?.name}${currentPlayer()?.type==='ai'?' (AI thinking...)':''}`;
-  const humanTurn = you && currentPlayer() && currentPlayer().id===you.id && !G.over;
-  $('drawBtn').disabled = !humanTurn;
-  $('playBtn').disabled = !(humanTurn && G.selectedCardId);
-  saveMatch();
-}
-function humanSeatCount(){ return G.players.filter(p=>p.type==='human').length; }
-function selectCard(id){
-  const you = currentPlayer();
-  if(!you || you.type!=='human') return;
-  G.selectedCardId = (G.selectedCardId===id)? null : id;
-  renderBoard();
+function setupFirstCard(){
+  let first = G.deck.pop();
+  let guard=0;
+  while(first.type==='wild4' && guard<50){ guard++; G.deck.unshift(first); G.deck=shuffle(G.deck); first=G.deck.pop(); }
+  G.discard=[first];
+  G.activeColor = first.color==='wild' ? pick(COLOR_KEYS) : first.color;
+  G.turn=0; G.dir=1;
+  if(first.type==='skip'){ advance(1); }
+  else if(first.type==='reverse'){ G.dir=-1; }
+  else if(first.type==='draw2'){ drawCards(0,2); advance(1); }
 }
 
-/* =========================================================================
-   TURN LOOP
-   ========================================================================= */
-async function runTurnLoop(){
-  while(!G.over){
-    const p = currentPlayer();
-    if(!p.alive){ G.turn = nextAliveIndex(G.turn); continue; }
-    if(alivePlayers().length<=1){ endMatch(); return; }
-    // In hotseat games with 2+ human players, show a "pass the device" privacy
-    // screen before revealing a different human's hand.
-    if(p.type==='human' && humanSeatCount()>1 && G.lastRevealedId!==p.id){
-      await showPassScreen(p);
-      G.lastRevealedId = p.id;
-    }
-    renderBoard();
-    if(p.type==='ai'){
-      await sleep(650);
-      await aiTakeTurn(p);
-    } else {
-      // wait for human interaction via buttons (humanDraw / playSelectedCard)
-      return;
-    }
-    if(G.over) return;
-  }
-}
-function showPassScreen(p){
-  return new Promise(res=>{
-    $('passGlyph').textContent = p.type==='human' ? '🧮' : '🤖';
-    $('passName').textContent = `${p.name}'s Turn`;
-    $('passOverlay').classList.add('active');
-    $('passReadyBtn').onclick = ()=>{ $('passOverlay').classList.remove('active'); res(); };
-  });
-}
-function advanceTurn(){
-  if(currentPlayer().forcedTurns>1){
-    currentPlayer().forcedTurns--;
-  } else {
-    currentPlayer().forcedTurns = 1;
-    G.turn = nextAliveIndex(G.turn);
-  }
-  if(currentPlayer().skips>0){
-    currentPlayer().skips--;
-    logMsg(`${currentPlayer().name} loses their turn (quiz penalty).`);
-    advanceTurn();
+/* ---------- TURN FLOW ---------- */
+function attemptPlay(cardId){
+  if(G.awaitingOverlay) return;
+  const playerIdx = G.turn;
+  const hand = G.players[playerIdx].hand;
+  const card = hand.find(c=>c.id===cardId);
+  if(!card) return;
+
+  if(G.turnState==='drewOne' && card.id !== G.drawnCardId){
+    showToast('Isang beses ka lang pwedeng bumunot — i-play ang nabunot o tapusin ang turn.');
     return;
   }
-  renderBoard();
-  runTurnLoop();
+  if(!canPlay(card)){
+    showToast('Hindi tugma ang card na iyan.');
+    return;
+  }
+
+  if(card.type==='number'){
+    const q = genQuestion(card.color, card.value);
+    openQuestionModal(q, (correct)=>{
+      logStat(playerIdx, card.color, correct);
+      if(correct){ finalizePlay(playerIdx, card); }
+      else {
+        showToast(G.mode==='klase' ? 'Mali. Subukan ang ibang card.' : 'Mali! +1 parusang card.');
+        if(G.mode==='palaro'){ drawCards(playerIdx,1); }
+        G.turnState='normal';
+        renderAll();
+      }
+    });
+  } else if(card.color==='wild'){
+    openColorPicker((chosenColor)=>{ finalizePlay(playerIdx, card, chosenColor); });
+  } else {
+    finalizePlay(playerIdx, card);
+  }
 }
 
-/* ---------------------------- draw resolution ----------------------------*/
-async function resolveDraw(p){
-  // Compute risk BEFORE popping, so we can credit a lucky escape correctly.
-  const riskBefore = G.deck.length ? (G.deck.filter(c=>c.type==='EXPLODE').length / G.deck.length) : 0;
-  const card = G.deck.pop();
-  renderBoard();
-  if(card.type==='EXPLODE'){
-    p.riskyDrawStreak = 0;
-    await handleExplode(p, card);
+function finalizePlay(playerIdx, card, chosenColor){
+  const hand = G.players[playerIdx].hand;
+  const idx = hand.findIndex(c=>c.id===card.id);
+  hand.splice(idx,1);
+  G.discard.push(card);
+  G.activeColor = (card.color==='wild') ? chosenColor : card.color;
+  G.turnState='normal'; G.drawnCardId=null;
+  renderAll();
+
+  if(hand.length===0){ handleRoundEnd(playerIdx); return; }
+
+  const afterUno = ()=> applyEffectAndAdvance(playerIdx, card);
+  if(hand.length===1 && G.mode==='palaro'){
+    showUnoPrompt(playerIdx, afterUno);
   } else {
-    logMsg(`${p.name} draws a card.`);
-    p.hand.push(card);
-    // BUGFIX: the "Lucky Student" achievement previously had no code path
-    // that could ever unlock it. This tracks a streak of high-risk draws
-    // (≥50% chance of a bomb at draw time) survived in a row.
-    if(riskBefore>=0.5){
-      p.riskyDrawStreak = (p.riskyDrawStreak||0)+1;
-      if(p.riskyDrawStreak>=3 && p.type==='human'){
-        checkAchievements(loadStats(), {luckySurvival:true});
+    if(hand.length===1) showToast(`${G.players[playerIdx].name}: UNO! Isang card na lang.`);
+    afterUno();
+  }
+}
+
+function applyEffectAndAdvance(playerIdx, card){
+  switch(card.type){
+    case 'skip':
+      showToast(`Skip! Nalaktawan si ${G.players[nextIdx(G.turn,G.dir)].name}.`);
+      advance(2); showPassScreenAndRender(); break;
+    case 'reverse':
+      if(G.players.length===2){ advance(2); }
+      else { G.dir*=-1; advance(1); }
+      showToast('Reverse! Nagbago ang direksyon.');
+      showPassScreenAndRender(); break;
+    case 'draw2': {
+      const victim = nextIdx(G.turn, G.dir);
+      offerBonusChallenge(victim, 2, ()=>{ advance(2); showPassScreenAndRender(); });
+      break;
+    }
+    case 'wild4': {
+      const victim = nextIdx(G.turn, G.dir);
+      offerBonusChallenge(victim, 4, ()=>{ advance(2); showPassScreenAndRender(); });
+      break;
+    }
+    default:
+      advance(1); showPassScreenAndRender();
+  }
+}
+
+function offerBonusChallenge(victimIdx, amount, callback){
+  const victimName = G.players[victimIdx].name;
+  document.getElementById('bonusTitle').textContent = `${victimName}, mag-di-draw ka ng ${amount} cards!`;
+  document.getElementById('bonusDesc').textContent = `Gusto mo bang sagutin ang isang bonus na tanong? Kung tama, ${amount/2} na lang ang idi-draw mo.`;
+  openOverlay('bonusOverlay');
+  const yesBtn = document.getElementById('bonusYes');
+  const noBtn = document.getElementById('bonusNo');
+  const cleanup = ()=>{ yesBtn.onclick=null; noBtn.onclick=null; closeOverlay('bonusOverlay'); };
+  yesBtn.onclick = ()=>{
+    cleanup();
+    const q = genQuestion(pick(COLOR_KEYS), 5);
+    openQuestionModal(q, (correct)=>{
+      logStat(victimIdx, q.colorKey, correct);
+      if(correct){ drawCards(victimIdx, Math.ceil(amount/2)); showToast(`Tama! ${victimName} bumunot lang ng ${Math.ceil(amount/2)}.`); }
+      else { drawCards(victimIdx, amount); showToast(`Mali. ${victimName} bumunot ng buong ${amount}.`); }
+      callback();
+    });
+  };
+  noBtn.onclick = ()=>{
+    cleanup();
+    drawCards(victimIdx, amount);
+    showToast(`${victimName} bumunot ng ${amount} cards.`);
+    callback();
+  };
+}
+
+function showUnoPrompt(playerIdx, callback){
+  document.getElementById('unoPlayerName').textContent = `${G.players[playerIdx].name}: Isang card na lang!`;
+  let count=5;
+  document.getElementById('unoCountdown').textContent=count;
+  openOverlay('unoOverlay');
+  const btn = document.getElementById('unoBtn');
+  let finished=false;
+  const timer = setInterval(()=>{
+    count--;
+    if(count<=0){
+      clearInterval(timer);
+      if(!finished){
+        finished=true;
+        closeOverlay('unoOverlay');
+        drawCards(playerIdx,2);
+        showToast(`${G.players[playerIdx].name} nakalimutan ang UNO! +2 cards.`);
+        renderAll();
+        callback();
       }
     } else {
-      p.riskyDrawStreak = 0;
+      document.getElementById('unoCountdown').textContent=count;
     }
-    if(SETTINGS.popQuiz && Math.random()<0.22){
-      await popQuizBonus(p);
-    }
-    renderBoard();
-    advanceTurn();
-  }
-}
-async function handleExplode(p, card){
-  const defuseIdx = p.hand.findIndex(c=>c.type==='DEFUSE');
-  if(defuseIdx>=0){
-    const defuse = p.hand.splice(defuseIdx,1)[0];
-    G.discard.push(defuse);
-    p.usedDefuse = true;
-    logMsg(`💥 ${p.name} drew ${card.name} — but used ${defuse.name} to survive!`);
-    toast(`${p.name} survives with ${defuse.name}!`);
-    Sound.flip();
-    // return exploding card to a random location in the draw pile
-    if(p.type==='human'){
-      const posChoice = confirm('You defused it! Click OK to bury it deep in the deck, or Cancel to place it near the top.');
-      const pos = posChoice? rand(0, Math.max(0,G.deck.length-3)) : rand(Math.max(0,G.deck.length-2), G.deck.length);
-      G.deck.splice(pos,0,card);
-    } else {
-      const pos = rand(0,G.deck.length);
-      G.deck.splice(pos,0,card);
-    }
-    renderBoard();
-    advanceTurn();
-  } else {
-    p.alive = false;
-    G.discard.push(card);
-    logMsg(`💥 ${p.name} drew ${card.name} and had no Function Repair. Eliminated!`);
-    explosionFx();
-    toast(`${p.name} exploded! Eliminated.`);
-    await sleep(900);
-    if(p.type==='human') recordGameResult(false);
-    renderBoard();
-    if(alivePlayers().length<=1){ endMatch(); return; }
-    G.turn = nextAliveIndex(G.turn);
-    renderBoard();
-    runTurnLoop();
-  }
-}
-async function popQuizBonus(p){
-  toast(`${p.name}: bonus Pop Quiz!`);
-  const cat = choice(ACTIVE_CATEGORIES);
-  const result = await askQuestion(p, cat, 'Pop Quiz Bonus');
-  if(result){
-    const bonus = G.deck.length? G.deck.pop() : null;
-    if(bonus){ p.hand.push(bonus); logMsg(`${p.name} answered correctly and drew a bonus card!`); }
-  } else {
-    logMsg(`${p.name} missed the bonus pop quiz — no extra card.`);
-  }
-}
-function humanDraw(){
-  const you = currentPlayer();
-  if(!you || you.type!=='human' || !you.alive) return;
-  G.selectedCardId=null;
-  Sound.flip();
-  resolveDraw(you);
+  },1000);
+  btn.onclick = ()=>{
+    if(finished) return;
+    finished=true;
+    clearInterval(timer);
+    closeOverlay('unoOverlay');
+    showToast(`${G.players[playerIdx].name}: UNO! Ligtas.`);
+    callback();
+  };
 }
 
-/* =========================================================================
-   PLAYING ACTION CARDS
-   ========================================================================= */
-function playSelectedCard(){
-  const you = currentPlayer();
-  if(!you || you.type!=='human' || !you.alive || !G.selectedCardId) return;
-  const idx = you.hand.findIndex(c=>c.id===G.selectedCardId);
-  if(idx<0) return;
-  const card = you.hand[idx];
-  playCard(you, card, idx);
-}
-async function playCard(p, card, idx){
-  p.hand.splice(idx,1);
-  G.discard.push(card);
-  Sound.flip();
-  G.selectedCardId=null;
-  logMsg(`${p.name} plays ${card.name} (${card.type}).`);
-  renderBoard();
-  switch(card.type){
-    case 'SKIP':
-      advanceTurn(); return;
-    case 'ATTACK':
-      currentAttackNext(p); return;
-    case 'SHUFFLE':
-      shuffle(G.deck); logMsg('The Draw Pile is shuffled.'); renderBoard(); return;
-    case 'FUTURE':
-      await showFuture(p); return;
-    case 'FAVOR':
-      await doFavor(p); return;
-    case 'STEAL':
-      await doSteal(p); return;
-    case 'CHALLENGE':
-      await doChallenge(p, card); return;
-    case 'NOPE':
-      logMsg('Nope has no effect outside a response window.'); return;
-    case 'DEFUSE':
-      logMsg('Function Repair can only be used automatically when you draw an Exploding Equation.');
-      p.hand.push(card); G.discard.pop(); renderBoard(); return;
-    default:
-      renderBoard();
-  }
-}
-// BUGFIX: Nope cards previously had a "Play NOPE!" button in the UI that
-// nothing ever showed or wired up — playing a Nope card just logged
-// "Nope has no effect outside a response window" with no such window ever
-// existing. This is that response window: whenever another player targets
-// someone (or plays Attack) and that target holds a Nope card, they now get
-// a real chance to cancel it — a human sees a prompt, an AI decides based
-// on its difficulty.
-async function maybeNope(target, actor, actionName){
-  if(!target || !target.alive) return false;
-  const hasNopeCard = target.hand.some(c=>c.type==='NOPE');
-  if(!hasNopeCard) return false;
-  if(target.type==='human'){
-    return await new Promise(res=>{
-      const overlay = $('qModal');
-      $('qCatLabel').textContent='Response Window'; $('qDiffLabel').textContent='';
-      $('qHeadline').textContent = `${actor.name} played ${actionName}`;
-      $('qPrompt').textContent = `${target.name}, you're holding a Nope card. Cancel this action?`;
-      $('qChoices').innerHTML='';
-      const yes=document.createElement('button'); yes.className='choice-btn'; yes.textContent='✋ Play Nope';
-      const no=document.createElement('button'); no.className='choice-btn'; no.textContent='Let it happen';
-      $('qChoices').appendChild(yes); $('qChoices').appendChild(no);
-      $('qFeedback').style.display='none'; $('qContinueBtn').style.display='none';
-      overlay.classList.add('active');
-      function cleanup(v){ overlay.classList.remove('active'); res(v); }
-      yes.onclick=()=>{
-        const idx = target.hand.findIndex(c=>c.type==='NOPE');
-        if(idx>=0){ const [c] = target.hand.splice(idx,1); G.discard.push(c); }
-        logMsg(`${target.name} plays Nope on ${actor.name}'s ${actionName}!`);
-        toast(`${target.name} noped it!`);
-        renderBoard();
-        cleanup(true);
-      };
-      no.onclick=()=>cleanup(false);
-    });
+function onDrawPileClick(){
+  if(G.turnState==='drewOne'){ showToast('Isang beses lang bawat turn ang pagbunot.'); return; }
+  const playerIdx = G.turn;
+  const drawn = drawCards(playerIdx,1)[0];
+  if(!drawn){ showToast('Walang natitirang card sa deck.'); return; }
+  G.turnState='drewOne'; G.drawnCardId=drawn.id;
+  renderAll();
+  if(canPlay(drawn)){
+    showToast(`Nabunot: ${cardLabel(drawn)} — puwede mo itong i-play!`);
   } else {
-    const skillMap = {Easy:0.08, Medium:0.22, Hard:0.4, Expert:0.55};
-    const chance = skillMap[target.difficulty] || 0.2;
-    if(Math.random()<chance){
-      const idx = target.hand.findIndex(c=>c.type==='NOPE');
-      const [c] = target.hand.splice(idx,1);
-      G.discard.push(c);
-      logMsg(`${target.name} (AI) plays Nope on ${actor.name}'s ${actionName}!`);
-      renderBoard();
-      return true;
-    }
-    return false;
-  }
-}
-async function currentAttackNext(p){
-  const nextIdx = nextAliveIndex(G.turn);
-  const nextP = G.players[nextIdx];
-  const noped = await maybeNope(nextP, p, 'Composite Attack');
-  if(noped){
-    logMsg(`The Composite Attack was cancelled — turn passes normally.`);
-    G.turn = nextIdx;
-    renderBoard();
-    runTurnLoop();
-    return;
-  }
-  // BUGFIX: this used to always add exactly +1 turn to the next player
-  // regardless of how many turns the attacker themself still owed, which
-  // undercounts a stacked Attack (e.g. Attack played in response to being
-  // attacked). Now the attacker's full owed-turn count is passed along.
-  const owed = Math.max(1, p.forcedTurns||1);
-  nextP.forcedTurns = (nextP.forcedTurns||1) - 1 + owed + 1;
-  p.forcedTurns = 1;
-  logMsg(`${nextP.name} must take ${nextP.forcedTurns} turns in a row!`);
-  G.turn = nextIdx;
-  renderBoard();
-  runTurnLoop();
-}
-async function showFuture(p){
-  const top3 = G.deck.slice(-3).reverse();
-  if(p.type==='human'){
-    await new Promise(res=>{
-      const overlay = $('qModal');
-      $('qCatLabel').textContent='See the Future'; $('qDiffLabel').textContent='';
-      $('qHeadline').textContent='Next 3 cards in the Draw Pile';
-      $('qPrompt').innerHTML = top3.length? '' : 'The draw pile is empty.';
-      $('qChoices').innerHTML='';
-      const row = document.createElement('div'); row.style.display='flex'; row.style.gap='10px'; row.style.justifyContent='center';
-      top3.forEach(c=> row.appendChild(cardEl(c,{mini:true})));
-      $('qPrompt').appendChild(row);
-      $('qFeedback').style.display='none';
-      $('qContinueBtn').style.display='inline-block';
-      $('qContinueBtn').onclick=()=>{ overlay.classList.remove('active'); res(); };
-      overlay.classList.add('active');
-    });
-  } else {
-    p.knownFuture = top3.map(c=>c.type);
-  }
-  advanceTurn();
-}
-async function doFavor(p){
-  const targets = alivePlayers().filter(pl=>pl.id!==p.id && pl.hand.length>0);
-  if(!targets.length){ logMsg('No one has cards to give.'); advanceTurn(); return; }
-  let target;
-  if(p.type==='human'){
-    target = await pickTargetModal(targets, 'Choose a player to ask for a card (Favor).');
-  } else {
-    target = targets.find(t=>t.type==='human') || choice(targets);
-  }
-  if(!target){ advanceTurn(); return; }
-  if(await maybeNope(target, p, 'Favor')){ renderBoard(); advanceTurn(); return; }
-  if(target.type==='human'){
-    const cardId = await pickCardFromHandModal(target, `${p.name} used Favor — choose a card to give them.`);
-    const idx = target.hand.findIndex(c=>c.id===cardId);
-    if(idx>=0){ const [c] = target.hand.splice(idx,1); p.hand.push(c); logMsg(`${target.name} gives a card to ${p.name}.`); }
-  } else {
-    const idx = rand(0,target.hand.length-1);
-    const [c] = target.hand.splice(idx,1); p.hand.push(c);
-    logMsg(`${target.name} hands over ${c.name} to ${p.name}.`);
-  }
-  renderBoard(); advanceTurn();
-}
-async function doSteal(p){
-  const targets = alivePlayers().filter(pl=>pl.id!==p.id && pl.hand.length>0);
-  if(!targets.length){ logMsg('No one has cards to steal.'); advanceTurn(); return; }
-  let target;
-  if(p.type==='human') target = await pickTargetModal(targets, 'Choose a player to steal a random card from.');
-  else target = choice(targets);
-  if(!target){ advanceTurn(); return; }
-  if(await maybeNope(target, p, 'Steal')){ renderBoard(); advanceTurn(); return; }
-  const idx = rand(0,target.hand.length-1);
-  const [c] = target.hand.splice(idx,1);
-  p.hand.push(c);
-  logMsg(`${p.name} steals a card from ${target.name}.`);
-  renderBoard(); advanceTurn();
-}
-async function doChallenge(p, card){
-  const targets = alivePlayers().filter(pl=>pl.id!==p.id);
-  if(!targets.length){ advanceTurn(); return; }
-  let target;
-  if(p.type==='human') target = await pickTargetModal(targets, 'Choose a player to challenge with '+card.name+'.');
-  else target = choice(targets);
-  if(!target){ advanceTurn(); return; }
-  if(await maybeNope(target, p, card.name)){ renderBoard(); advanceTurn(); return; }
-  const correct = await askQuestion(target, card.category, card.name);
-  if(correct){
-    logMsg(`${target.name} answered correctly — the Function Challenge has no effect.`);
-  } else {
-    applyPenalty(target);
-  }
-  renderBoard(); advanceTurn();
-}
-function applyPenalty(target){
-  if(SETTINGS.penalty==='draw'){
-    if(G.deck.length){ target.hand.push(G.deck.pop()); logMsg(`${target.name} answered incorrectly and draws an extra card.`); }
-  } else if(SETTINGS.penalty==='skip'){
-    target.skips = (target.skips||0)+1;
-    logMsg(`${target.name} answered incorrectly and will lose their next turn.`);
-  } else {
-    logMsg(`${target.name} answered incorrectly — the action fails to help them.`);
+    showToast('Hindi puwedeng i-play ang nabunot. Tapusin ang turn.');
   }
 }
 
-/* ---------------- target/card picking modals (human) ---------------------*/
-function pickTargetModal(targets, title){
-  return new Promise(res=>{
-    const overlay = $('qModal');
-    $('qCatLabel').textContent='Choose Target'; $('qDiffLabel').textContent='';
-    $('qHeadline').textContent = title;
-    $('qPrompt').textContent = '';
-    $('qChoices').innerHTML='';
-    targets.forEach(t=>{
-      const b = document.createElement('button'); b.className='choice-btn';
-      b.textContent = `${t.name} (${t.hand.length} cards)`;
-      b.onclick = ()=>{ overlay.classList.remove('active'); res(t); };
-      $('qChoices').appendChild(b);
-    });
-    $('qFeedback').style.display='none'; $('qContinueBtn').style.display='none';
-    overlay.classList.add('active');
+function onEndTurnClick(){
+  G.turnState='normal'; G.drawnCardId=null;
+  advance(1);
+  showPassScreenAndRender();
+}
+
+/* ---------- ROUND / GAME END ---------- */
+function handleRoundEnd(winnerIdx){
+  let total=0;
+  const breakdown=[];
+  G.players.forEach((p,i)=>{
+    if(i===winnerIdx) return;
+    let sum=0;
+    p.hand.forEach(c=>sum+=cardPoints(c));
+    breakdown.push({name:p.name, cards:p.hand.length, value:sum});
+    total+=sum;
   });
+  G.players[winnerIdx].score += total;
+
+  const body = document.getElementById('roundBody');
+  document.getElementById('roundTitle').textContent = `🎉 Panalo si ${G.players[winnerIdx].name} sa round na ito!`;
+  let html = `<table><tr><th>Manlalaro</th><th>Natitirang Cards</th><th>Halaga</th></tr>`;
+  breakdown.forEach(b=> html += `<tr><td>${b.name}</td><td>${b.cards}</td><td class="mono">${fmtMoney(b.value)}</td></tr>`);
+  html += `</table><p style="margin-top:12px;">Nakuha ni <b>${G.players[winnerIdx].name}</b>: <span class="mono" style="color:var(--green); font-weight:700;">${fmtMoney(total)}</span></p>`;
+  html += `<table style="margin-top:10px;"><tr><th>Manlalaro</th><th>Kabuuang Puntos</th></tr>`;
+  G.players.forEach(p=> html += `<tr><td>${p.name}</td><td class="mono">${fmtMoney(p.score)}</td></tr>`);
+  html += `</table>`;
+  body.innerHTML = html;
+  openOverlay('roundOverlay');
+
+  const champ = G.players.find(p=>p.score>=G.target);
+  document.getElementById('roundContinueBtn').onclick = ()=>{
+    closeOverlay('roundOverlay');
+    if(champ){ showChampion(champ); }
+    else { startNewRound(); }
+  };
 }
-function pickCardFromHandModal(target, title){
-  return new Promise(res=>{
-    const overlay = $('qModal');
-    $('qCatLabel').textContent='Give a Card'; $('qDiffLabel').textContent='';
-    $('qHeadline').textContent = title;
-    $('qPrompt').innerHTML='';
-    const row = document.createElement('div'); row.style.display='flex'; row.style.gap='8px'; row.style.flexWrap='wrap'; row.style.justifyContent='center';
-    target.hand.forEach(c=>{
-      const el = cardEl(c,{mini:true}); el.style.cursor='pointer';
-      el.onclick=()=>{ overlay.classList.remove('active'); res(c.id); };
-      row.appendChild(el);
-    });
-    $('qPrompt').appendChild(row);
-    $('qChoices').innerHTML='';
-    $('qFeedback').style.display='none'; $('qContinueBtn').style.display='none';
-    overlay.classList.add('active');
+
+function startNewRound(){
+  G.deck = shuffle(buildDeck());
+  G.discard=[];
+  G.players.forEach(p=>p.hand=[]);
+  G.players.forEach((p,idx)=>drawCards(idx,7));
+  setupFirstCard();
+  showPassScreenAndRender(true);
+}
+
+function showChampion(champ){
+  document.getElementById('championName').textContent = `${champ.name} ang Kampeon!`;
+  const body = document.getElementById('championBody');
+  let html = `<table><tr><th>Manlalaro</th><th>Puntos (₱)</th><th>Tamang Sagot</th></tr>`;
+  G.players.forEach(p=>{
+    let c=0,t=0;
+    COLOR_KEYS.forEach(k=>{ c+=p.stats[k].correct; t+=p.stats[k].total; });
+    html += `<tr><td>${p.name}</td><td class="mono">${fmtMoney(p.score)}</td><td class="mono">${c}/${t}</td></tr>`;
   });
+  html += `</table>`;
+  body.innerHTML = html;
+  openOverlay('championOverlay');
 }
 
-/* ---------------- question modal (used by CHALLENGE + pop quiz) ---------- */
-let qTimerHandle=null;
-function askQuestion(player, category, headline){
-  return new Promise(res=>{
-    const q = getQuestion(category, SETTINGS.qDifficulty||'medium');
-    const startTime = Date.now();
-    const overlay = $('qModal');
-    $('qCatLabel').textContent = (CATEGORY_INFO[category]||{label:category}).label;
-    $('qDiffLabel').textContent = (SETTINGS.qDifficulty||'medium').toUpperCase();
-    $('qHeadline').textContent = `${headline} — ${player.name}${player.type==='ai'?' (AI)':''}`;
-    $('qPrompt').textContent = q.prompt;
-    $('qFeedback').style.display='none';
-    $('qContinueBtn').style.display='none';
-    const choicesEl = $('qChoices'); choicesEl.innerHTML='';
+/* ---------- MODAL: QUESTION ---------- */
+function openQuestionModal(q, onDone){
+  const tag = document.getElementById('qTag');
+  const cat = CATEGORIES[q.colorKey];
+  tag.textContent = `${cat.icon} ${cat.label} · ${cat.sub}`;
+  tag.style.background = q.colorKey==='red'?'var(--red)':q.colorKey==='blue'?'var(--blue)':q.colorKey==='green'?'var(--green)':'var(--yellow)';
+  document.getElementById('qText').textContent = q.qtext;
+  const choicesWrap = document.getElementById('qChoices');
+  choicesWrap.innerHTML='';
+  const explain = document.getElementById('qExplain');
+  explain.classList.add('hidden');
+  const contBtn = document.getElementById('qContinueBtn');
+  contBtn.classList.add('hidden');
+  const timerBar = document.getElementById('qTimerBar');
+  const timerFill = document.getElementById('qTimerFill');
+  let timerInterval=null;
+  let answered=false;
 
-    function finish(correct, chosenText){
-      clearInterval(qTimerHandle); qTimerHandle=null;
-      const rt = Date.now()-startTime;
-      if(player.type==='human') recordAnswer(category, correct, rt);
-      const fb = $('qFeedback'); fb.style.display='block';
-      fb.className = 'feedback '+(correct?'ok':'no');
-      fb.textContent = correct ? '✅ Correct!' : `❌ Not quite. Correct answer: ${q.answer}`;
-      if(correct) Sound.correct(); else Sound.wrong();
-      $('qContinueBtn').style.display='inline-block';
-      $('qContinueBtn').onclick = ()=>{ overlay.classList.remove('active'); res(correct); };
-      Array.from(choicesEl.children).forEach(b=>b.disabled=true);
-    }
-
-    if(player.type==='ai'){
-      // AI answers based on difficulty (higher difficulty = higher chance correct)
-      const skill = {Easy:0.45, Medium:0.65, Hard:0.8, Expert:0.92}[player.difficulty]||0.65;
-      const correct = Math.random()<skill;
-      overlay.classList.add('active');
-      setTimeout(()=>{ finish(correct, null); }, 500);
-      return;
-    }
-
-    if(q.type==='mc'){
-      q.choices.forEach(choiceText=>{
-        const b = document.createElement('button'); b.className='choice-btn'; b.textContent=choiceText;
-        b.onclick=()=>{
-          const correct = choiceText===q.answer;
-          b.classList.add(correct?'correct':'wrong');
-          if(!correct){
-            Array.from(choicesEl.children).find(x=>x.textContent===q.answer)?.classList.add('correct');
-          }
-          finish(correct, choiceText);
-        };
-        choicesEl.appendChild(b);
-      });
-    } else {
-      const input = document.createElement('input'); input.type='text'; input.placeholder='Type your numeric answer...';
-      input.style.cssText='width:100%;padding:12px;border-radius:9px;border:1px solid var(--line-strong);background:var(--bg);color:var(--chalk);font-size:15px;';
-      const submit = document.createElement('button'); submit.className='btn'; submit.style.marginTop='10px'; submit.textContent='Submit Answer';
-      submit.onclick=()=>{ const correct = checkAnswer(q, input.value); input.disabled=true; submit.disabled=true; finish(correct, input.value); };
-      choicesEl.appendChild(input); choicesEl.appendChild(submit);
-      input.addEventListener('keydown', e=>{ if(e.key==='Enter') submit.click(); });
-    }
-
-    if(SETTINGS.timer>0){
-      $('qTimerBar').style.display='block';
-      let timeLeft = SETTINGS.timer*1000;
-      const total = timeLeft;
-      $('qTimerFill').style.width='100%';
-      qTimerHandle = setInterval(()=>{
-        timeLeft -= 100;
-        $('qTimerFill').style.width = Math.max(0,100*timeLeft/total)+'%';
-        if(timeLeft<=0){ clearInterval(qTimerHandle); finish(false,null); }
-      },100);
-    } else {
-      $('qTimerBar').style.display='none';
-    }
-    overlay.classList.add('active');
-  });
-}
-function closeQuestionModal(){
-  if(qTimerHandle){ clearInterval(qTimerHandle); qTimerHandle=null; }
-  $('qModal').classList.remove('active');
-}
-
-/* =========================================================================
-   AI LOGIC
-   ========================================================================= */
-function bombProbability(p){
-  const remaining = G.deck.length;
-  if(remaining<=0) return 0;
-  // if AI has seen the future, use exact knowledge for the top cards
-  if(p.knownFuture && p.knownFuture.length){
-    const top = p.knownFuture[p.knownFuture.length-1];
-    if(top==='EXPLODE') return 1;
-  }
-  const bombsLeft = G.deck.filter(c=>c.type==='EXPLODE').length;
-  return bombsLeft/remaining;
-}
-async function aiTakeTurn(p){
-  const diff = p.difficulty || 'Medium';
-  const skillMap = {Easy:0, Medium:1, Hard:2, Expert:3}; const skill = skillMap[diff]??1;
-  let actionsThisTurn = 0;
-  const maxActions = skill+1;
-
-  while(actionsThisTurn < maxActions){
-    const prob = bombProbability(p);
-    const hasDefuse = p.hand.some(c=>c.type==='DEFUSE');
-    const playable = p.hand.filter(c=>c.type!=='DEFUSE');
-    let acted = false;
-
-    // Expert/Hard: play Attack or Challenge offensively sometimes; use Skip/Shuffle if danger high
-    if(skill>=1 && prob>0.35){
-      const skip = p.hand.find(c=>c.type==='SKIP');
-      if(skip){ await aiPlayCard(p, skip); acted=true; actionsThisTurn++; continue; }
-      const shuf = p.hand.find(c=>c.type==='SHUFFLE');
-      if(shuf && skill>=2){ await aiPlayCard(p, shuf); acted=true; actionsThisTurn++; continue; }
-    }
-    if(skill>=2 && Math.random()<0.35){
-      const atk = p.hand.find(c=>c.type==='ATTACK');
-      if(atk){ await aiPlayCard(p, atk); acted=true; actionsThisTurn++; continue; }
-    }
-    if(skill>=1 && Math.random()<0.3){
-      const chal = p.hand.find(c=>c.type==='CHALLENGE');
-      if(chal){ await aiPlayCard(p, chal); acted=true; actionsThisTurn++; continue; }
-    }
-    if(skill>=2 && Math.random()<0.25){
-      const steal = p.hand.find(c=>c.type==='STEAL');
-      if(steal && alivePlayers().some(pl=>pl.id!==p.id && pl.hand.length>0)){ await aiPlayCard(p, steal); acted=true; actionsThisTurn++; continue; }
-    }
-    // ENHANCEMENT: AI previously never played Favor cards at all — they just
-    // sat unused in its hand. Now it uses one when running low on cards.
-    if(skill>=1 && p.hand.length<=3 && Math.random()<0.3){
-      const favor = p.hand.find(c=>c.type==='FAVOR');
-      if(favor && alivePlayers().some(pl=>pl.id!==p.id && pl.hand.length>0)){ await aiPlayCard(p, favor); acted=true; actionsThisTurn++; continue; }
-    }
-    if(skill>=3 && p.hand.some(c=>c.type==='FUTURE') && !acted){
-      const fut = p.hand.find(c=>c.type==='FUTURE');
-      if(fut && (!p.knownFuture||!p.knownFuture.length) ){ await aiPlayCard(p, fut); acted=true; actionsThisTurn++; continue; }
-    }
-    break;
-  }
-  await sleep(400);
-  // decide to draw
-  await aiDraw(p);
-}
-async function aiPlayCard(p, card){
-  const idx = p.hand.findIndex(c=>c.id===card.id);
-  if(idx<0) return;
-  await sleep(500);
-  const card2 = p.hand[idx];
-  p.hand.splice(idx,1); G.discard.push(card2); logMsg(`${p.name} plays ${card2.name} (${card2.type}).`);
-  renderBoard();
-  if(card2.type==='SKIP'){ /* consumed, allows skip of draw this loop via aiDraw flag */ p._skipDraw = true; return; }
-  if(card2.type==='ATTACK'){ await currentAttackNextSilent(p); return; }
-  if(card2.type==='SHUFFLE'){ shuffle(G.deck); logMsg('The Draw Pile is shuffled.'); return; }
-  if(card2.type==='FUTURE'){ p.knownFuture = G.deck.slice(-3).reverse().map(c=>c.type); return; }
-  if(card2.type==='FAVOR'){ await doFavor(p); return; }
-  if(card2.type==='STEAL'){ await doSteal(p); return; }
-  if(card2.type==='CHALLENGE'){ await doChallenge(p, card2); return; }
-}
-async function currentAttackNextSilent(p){
-  const nextIdx = nextAliveIndex(G.turn);
-  const nextP = G.players[nextIdx];
-  const noped = await maybeNope(nextP, p, 'Composite Attack');
-  if(noped){ p._attackedAway = false; return; }
-  // Same stacking fix as the human-facing currentAttackNext: pass along the
-  // attacker's own owed turns rather than always just adding 1.
-  const owed = Math.max(1, p.forcedTurns||1);
-  nextP.forcedTurns = (nextP.forcedTurns||1) - 1 + owed + 1;
-  p.forcedTurns = 1;
-  logMsg(`${nextP.name} must take ${nextP.forcedTurns} turns in a row!`);
-  p._attackedAway = true;
-}
-async function aiDraw(p){
-  if(p._skipDraw){ p._skipDraw=false; logMsg(`${p.name} skips drawing this turn.`); advanceTurn(); return; }
-  if(p._attackedAway){ p._attackedAway=false; advanceTurn(); return; }
-  await sleep(400);
-  await resolveDraw(p);
-}
-
-/* =========================================================================
-   MATCH END
-   ========================================================================= */
-function endMatch(){
-  G.over = true;
-  const winner = alivePlayers()[0];
-  const anyHuman = G.players.some(p=>p.type==='human');
-  const humanWon = !!(winner && winner.type==='human');
-  if(anyHuman){
-    recordGameResult(humanWon);
-    if(humanWon){
-      // BUGFIX: this used to check `humanPlayer.hand.every(c=>true)`, a no-op
-      // predicate that's always true, and looked at the first human seat
-      // rather than whichever human actually won. Now it checks the real
-      // per-player usedDefuse flag on the winner.
-      const ctx = { wonWithoutDefuse: !winner.usedDefuse };
-      checkAchievements(loadStats(), ctx);
-    }
-  }
-  try{ localStorage.removeItem('fee_save'); }catch(e){}
-  $('endGlyph').textContent = winner? '🏆' : '💥';
-  $('endTitle').textContent = winner? `${winner.name} Wins!` : 'Everyone Exploded';
-  $('endSub').textContent = winner ? `${winner.name} survived the Exploding Equations and outlasted every classmate.` : 'No survivors this round — try again!';
-  if(humanWon) Sound.win(); else Sound.lose();
-  goto('screen-end');
-}
-function confirmQuit(){
-  if(G && !G.over){ if(!confirm('Quit the current match? Your progress is auto-saved, so you can Continue later.')) return; }
-  goto('screen-start');
-}
-function saveMatch(){
-  if(!G || !G.deck || G.over){
-    try{ localStorage.removeItem('fee_save'); }catch(e){}
-    return;
-  }
-  try{
-    localStorage.setItem('fee_save', JSON.stringify({G, SETTINGS, ACTIVE_CATEGORIES}));
-  }catch(e){ /* storage unavailable or quota exceeded — silently skip autosave */ }
-}
-function continueSavedMatch(){
-  try{
-    const raw = localStorage.getItem('fee_save');
-    if(!raw){ toast('No saved match found.'); return; }
-    const data = JSON.parse(raw);
-    G = data.G; SETTINGS = data.SETTINGS || SETTINGS;
-    if(data.ACTIVE_CATEGORIES) ACTIVE_CATEGORIES = data.ACTIVE_CATEGORIES;
-    goto('screen-game');
-    logMsg('Match resumed from your last save.');
-    runTurnLoop();
-  }catch(e){ toast('Could not load the saved match — it may be corrupted.'); }
-}
-
-/* =========================================================================
-   PRACTICE MODE
-   ========================================================================= */
-let PRAC = {score:0,total:0,streak:0};
-function startPractice(){
-  PRAC = {score:0,total:0,streak:0};
-  updatePracHud();
-  goto('screen-practice');
-  nextPracticeQuestion();
-}
-function updatePracHud(){ $('pracScore').textContent=PRAC.score; $('pracTotal').textContent=PRAC.total; $('pracStreak').textContent=PRAC.streak; }
-function nextPracticeQuestion(){
-  const cat = choice(ACTIVE_CATEGORIES);
-  const q = getQuestion(cat, (SETTINGS.qDifficulty||'medium'));
-  const panel = $('pracPanel');
-  const info = CATEGORY_INFO[cat];
-  panel.innerHTML = `<div class="qmeta"><span>${info.label}</span><span>${(SETTINGS.qDifficulty||'medium').toUpperCase()}</span></div>
-    <div class="qprompt">${q.prompt.replace(/\n/g,'<br>')}</div>
-    <div class="choices" id="pracChoices"></div>
-    <div class="feedback" id="pracFeedback" style="display:none;"></div>`;
-  const choicesEl = $('pracChoices');
-  function grade(correct, el){
-    PRAC.total++; if(correct) PRAC.score++, PRAC.streak++; else PRAC.streak=0;
-    updatePracHud();
-    recordAnswer(cat, correct, 3000);
-    const fb=$('pracFeedback'); fb.style.display='block'; fb.className='feedback '+(correct?'ok':'no');
-    fb.textContent = correct? '✅ Correct!' : '❌ Correct answer: '+q.answer;
-    if(correct) Sound.correct(); else Sound.wrong();
-    const btn = document.createElement('button'); btn.className='btn'; btn.style.marginTop='12px'; btn.textContent='Next Question →';
-    btn.onclick = nextPracticeQuestion;
-    fb.after(btn);
-  }
-  if(q.type==='mc'){
-    q.choices.forEach(c=>{
-      const b=document.createElement('button'); b.className='choice-btn'; b.textContent=c;
-      b.onclick=()=>{ const correct=c===q.answer; b.classList.add(correct?'correct':'wrong'); Array.from(choicesEl.children).forEach(x=>x.disabled=true); grade(correct); };
-      choicesEl.appendChild(b);
+  function finish(correct){
+    if(answered) return;
+    answered=true;
+    if(timerInterval) clearInterval(timerInterval);
+    timerBar.classList.add('hidden');
+    Array.from(choicesWrap.children).forEach(btn=>{
+      btn.disabled=true;
+      if(btn.dataset.correct==='true') btn.classList.add('correct');
+      else if(btn.classList.contains('picked')) btn.classList.add('wrong');
     });
+    explain.classList.remove('hidden');
+    explain.innerHTML = `<div class="formula">${q.formula}</div><div>${q.steps}</div>`;
+    contBtn.classList.remove('hidden');
+    contBtn.onclick = ()=>{ closeOverlay('questionOverlay'); onDone(correct); };
+  }
+
+  q.choices.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className='choice'; btn.textContent=c.label; btn.dataset.correct=c.isCorrect;
+    btn.onclick = ()=>{ btn.classList.add('picked'); finish(c.isCorrect); };
+    choicesWrap.appendChild(btn);
+  });
+
+  if(G.mode==='palaro'){
+    timerBar.classList.remove('hidden');
+    let timeLeft=20;
+    timerFill.style.width='100%';
+    timerInterval = setInterval(()=>{
+      timeLeft--;
+      timerFill.style.width = Math.max(0,(timeLeft/20*100))+'%';
+      if(timeLeft<=0){ finish(false); }
+    },1000);
   } else {
-    const input=document.createElement('input'); input.type='text'; input.placeholder='Your numeric answer...';
-    input.style.cssText='width:100%;padding:12px;border-radius:9px;border:1px solid var(--line-strong);background:var(--bg);color:var(--chalk);font-size:15px;';
-    const submit=document.createElement('button'); submit.className='btn'; submit.style.marginTop='10px'; submit.textContent='Submit';
-    submit.onclick=()=>{ const correct=checkAnswer(q,input.value); input.disabled=true; submit.disabled=true; grade(correct); };
-    choicesEl.appendChild(input); choicesEl.appendChild(submit);
-    input.addEventListener('keydown', e=>{if(e.key==='Enter') submit.click();});
+    timerBar.classList.add('hidden');
+  }
+  openOverlay('questionOverlay');
+}
+
+/* ---------- MODAL: COLOR PICKER ---------- */
+function openColorPicker(callback){
+  const wrap = document.getElementById('colorPickButtons');
+  wrap.innerHTML='';
+  COLOR_KEYS.forEach(k=>{
+    const btn = document.createElement('button');
+    btn.style.background = `var(--${k})`;
+    btn.innerHTML = `<span style="font-size:1.4rem;">${CATEGORIES[k].icon}</span><span>${CATEGORIES[k].label}</span>`;
+    btn.onclick = ()=>{ closeOverlay('colorOverlay'); callback(k); };
+    wrap.appendChild(btn);
+  });
+  openOverlay('colorOverlay');
+}
+
+/* ---------- RENDER ---------- */
+function cardEl(card, opts){
+  opts = opts||{};
+  const el = document.createElement('div');
+  const colorClass = card.color==='wild' ? 'card--wild' : `card--${card.color}`;
+  el.className = `card ${colorClass}`;
+  if(opts.playable===false) el.classList.add('disabled');
+  if(opts.playable===true) el.classList.add('playable');
+
+  const seal = document.createElement('div');
+  seal.className='seal';
+  seal.textContent = card.color==='wild' ? '★' : CATEGORIES[card.color].icon;
+  el.appendChild(seal);
+
+  const catlabel = document.createElement('div');
+  catlabel.className='catlabel';
+  catlabel.textContent = card.color==='wild' ? 'WILD' : CATEGORIES[card.color].sub;
+  el.appendChild(catlabel);
+
+  const big = document.createElement('div');
+  big.className='big';
+  big.textContent = card.type==='number' ? card.value
+                  : card.type==='skip' ? '⛔'
+                  : card.type==='reverse' ? '🔁'
+                  : card.type==='draw2' ? '+2'
+                  : card.type==='wild' ? '★'
+                  : '+4';
+  el.appendChild(big);
+
+  const c1 = document.createElement('div'); c1.className='corner';
+  c1.style.top='6px'; c1.style.right='8px';
+  c1.textContent = card.type==='number'?card.value: card.type==='draw2'?'+2': card.type==='wild4'?'+4':'';
+  el.appendChild(c1);
+  const c2 = document.createElement('div'); c2.className='corner br';
+  c2.textContent = c1.textContent;
+  el.appendChild(c2);
+
+  if(card.type==='number'){
+    const stamp = document.createElement('div');
+    stamp.className='stamp'; stamp.textContent='SOLVE TO PLAY';
+    el.appendChild(stamp);
+  }
+  return el;
+}
+
+function renderAll(){
+  document.getElementById('deckCount').textContent = G.deck.length;
+  const top = topCard();
+  const discardWrap = document.getElementById('discardTop');
+  discardWrap.innerHTML='';
+  discardWrap.appendChild(cardEl(top, {playable:false}));
+
+  const tag = document.getElementById('activeColorTag');
+  const cat = CATEGORIES[G.activeColor];
+  tag.innerHTML = `<span class="dot" style="background:var(--${G.activeColor})"></span> ${cat.icon} ${cat.label}`;
+
+  const oppWrap = document.getElementById('opponents');
+  oppWrap.innerHTML='';
+  G.players.forEach((p,idx)=>{
+    const chip = document.createElement('div');
+    chip.className = 'opp-chip' + (idx===G.turn?' active':'');
+    chip.innerHTML = `<div class="stack"></div><div class="info"><b>${p.name}</b><small>${p.hand.length} cards · ${fmtMoney(p.score)}</small></div>`;
+    oppWrap.appendChild(chip);
+  });
+
+  const owner = G.players[G.turn];
+  document.getElementById('handOwner').textContent = `Kamay ni ${owner.name}`;
+  const handWrap = document.getElementById('hand');
+  handWrap.innerHTML='';
+  owner.hand.forEach(card=>{
+    let playable;
+    if(G.turnState==='drewOne'){ playable = (card.id===G.drawnCardId) && canPlay(card); }
+    else { playable = canPlay(card); }
+    const el = cardEl(card, {playable});
+    el.onclick = ()=>attemptPlay(card.id);
+    handWrap.appendChild(el);
+  });
+
+  const msg = document.getElementById('turnStateMsg');
+  const endBtn = document.getElementById('endTurnBtn');
+  if(G.turnState==='drewOne'){
+    msg.classList.remove('hidden');
+    msg.textContent = 'Nakabunot ka na — i-play ang nabunot o tapusin ang turn.';
+    endBtn.style.display='inline-block';
+    endBtn.onclick = onEndTurnClick;
+  } else {
+    msg.classList.add('hidden');
+    endBtn.style.display='none';
   }
 }
 
-/* ---------------- default settings so practice/teacher work standalone ---*/
-SETTINGS = {aiDefault:'Medium', penalty:'draw', qDifficulty:'medium', timer:0, popQuiz:true};
-renderSeatRows();
-renderContinueRow();
-(function initSoundIcon(){
-  const btn = $('soundToggleBtn');
-  if(btn) btn.textContent = soundEnabled? '🔊' : '🔇';
-})();
+function showPassScreenAndRender(isFirst){
+  G.turnState='normal'; G.drawnCardId=null;
+  if(G.players.length>1){
+    switchScreen('passScreen');
+    document.getElementById('passName').textContent = `Ipasa kay ${G.players[G.turn].name}`;
+    document.getElementById('passReadyBtn').onclick = ()=>{
+      switchScreen('game');
+      renderAll();
+    };
+  } else {
+    switchScreen('game');
+    renderAll();
+  }
+}
+
+/* ---------- LEDGER / REPORT / FORMULA MODALS ---------- */
+function renderLedger(){
+  const body = document.getElementById('ledgerBody');
+  let html = `<table><tr><th>Manlalaro</th><th>Puntos (₱)</th><th>Kamay</th></tr>`;
+  G.players.forEach(p=> html += `<tr><td>${p.name}</td><td class="mono">${fmtMoney(p.score)}</td><td>${p.hand.length} cards</td></tr>`);
+  html += `</table><p style="margin-top:10px; font-size:.8rem; color:var(--ink-soft);">Target upang manalo: <b>${fmtMoney(G.target)}</b></p>`;
+  body.innerHTML = html;
+}
+function renderReport(){
+  const body = document.getElementById('reportBody');
+  let html='';
+  G.players.forEach(p=>{
+    html += `<div style="margin-bottom:16px;"><b>${p.name}</b> <span class="mono" style="color:var(--ink-soft); font-size:.78rem;">(Learning Points: ${p.learningPoints})</span>`;
+    COLOR_KEYS.forEach(k=>{
+      const st = p.stats[k];
+      const pct = st.total ? Math.round(st.correct/st.total*100) : 0;
+      html += `<div style="margin-top:6px; font-size:.8rem;">
+        <div style="display:flex; justify-content:space-between;"><span>${CATEGORIES[k].icon} ${CATEGORIES[k].label}</span><span class="mono">${st.correct}/${st.total} (${pct}%)</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:var(--${k});"></div></div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  body.innerHTML = html || '<p>Wala pang datos.</p>';
+}
+function renderFormulaSheet(){
+  const body = document.getElementById('formulaBody');
+  body.innerHTML = FORMULAS.map(f=>`
+    <div class="fitem">
+      <h4><span style="color:var(--${f.color});">${CATEGORIES[f.color].icon}</span> ${f.title}</h4>
+      <div class="f">${f.f}</div>
+      <p>${f.desc}</p>
+    </div>`).join('');
+}
+
+/* ================= SETUP SCREEN WIRING ================= */
+let selectedPlayerCount = 2;
+let selectedTarget = 3000;
+let selectedMode = 'palaro';
+
+function renderPlayerNameInputs(){
+  const wrap = document.getElementById('playerNamesWrap');
+  wrap.innerHTML='';
+  for(let i=0;i<selectedPlayerCount;i++){
+    const row = document.createElement('div');
+    row.className='player-row';
+    row.innerHTML = `<span class="pnum">${i+1}</span><input type="text" placeholder="Pangalan ng Manlalaro ${i+1}" value="${i===0?'Manlalaro 1':'Manlalaro '+(i+1)}" data-idx="${i}">`;
+    wrap.appendChild(row);
+  }
+}
+renderPlayerNameInputs();
+
+document.getElementById('playerCountChips').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#playerCountChips button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedPlayerCount = parseInt(btn.dataset.n);
+  renderPlayerNameInputs();
+});
+document.getElementById('targetChips').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#targetChips button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedTarget = parseInt(btn.dataset.t);
+});
+document.getElementById('modeChips').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#modeChips button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedMode = btn.dataset.m;
+});
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  const inputs = document.querySelectorAll('#playerNamesWrap input');
+  const names = Array.from(inputs).map((inp,i)=> inp.value.trim() || `Manlalaro ${i+1}`);
+  initGame(names, selectedTarget, selectedMode);
+});
+document.getElementById('howToBtn').addEventListener('click', ()=>openOverlay('howtoOverlay'));
+document.getElementById('howtoCloseBtn').addEventListener('click', ()=>closeOverlay('howtoOverlay'));
+document.getElementById('helpBtnGame').addEventListener('click', ()=>openOverlay('howtoOverlay'));
+
+document.getElementById('drawPile').addEventListener('click', onDrawPileClick);
+document.getElementById('ledgerBtn').addEventListener('click', ()=>{ renderLedger(); openOverlay('ledgerOverlay'); });
+document.getElementById('ledgerCloseBtn').addEventListener('click', ()=>closeOverlay('ledgerOverlay'));
+document.getElementById('reportBtn').addEventListener('click', ()=>{ renderReport(); openOverlay('reportOverlay'); });
+document.getElementById('reportCloseBtn').addEventListener('click', ()=>closeOverlay('reportOverlay'));
+document.getElementById('formulaBtn').addEventListener('click', ()=>{ renderFormulaSheet(); openOverlay('formulaOverlay'); });
+document.getElementById('formulaCloseBtn').addEventListener('click', ()=>closeOverlay('formulaOverlay'));
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  closeOverlay('championOverlay');
+  switchScreen('setup');
+});
 </script>
 </body>
 </html>
