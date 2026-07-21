@@ -1,566 +1,1063 @@
 <!DOCTYPE html>
-<html lang="tl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Z-Score Attack: Battle of the Normal Curve</title>
+<title>Measure-opoly — The Measurement Board Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
-
   :root{
-    --bg: #0a0f1c;
-    --panel: #121a2b;
-    --panel-2: #17203a;
-    --line: #263252;
-    --blue: #4c8dff;
-    --green: #34d399;
-    --amber: #fbbf24;
-    --red: #f87171;
-    --text: #e7ecf5;
-    --muted: #8593ac;
+    --bg: #FBF3DE;
+    --surface: #FFFFFF;
+    --ink: #2B1B12;
+    --ink-soft: #6b5947;
+    --tangke: #2C6E91;
+    --tangke-dark:#1d4c66;
+    --bigasan: #D9A441;
+    --bigasan-dark:#a97a26;
+    --balikbayan: #C1272D;
+    --balikbayan-dark:#8f1a1f;
+    --hardin: #3B7A47;
+    --hardin-dark:#255030;
+    --tiisan: #8B5E3C;
+    --palengke: #E08E23;
+    --paaralan: #1E8A78;
+    --poblacion: #4A3B78;
+    --terminal: #5B4636;
+    --utility: #B08D57;
+    --tax: #555555;
+    --corner: #3A2A1D;
+    --chance: #F4A300;
+    --gold: #F4A300;
+    --shadow: rgba(43,27,18,0.25);
+    --radius: 12px;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
-    background: radial-gradient(1200px 600px at 50% -10%, #14203f 0%, var(--bg) 60%);
-    color:var(--text);
-    font-family:'Inter',sans-serif;
     min-height:100vh;
-    padding:20px 14px 60px;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(217,164,65,0.15), transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(59,122,71,0.15), transparent 40%),
+      var(--bg);
+    font-family:'Nunito', sans-serif;
+    color:var(--ink);
+    padding:16px;
   }
-  h1,h2,h3{font-family:'Space Grotesk',sans-serif; margin:0;}
-  .wrap{max-width:920px; margin:0 auto;}
+  h1,h2,h3, .display{ font-family:'Baloo 2', sans-serif; }
+  .cash, .num{ font-family:'Space Mono', monospace; }
 
-  /* HEADER */
-  .header{text-align:center; margin-bottom:18px;}
-  .eyebrow{
-    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em;
-    color:var(--blue); text-transform:uppercase; margin-bottom:6px;
+  /* ===== Top bar ===== */
+  .topbar{
+    max-width:1180px; margin:0 auto 14px auto;
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
   }
-  .title{font-size:26px; font-weight:700;}
-  .subtitle{color:var(--muted); font-size:13px; margin-top:4px;}
-
-  .curve-wrap{margin:14px auto 4px; max-width:520px;}
-
-  /* LAB PANELS */
-  .lab{
-    background:linear-gradient(180deg,var(--panel),var(--panel-2));
-    border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:12px;
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-badge{
+    width:46px;height:46px;border-radius:10px;
+    background:linear-gradient(135deg, var(--hardin), var(--tangke));
+    display:flex;align-items:center;justify-content:center;font-size:22px;
+    box-shadow:0 4px 0 var(--shadow);
   }
-  .lab-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
-  .lab-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px;}
-  .lab-name.ai{color:var(--red);}
-  .lab-name.you{color:var(--green);}
-  .kp{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--amber);}
-
-  .parts{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
-  .part{
-    background:#0d1424; border:1px solid var(--line); border-radius:10px;
-    padding:8px 4px; text-align:center; position:relative; transition:.2s;
-    cursor:default;
+  .brand h1{ margin:0; font-size:22px; letter-spacing:0.5px; }
+  .brand p{ margin:0; font-size:12px; color:var(--ink-soft); font-weight:700;}
+  .topbtns{ display:flex; gap:8px; flex-wrap:wrap; }
+  .iconbtn{
+    border:2px solid var(--corner); background:var(--surface); color:var(--corner);
+    border-radius:10px; padding:8px 12px; font-weight:800; font-family:'Nunito';
+    cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px;
+    transition:transform .1s ease;
   }
-  .part.targetable{cursor:pointer; border-color:var(--blue);}
-  .part.targetable:hover{background:#152040; transform:translateY(-2px);}
-  .part.destroyed{opacity:.3; filter:grayscale(1);}
-  .part .icon{font-size:20px; display:block; margin-bottom:4px;}
-  .part .pname{font-size:9px; color:var(--muted); line-height:1.2; min-height:22px;}
-  .hp-dots{display:flex; justify-content:center; gap:3px; margin-top:5px;}
-  .hp-dot{width:6px; height:6px; border-radius:50%; background:var(--line);}
-  .hp-dot.filled{background:var(--green);}
-  .lab-name.ai ~ .parts .hp-dot.filled{background:var(--red);}
+  .iconbtn:hover{ transform:translateY(-2px); }
+  .iconbtn:active{ transform:translateY(0); }
 
-  /* LOG / STATUS */
-  .status{
-    text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12.5px;
-    color:var(--muted); min-height:20px; margin:10px 0;
+  /* ===== Layout ===== */
+  .wrap{ max-width:1180px; margin:0 auto; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+  .board-col{ flex:1 1 640px; display:flex; justify-content:center; }
+  .side-col{ flex:0 1 340px; min-width:280px; display:flex; flex-direction:column; gap:12px; }
+
+  /* ===== Board ===== */
+  .board-frame{
+    background:var(--corner); padding:10px; border-radius:18px;
+    box-shadow:0 10px 0 rgba(0,0,0,0.15), 0 14px 24px rgba(0,0,0,0.25);
+  }
+  .board{
+    width:min(92vw,660px); aspect-ratio:1/1;
+    display:grid; grid-template-columns:repeat(11,1fr); grid-template-rows:repeat(11,1fr);
+    gap:2px; background:var(--corner); border-radius:10px; overflow:hidden;
+  }
+  .tile{
+    background:var(--surface); position:relative; border-radius:3px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:1px; overflow:hidden; text-align:center;
+  }
+  .tile .tname{ font-size:5.6px; font-weight:800; line-height:1.05; color:var(--ink); }
+  .tile .ticon{ font-size:11px; }
+  .tile .tprice{ font-size:5px; color:var(--ink-soft); font-family:'Space Mono'; }
+  .tile.corner{ background:var(--corner); color:#fff; }
+  .tile.corner .tname{ color:#F4E9CF; font-size:6px; }
+  .tile.corner .ticon{ font-size:15px; }
+  .tile-stripe{ position:absolute; top:0; left:0; right:0; height:5px; }
+  .tile.owned::after{
+    content:''; position:absolute; bottom:1px; right:1px; width:5px; height:5px; border-radius:50%;
+    background:var(--ownerColor,#333); border:1px solid #fff;
+  }
+  .center{
+    grid-row:2/11; grid-column:2/11; background:linear-gradient(160deg,#fffdf6,#f4ead0);
+    border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; padding:10px; text-align:center; position:relative; overflow:hidden;
+  }
+  .diag-logo{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-28deg);
+    width:130%; text-align:center; pointer-events:none; opacity:0.9;
+  }
+  .diag-logo .band{
+    background:var(--balikbayan); color:#fff; font-family:'Baloo 2'; font-weight:800;
+    font-size:26px; letter-spacing:1px; padding:6px 0; border:3px solid #fff;
+    box-shadow:0 4px 0 rgba(0,0,0,0.25);
+  }
+  .diag-logo .sub{ font-size:8px; color:var(--corner); font-weight:700; letter-spacing:2px; margin-top:2px; }
+  .jeepney-sign{
+    background:#161311; color:var(--gold); font-family:'Space Mono',monospace;
+    padding:8px 14px; border-radius:6px; letter-spacing:1.5px; font-size:12px;
+    text-transform:uppercase; box-shadow:inset 0 0 10px rgba(244,163,0,0.35);
+    border:2px solid #000; z-index:2;
+  }
+  .dice-row{ display:flex; gap:8px; align-items:center; justify-content:center; z-index:2; }
+  .die{
+    width:38px;height:38px;background:#fff;border:2px solid var(--corner); border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;
+    box-shadow:0 3px 0 var(--corner);
+  }
+  #roundLabel{ z-index:2; font-size:11px; color:var(--ink-soft); }
+  .token{
+    position:absolute; width:12px; height:12px; border-radius:50%; border:1.5px solid #fff;
+    box-shadow:0 1px 3px rgba(0,0,0,0.5); font-size:7px; display:flex; align-items:center; justify-content:center;
+    transition: all 0.35s ease; z-index:5;
   }
 
-  /* ACTIONS */
-  .actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:14px 0;}
-  button{
-    font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px;
-    border:none; border-radius:9px; padding:11px 18px; cursor:pointer;
-    transition:.15s; color:#08101f;
-  }
-  button:disabled{opacity:.35; cursor:not-allowed;}
-  .btn-attack{background:var(--blue); color:#fff;}
-  .btn-attack:hover:not(:disabled){background:#6ba0ff;}
-  .btn-defend{background:var(--green);}
-  .btn-defend:hover:not(:disabled){background:#5eeab0;}
-  .btn-repair{background:var(--amber);}
-  .btn-repair:hover:not(:disabled){background:#ffd061;}
-  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--text);}
-  .btn-ghost:hover{border-color:var(--blue);}
-
-  /* CHALLENGE MODAL */
-  .overlay{
-    position:fixed; inset:0; background:rgba(4,7,15,.78); backdrop-filter:blur(3px);
-    display:none; align-items:center; justify-content:center; z-index:50; padding:16px;
-  }
-  .overlay.show{display:flex;}
+  /* ===== Side panel ===== */
   .card{
-    background:linear-gradient(180deg,#161f38,#0f1626);
-    border:1px solid var(--line); border-radius:16px; max-width:480px; width:100%;
-    padding:22px 22px 20px; box-shadow:0 20px 60px rgba(0,0,0,.5);
+    background:var(--surface); border-radius:var(--radius); padding:12px 14px;
+    box-shadow:0 3px 0 var(--shadow);
   }
-  .card-tag{
-    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
-    letter-spacing:.1em; padding:3px 9px; border-radius:20px; margin-bottom:10px;
+  .card h3{ margin:0 0 8px 0; font-size:14px; color:var(--corner); }
+  .player-row{
+    display:flex; align-items:center; gap:8px; padding:7px 8px; border-radius:8px; margin-bottom:6px;
+    background:#faf5e6; border:2px solid transparent;
   }
-  .tag-A{background:rgba(76,141,255,.15); color:var(--blue); border:1px solid rgba(76,141,255,.4);}
-  .tag-B{background:rgba(52,211,153,.15); color:var(--green); border:1px solid rgba(52,211,153,.4);}
-  .card-q{font-size:15.5px; line-height:1.5; margin-bottom:14px;}
-  .card-q .formula{
-    display:block; font-family:'IBM Plex Mono',monospace; background:#0a1120;
-    border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin-top:8px; font-size:13.5px; color:var(--amber);
+  .player-row.active{ border-color:var(--gold); background:#fff3d6; }
+  .player-token{
+    width:26px;height:26px;border-radius:50%; display:flex;align-items:center;justify-content:center;
+    font-size:14px; border:2px solid #fff; box-shadow:0 0 0 2px var(--tokColor,#333);
   }
-  .opts{display:flex; flex-direction:column; gap:8px; margin-bottom:6px;}
-  .opt{
-    text-align:left; background:#0d1424; border:1px solid var(--line); color:var(--text);
-    padding:10px 12px; border-radius:9px; font-family:'IBM Plex Mono',monospace; font-size:13.5px;
-  }
-  .opt:hover:not(:disabled){border-color:var(--blue); background:#132043;}
-  .opt.correct{border-color:var(--green); background:rgba(52,211,153,.12); color:var(--green);}
-  .opt.wrong{border-color:var(--red); background:rgba(248,113,113,.12); color:var(--red);}
+  .player-info{ flex:1; }
+  .player-info .pname{ font-weight:800; font-size:13px; }
+  .player-info .pcash{ font-size:12px; color:var(--hardin-dark); font-weight:700; }
+  .jail-tag{ font-size:9px; background:var(--balikbayan); color:#fff; padding:2px 6px; border-radius:6px; font-weight:800; }
 
-  .feedback{margin-top:12px; padding:12px; border-radius:10px; background:#0a1120; border:1px solid var(--line); font-size:13px; color:var(--muted); display:none;}
-  .feedback.show{display:block;}
-  .feedback b{color:var(--text);}
-  .feedback .fb-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; display:block; margin-bottom:5px;}
-  .fb-title.ok{color:var(--green);}
-  .fb-title.no{color:var(--red);}
-  .continue-btn{margin-top:12px; width:100%; background:var(--blue); color:#fff; padding:11px;}
-
-  /* GAME OVER */
-  .gameover{
-    position:fixed; inset:0; background:rgba(4,7,15,.9); display:none;
-    align-items:center; justify-content:center; z-index:60; text-align:center; padding:20px;
+  #rollBtn{
+    width:100%; padding:12px; border:none; border-radius:10px; font-family:'Baloo 2';
+    font-weight:700; font-size:16px; color:#fff; cursor:pointer;
+    background:linear-gradient(180deg, var(--hardin), var(--hardin-dark));
+    box-shadow:0 4px 0 #163d20;
   }
-  .gameover.show{display:flex;}
-  .go-title{font-size:30px; margin-bottom:8px;}
-  .go-sub{color:var(--muted); margin-bottom:18px;}
+  #rollBtn:disabled{ opacity:0.5; cursor:not-allowed; }
+  #rollBtn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 1px 0 #163d20; }
 
-  @media (max-width:520px){
-    .parts{grid-template-columns:repeat(5,1fr);}
-    .part .pname{font-size:7.5px;}
-    .title{font-size:21px;}
+  .log{ max-height:150px; overflow-y:auto; font-size:12px; color:var(--ink-soft); display:flex; flex-direction:column; gap:4px;}
+  .log div{ border-bottom:1px dashed #e5d9bd; padding-bottom:3px; }
+
+  /* ===== Modal ===== */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,14,8,0.55); display:none;
+    align-items:center; justify-content:center; z-index:50; padding:16px;
   }
+  .overlay.show{ display:flex; }
+  .modal{
+    background:var(--surface); border-radius:16px; max-width:460px; width:100%;
+    padding:22px; box-shadow:0 12px 0 rgba(0,0,0,0.2); max-height:88vh; overflow-y:auto;
+  }
+  .modal h2{ margin:0 0 6px 0; font-size:19px; }
+  .modal .tag{
+    display:inline-block; font-size:11px; font-weight:800; color:#fff; padding:3px 10px;
+    border-radius:20px; margin-bottom:10px;
+  }
+  .modal p{ font-size:14px; line-height:1.5; }
+  .choice-btn{
+    display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border-radius:10px;
+    border:2px solid #e4d6b3; background:#fffdf7; cursor:pointer; font-family:'Nunito'; font-weight:700; font-size:13.5px;
+  }
+  .choice-btn:hover{ border-color:var(--gold); }
+  .choice-btn.correct{ background:#e4f5e6; border-color:var(--hardin); }
+  .choice-btn.wrong{ background:#fbe6e6; border-color:var(--balikbayan); }
+  .modal-actions{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .btn{
+    padding:10px 16px; border-radius:10px; border:none; font-family:'Baloo 2'; font-weight:700;
+    cursor:pointer; font-size:14px; color:#fff;
+  }
+  .btn.primary{ background:linear-gradient(180deg,var(--tangke),var(--tangke-dark)); }
+  .btn.gold{ background:linear-gradient(180deg,var(--gold),#b97900); }
+  .btn.ghost{ background:transparent; color:var(--ink); border:2px solid var(--ink-soft); }
+  .btn.red{ background:linear-gradient(180deg,var(--balikbayan),var(--balikbayan-dark)); }
+  .explain{ font-size:12.5px; background:#f4ecd8; padding:8px 10px; border-radius:8px; margin-top:8px; }
+
+  /* ===== Setup ===== */
+  .setup-wrap{ max-width:560px; margin:40px auto; }
+  .field{ margin-bottom:14px; }
+  .field label{ font-size:12.5px; font-weight:800; color:var(--ink-soft); display:block; margin-bottom:4px;}
+  .field input, .field select{
+    width:100%; padding:9px 10px; border-radius:8px; border:2px solid #e4d6b3; font-family:'Nunito'; font-size:14px;
+  }
+  .player-setup-row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .token-pick{ display:flex; gap:4px; }
+  .token-pick span{
+    width:28px;height:28px; border-radius:50%; background:#fff2d6; display:flex;align-items:center;justify-content:center;
+    font-size:15px; cursor:pointer; border:2px solid transparent;
+  }
+  .token-pick span.picked{ border-color:var(--gold); }
+  .muted-small{ font-size:11px; color:var(--ink-soft); }
+  .hidden{ display:none !important; }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="header">
-    <div class="eyebrow">Educational Strategy Card Game</div>
-    <div class="title">🔔 Z-SCORE ATTACK</div>
-    <div class="subtitle">Battle of the Normal Curve — Ipagtanggol ang iyong Lab, sirain ang kay AI!</div>
-  </div>
-
-  <div class="curve-wrap">
-    <svg id="curveViz" viewBox="0 0 520 90" width="100%" height="90"></svg>
-  </div>
-
-  <!-- AI LAB -->
-  <div class="lab">
-    <div class="lab-head">
-      <div class="lab-name ai">🤖 AI Data Corruption Lab</div>
-      <div class="kp">KP: <span id="aiKP">0</span></div>
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-badge">📏</div>
+    <div>
+      <h1>MEASURE-OPOLY</h1>
+      <p>The Measurement Board Game — Length, Distance, Area &amp; Perimeter</p>
     </div>
-    <div class="parts" id="aiParts"></div>
   </div>
-
-  <div class="status" id="statusLine">Ikaw ang unang gagalaw. Piliin ang aksyon mo sa ibaba.</div>
-
-  <!-- PLAYER LAB -->
-  <div class="lab">
-    <div class="lab-head">
-      <div class="lab-name you">🧑‍🔬 Your Statistics Lab</div>
-      <div class="kp">KP: <span id="playerKP">0</span></div>
-    </div>
-    <div class="parts" id="playerParts"></div>
+  <div class="topbtns">
+    <button class="iconbtn" id="muteBtn">🔊 Sound</button>
+    <button class="iconbtn" id="rulesBtn">📖 How to Play</button>
+    <button class="iconbtn hidden" id="restartBtn">🔁 Restart</button>
   </div>
-
-  <div class="actions" id="mainActions">
-    <button class="btn-attack" id="btnAttack">⚔️ Attack (piliin ang target)</button>
-    <button class="btn-defend" id="btnStudy">📖 Study Round (+prep, walang attack)</button>
-    <button class="btn-ghost" id="btnHowTo">❓ Paano Laruin</button>
-  </div>
-
 </div>
 
-<!-- CHALLENGE OVERLAY -->
+<!-- ===================== SETUP SCREEN ===================== -->
+<div id="setupScreen" class="card setup-wrap">
+  <h2 style="margin-top:0;">Set Up the Game</h2>
+  <p class="muted-small">Choose 2–4 players. Each starts with $1000. Learn while you play: estimate the length of water tanks, rice storage, and balikbayan boxes, and calculate the area and perimeter of rooms and gardens.</p>
+
+  <div class="field">
+    <label>Number of Players</label>
+    <select id="numPlayers">
+      <option value="2">2 Players</option>
+      <option value="3">3 Players</option>
+      <option value="4" selected>4 Players</option>
+    </select>
+  </div>
+
+  <div id="playerFields"></div>
+
+  <p class="muted-small">🏆 <b>Goal:</b> Buy properties, collect rent, and answer measurement questions to grow your wealth. The last player who hasn't gone bankrupt wins!</p>
+
+  <button class="btn primary" style="width:100%; padding:13px; font-size:16px;" id="startBtn">🚀 Start Game</button>
+</div>
+
+<!-- ===================== GAME SCREEN ===================== -->
+<div id="gameScreen" class="wrap hidden">
+  <div class="board-col">
+    <div class="board-frame">
+      <div class="board" id="board"></div>
+    </div>
+  </div>
+
+  <div class="side-col">
+    <div class="card">
+      <h3>Players</h3>
+      <div id="playersList"></div>
+    </div>
+    <div class="card">
+      <button id="rollBtn">🎲 Roll the Dice</button>
+      <div style="margin-top:8px; font-size:12px; color:var(--ink-soft);" id="turnHint"></div>
+    </div>
+    <div class="card">
+      <h3>Game Log</h3>
+      <div class="log" id="logBox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL ===================== -->
 <div class="overlay" id="overlay">
-  <div class="card">
-    <span class="card-tag" id="cardTag">TYPE A</span>
-    <div class="card-q" id="cardQ"></div>
-    <div class="opts" id="cardOpts"></div>
-    <div class="feedback" id="feedback">
-      <span class="fb-title" id="fbTitle"></span>
-      <span id="fbBody"></span>
-    </div>
-    <button class="continue-btn" id="continueBtn" style="display:none;">Ituloy →</button>
-  </div>
-</div>
-
-<!-- GAME OVER -->
-<div class="gameover" id="gameover">
-  <div>
-    <div class="go-title" id="goTitle">🎉 PANALO!</div>
-    <div class="go-sub" id="goSub">Nasira mo lahat ng AI lab parts.</div>
-    <button class="btn-attack" onclick="location.reload()">🔄 Maglaro Ulit</button>
-  </div>
+  <div class="modal" id="modalBox"></div>
 </div>
 
 <script>
-/* ---------------- DATA ---------------- */
-const PART_DEFS = [
-  {key:'curve', icon:'🔔', name:'Bell Curve'},
-  {key:'mean', icon:'📍', name:'Mean (μ)'},
-  {key:'sd', icon:'📏', name:'Std. Dev (σ)'},
-  {key:'sym', icon:'⚖️', name:'Symmetry'},
-  {key:'zconv', icon:'🎯', name:'Z-Converter'},
+/* ============================================================
+   MEASURE-OPOLY — game data
+   ============================================================ */
+const LENGTH_QUESTIONS = [
+  {q:"The water tank in the backyard is 150 cm tall. How many meters is that?", c:["1.5 m","15 m","0.15 m","1.05 m"], a:0},
+  {q:"If 5 sacks of rice are laid end to end, each 70 cm long, what is the total length of the row?", c:["350 cm","300 cm","250 cm","400 cm"], a:0},
+  {q:"A balikbayan box is 0.6 m long. How many centimeters is that?", c:["60 cm","6 cm","600 cm","0.6 cm"], a:0},
+  {q:"The distance from the gate to the front door is estimated at 8 meters. About how many feet is that? (1 m ≈ 3.28 ft)", c:["~26 ft","~16 ft","~36 ft","~8 ft"], a:0},
+  {q:"Which of these is the closest estimate for the height of a typical household water tank?", c:["1.5 m","0.5 m","4 m","10 m"], a:0},
+  {q:"A 25-kilo sack of rice is about 60 cm long. If you line up 3 sacks end to end, what is the total length?", c:["1.8 m","2.4 m","1.2 m","3.0 m"], a:0},
+  {q:"600 mm is equal to how many meters?", c:["0.6 m","6 m","60 m","0.06 m"], a:0},
+  {q:"The width of a medium balikbayan box is 50 cm. How many meters is that?", c:["0.5 m","5 m","0.05 m","50 m"], a:0},
+  {q:"If a tank is 2 m tall and you add a 20 cm base, what is the total height from the ground?", c:["2.2 m","2.02 m","4 m","20.2 m"], a:0},
+  {q:"Which unit is most appropriate for measuring the distance from the house to the market?", c:["kilometer","millimeter","centimeter","gram"], a:0},
+  {q:"A measuring tape reads 340 cm for the length of a storage room. How many meters is that?", c:["3.4 m","34 m","0.34 m","3.04 m"], a:0},
+  {q:"If a balikbayan box is 0.7 m long and you want to place 4 of them side by side, how many meters of space will they need in total?", c:["2.8 m","2.4 m","3.2 m","1.4 m"], a:0},
+  {q:"A jeepney route is 3200 meters long. How many kilometers is that?", c:["3.2 km","32 km","0.32 km","320 km"], a:0},
+  {q:"Two jeepney terminals are 1.5 km apart. How many meters is that?", c:["1500 m","150 m","15 m","15000 m"], a:0},
+  {q:"A market stall table is 200 cm long. How many meters is that?", c:["2 m","20 m","0.2 m","2000 m"], a:0},
+  {q:"If a fish stall table is 2.5 m and a vegetable stall table is 2 m, what is their combined length?", c:["4.5 m","4 m","5 m","0.5 m"], a:0},
+  {q:"An electrical cable measures 1200 cm. How many meters is that?", c:["12 m","120 m","1.2 m","0.12 m"], a:0},
+  {q:"A water pipe run is 9 m long. How many centimeters is that?", c:["900 cm","90 cm","9000 cm","9.0 cm"], a:0},
 ];
-const HP_MAX = 2;
-
-// TYPE A — Illustrate a normal random variable & characteristics
-const TYPE_A = [
-  {
-    q:"Sa isang perpektong normal distribution, ano ang relasyon ng mean, median, at mode?",
-    opts:["Magkakapantay silang tatlo","Ang mean ay laging pinakamataas","Ang mode ay laging nasa gilid","Walang fixed na relasyon"],
-    correct:0,
-    exp:"Sa normal distribution, ang mean, median, at mode ay nasa gitna at magkakapantay dahil symmetric ang curve."
-  },
-  {
-    q:"Alin sa mga sumusunod ang TAMANG hugis ng normal distribution?",
-    opts:["Skewed to the right","Skewed to the left","Symmetric, bell-shaped","Uniform / patag"],
-    correct:2,
-    exp:"Ang normal distribution ay symmetric at bell-shaped — magkatulad ang dalawang kalahati sa magkabilang gilid ng mean."
-  },
-  {
-    q:"Ayon sa Empirical Rule (68-95-99.7), ilang porsyento ng data ang nasa loob ng ±1 standard deviation mula sa mean?",
-    opts:["50%","68%","95%","99.7%"],
-    correct:1,
-    exp:"Ang 68% ng data ay nasa loob ng ±1σ mula sa mean — ito ang unang bahagi ng Empirical Rule."
-  },
-  {
-    q:"Ilang porsyento ng data ang sakop ng ±2 standard deviations mula sa mean?",
-    opts:["68%","75%","95%","99.7%"],
-    correct:2,
-    exp:"Ayon sa Empirical Rule, 95% ng data ang nasa loob ng ±2σ mula sa mean."
-  },
-  {
-    q:"Ang total area sa ilalim ng normal curve ay katumbas ng:",
-    opts:["0","0.5","1","Depende sa σ"],
-    correct:2,
-    exp:"Ang buong area sa ilalim ng anumang normal curve ay palaging katumbas ng 1 (o 100%) — ito ang kabuuang probability."
-  },
-  {
-    q:"Kung mas malaki ang standard deviation ng isang normal distribution, ano ang mangyayari sa hugis ng curve?",
-    opts:["Mas matangkad at makitid","Mas mababa at mas kalat (flat/wide)","Mababago ang mean","Mawawala ang symmetry"],
-    correct:1,
-    exp:"Mas malaking σ = mas kalat ang data, kaya mas flat at mas malapad ang curve. Mas maliit na σ = mas makitid at matangkad."
-  },
-  {
-    q:"Ang mean ng isang normal curve ang tumutukoy sa:",
-    opts:["Lapad ng curve","Gitna/center ng distribution","Bilang ng outliers","Skewness"],
-    correct:1,
-    exp:"Ang mean ang siyang center o balanse ng buong distribution — kung saan naka-align ang peak ng curve."
-  },
-  {
-    q:"Alin ang HINDI katangian ng normal random variable?",
-    opts:["Symmetric sa mean","May dalawang peaks (bimodal)","Continuous ang values","Ang curve ay hindi kailanman gumagalaw pababa sa x-axis"],
-    correct:1,
-    exp:"Ang normal distribution ay unimodal — iisa lang ang peak nito, hindi bimodal."
-  },
-  {
-    q:"Sa normal curve, ang mga 'tails' (dulo) nito ay:",
-    opts:["Umaabot sa infinity pero hindi kailanman humihipo sa x-axis","Direktang humihinto sa isang fixed point","Palaging pantay ang taas sa peak","Wala sa larawan ng normal curve"],
-    correct:0,
-    exp:"Ang mga tails ng normal curve ay 'asymptotic' — papalapit sila sa x-axis pero hindi ito hinihipo, hanggang infinity."
-  },
-  {
-    q:"Kapag inilarawan mo ang isang normal random variable gamit ang graph, ano ang dalawang parameter na kailangan mong tukuyin?",
-    opts:["Minimum at maximum","Mean at standard deviation","Median at range","Mode at frequency"],
-    correct:1,
-    exp:"Ang normal distribution ay ganap na natutukoy gamit lang ang dalawang parameter: ang mean (μ) at standard deviation (σ)."
-  },
+const AREA_QUESTIONS = [
+  {q:"A garden is 4 m long and 3 m wide. What is its perimeter?", c:["14 m","12 m","7 m","24 m"], a:0},
+  {q:"Using the same garden (4 m x 3 m), what is its area?", c:["12 sq.m","14 sq.m","7 sq.m","24 sq.m"], a:0},
+  {q:"A bedroom being renovated measures 5 m x 4 m. What is its area?", c:["20 sq.m","18 sq.m","9 sq.m","24 sq.m"], a:0},
+  {q:"You want to install molding around the ceiling of a 5 m x 4 m room. How many meters of molding do you need (perimeter)?", c:["18 m","20 m","9 m","16 m"], a:0},
+  {q:"A living room extension is 6 m long and 4.5 m wide. What is its area?", c:["27 sq.m","24 sq.m","21 sq.m","30 sq.m"], a:0},
+  {q:"How much fencing is needed around a 6 m x 4.5 m garden (perimeter)?", c:["21 m","27 m","24 m","10.5 m"], a:0},
+  {q:"A square garden plot has sides of 3.5 m each. What is its area?", c:["12.25 sq.m","14 sq.m","7 sq.m","10.5 sq.m"], a:0},
+  {q:"What is the perimeter of that same square plot (3.5 m per side)?", c:["14 m","12.25 m","7 m","17.5 m"], a:0},
+  {q:"A room measures 4.5 m x 3.5 m. How many sq.m of tile are needed to cover the floor (area)?", c:["15.75 sq.m","16 sq.m","14 sq.m","18 sq.m"], a:0},
+  {q:"A backyard lot is 8 m x 5 m. What is the perimeter if you fence around it?", c:["26 m","40 m","13 m","20 m"], a:0},
+  {q:"How much space (area) will a new 3.2 m x 2.5 m terrace cover?", c:["8 sq.m","5.7 sq.m","11.4 sq.m","6.4 sq.m"], a:0},
+  {q:"If you double both the length and width of a 3 m x 2 m room, what is the new area?", c:["24 sq.m","12 sq.m","6 sq.m","18 sq.m"], a:0},
+  {q:"A classroom floor is 6 m long and 5 m wide. What is its area?", c:["30 sq.m","22 sq.m","11 sq.m","60 sq.m"], a:0},
+  {q:"How much border trim is needed around that same 6 m x 5 m classroom (perimeter)?", c:["22 m","30 m","11 m","20 m"], a:0},
+  {q:"A school playground is 10 m long and 8 m wide. What is its area?", c:["80 sq.m","18 sq.m","36 sq.m","64 sq.m"], a:0},
+  {q:"A rectangular plaza is 12 m by 9 m. What is its perimeter?", c:["42 m","21 m","108 m","54 m"], a:0},
+  {q:"What is the area of that same 12 m x 9 m plaza?", c:["108 sq.m","42 sq.m","21 sq.m","96 sq.m"], a:0},
+  {q:"A market complex floor measures 15 m x 10 m. What is its area?", c:["150 sq.m","50 sq.m","25 sq.m","125 sq.m"], a:0},
 ];
 
-// TYPE B — Convert a normal random variable to a z-score
-function zProblem(mu, sigma, x){
-  const z = (x - mu) / sigma;
-  return {mu, sigma, x, z: Math.round(z*100)/100};
-}
-const rawB = [
-  zProblem(80,10,95),
-  zProblem(50,5,60),
-  zProblem(100,15,130),
-  zProblem(70,8,62),
-  zProblem(60,12,60),
-  zProblem(45,9,27),
-  zProblem(90,6,84),
-  zProblem(120,20,140),
-  zProblem(35,7,49),
-  zProblem(65,10,50),
+const TILES = [
+  {id:0, type:'corner', sub:'go', name:'GO', icon:'🏁'},
+  {id:1, type:'property', district:'tiisan', name:'Sari-Sari Store Counter', price:100, dims:'Length: 1.2 m', icon:'🛒'},
+  {id:2, type:'chance', name:'Tulong Barangay', icon:'🤝'},
+  {id:3, type:'property', district:'tiisan', name:'Tricycle Sidecar', price:120, dims:'Length: 1.8 m', icon:'🛺'},
+  {id:4, type:'tax', name:'Buwis sa Kita (Income Tax)', icon:'💰', amount:200},
+  {id:5, type:'property', district:'terminal', name:'Jeepney Terminal – Divisoria', price:200, dims:'Route length: 3.2 km', icon:'🚐'},
+  {id:6, type:'property', district:'tangke', name:'Small Water Tank', price:140, dims:'Height: 1.0 m • Width: 0.8 m', icon:'🛢️'},
+  {id:7, type:'chance', name:'Sorpresa', icon:'🎲'},
+  {id:8, type:'property', district:'tangke', name:'Medium Water Tank', price:180, dims:'Height: 1.5 m • Width: 1.0 m', icon:'🛢️'},
+  {id:9, type:'property', district:'tangke', name:'Large Water Tank', price:220, dims:'Height: 2.0 m • Width: 1.2 m', icon:'🛢️'},
+  {id:10, type:'corner', sub:'jail', name:'Imbakan (Storage)', icon:'📦'},
+  {id:11, type:'property', district:'bigasan', name:'Stacked Rice Sacks', price:180, dims:'Length per sack: 70 cm', icon:'🌾'},
+  {id:12, type:'property', district:'utility', name:'Kuryente Metro (Electric)', price:150, dims:'Cable run: 12 m', icon:'💡'},
+  {id:13, type:'property', district:'bigasan', name:'Rice Storage Room', price:200, dims:'Length: 4 m • Width: 2.5 m', icon:'🌾'},
+  {id:14, type:'property', district:'bigasan', name:'Rice Warehouse', price:240, dims:'Length: 6 m • Width: 3 m', icon:'🌾'},
+  {id:15, type:'property', district:'terminal', name:'Jeepney Terminal – Quiapo', price:200, dims:'Route length: 4.1 km', icon:'🚐'},
+  {id:16, type:'property', district:'palengke', name:'Gulay Stall', price:260, dims:'Table length: 2.0 m', icon:'🥕'},
+  {id:17, type:'chance', name:'Tulong Barangay', icon:'🤝'},
+  {id:18, type:'property', district:'palengke', name:'Isda Stall', price:280, dims:'Table length: 2.5 m', icon:'🐟'},
+  {id:19, type:'property', district:'palengke', name:'Karne Stall', price:300, dims:'Table length: 3.0 m', icon:'🥩'},
+  {id:20, type:'corner', sub:'rest', name:'Plaza (Palengke Central)', icon:'🥭'},
+  {id:21, type:'property', district:'balikbayan', name:'Small Balikbayan Box', price:220, dims:'50 x 40 x 40 cm', icon:'🎁'},
+  {id:22, type:'chance', name:'Sorpresa', icon:'🎲'},
+  {id:23, type:'property', district:'balikbayan', name:'Medium Balikbayan Box', price:260, dims:'60 x 50 x 45 cm', icon:'🎁'},
+  {id:24, type:'property', district:'balikbayan', name:'Large Balikbayan Box', price:300, dims:'70 x 60 x 50 cm', icon:'🎁'},
+  {id:25, type:'property', district:'terminal', name:'Jeepney Terminal – Cubao', price:200, dims:'Route length: 5.6 km', icon:'🚐'},
+  {id:26, type:'property', district:'hardin', name:'Small Garden', price:300, dims:'Length: 3 m • Width: 2 m', icon:'🌿'},
+  {id:27, type:'property', district:'hardin', name:'Bedroom Renovation', price:320, dims:'Length: 4 m • Width: 3 m', icon:'🛏️'},
+  {id:28, type:'property', district:'utility', name:'Tubig Metro (Water)', price:150, dims:'Pipe run: 9 m', icon:'💧'},
+  {id:29, type:'property', district:'hardin', name:'Living Room Extension', price:340, dims:'Length: 5 m • Width: 4 m', icon:'🛋️'},
+  {id:30, type:'corner', sub:'gotojail', name:'Punta sa Imbakan', icon:'🚨'},
+  {id:31, type:'property', district:'paaralan', name:'Classroom Floor', price:340, dims:'Length: 6 m • Width: 5 m', icon:'🏫'},
+  {id:32, type:'property', district:'paaralan', name:'School Playground', price:360, dims:'Length: 10 m • Width: 8 m', icon:'⚽'},
+  {id:33, type:'chance', name:'Tulong Barangay', icon:'🤝'},
+  {id:34, type:'property', district:'paaralan', name:'School Garden Plot', price:380, dims:'Length: 7 m • Width: 6 m', icon:'🌻'},
+  {id:35, type:'property', district:'terminal', name:'Jeepney Terminal – Alabang', price:200, dims:'Route length: 6.8 km', icon:'🚐'},
+  {id:36, type:'chance', name:'Sorpresa', icon:'🎲'},
+  {id:37, type:'property', district:'poblacion', name:'Munisipyo Plaza', price:400, dims:'Length: 12 m • Width: 9 m', icon:'🏛️'},
+  {id:38, type:'tax', name:'Buwis sa Karangyaan (Luxury Tax)', icon:'💎', amount:100},
+  {id:39, type:'property', district:'poblacion', name:'Bagong Palengke Complex', price:450, dims:'Length: 15 m • Width: 10 m', icon:'🏢'},
 ];
-const TYPE_B = rawB.map(p=>{
-  const correctVal = p.z;
-  // generate 3 distractors close to correct
-  const distractSet = new Set([correctVal]);
-  while(distractSet.size < 4){
-    const delta = (Math.random()>0.5?1:-1) * (Math.round((Math.random()*1.5+0.3)*10)/10);
-    let d = Math.round((correctVal + delta)*100)/100;
-    if(d !== correctVal) distractSet.add(d);
+
+const GRID_POS = {
+  0:{r:11,c:11}, 1:{r:11,c:10}, 2:{r:11,c:9}, 3:{r:11,c:8}, 4:{r:11,c:7}, 5:{r:11,c:6},
+  6:{r:11,c:5}, 7:{r:11,c:4}, 8:{r:11,c:3}, 9:{r:11,c:2}, 10:{r:11,c:1},
+  11:{r:10,c:1}, 12:{r:9,c:1}, 13:{r:8,c:1}, 14:{r:7,c:1}, 15:{r:6,c:1},
+  16:{r:5,c:1}, 17:{r:4,c:1}, 18:{r:3,c:1}, 19:{r:2,c:1}, 20:{r:1,c:1},
+  21:{r:1,c:2}, 22:{r:1,c:3}, 23:{r:1,c:4}, 24:{r:1,c:5}, 25:{r:1,c:6},
+  26:{r:1,c:7}, 27:{r:1,c:8}, 28:{r:1,c:9}, 29:{r:1,c:10}, 30:{r:1,c:11},
+  31:{r:2,c:11}, 32:{r:3,c:11}, 33:{r:4,c:11}, 34:{r:5,c:11}, 35:{r:6,c:11},
+  36:{r:7,c:11}, 37:{r:8,c:11}, 38:{r:9,c:11}, 39:{r:10,c:11},
+};
+const DISTRICT_COLOR = {
+  tiisan:'var(--tiisan)', tangke:'var(--tangke)', bigasan:'var(--bigasan)',
+  palengke:'var(--palengke)', balikbayan:'var(--balikbayan)', hardin:'var(--hardin)',
+  paaralan:'var(--paaralan)', poblacion:'var(--poblacion)', terminal:'var(--terminal)', utility:'var(--utility)'
+};
+const AREA_DISTRICTS = ['hardin','paaralan','poblacion'];
+function isAreaDistrict(d){ return AREA_DISTRICTS.includes(d); }
+const TOKEN_EMOJI = ['🥥','🥭','🍍','🐔'];
+const TOKEN_COLOR = ['#2C6E91','#D9A441','#C1272D','#3B7A47'];
+
+/* ============================================================
+   State
+   ============================================================ */
+let state = null; // set on start
+let usedLength = new Set();
+let usedArea = new Set();
+let isRolling = false;
+let modalLocked = false; // when true, only modal buttons respond (prevents double actions)
+let audioCtx = null;
+let muted = false;
+
+/* ============================================================
+   Audio (WebAudio, generated tones — no external files, bug-safe)
+   ============================================================ */
+function ensureAudio(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch(e){ audioCtx = null; }
   }
-  const opts = Array.from(distractSet).sort(()=>Math.random()-0.5);
-  return {
-    q:`Hanapin ang z-score. Mean (μ) = ${p.mu}, Standard Deviation (σ) = ${p.sigma}, Score (x) = ${p.x}.`,
-    formula:`z = (x − μ) / σ = (${p.x} − ${p.mu}) / ${p.sigma} = ${correctVal}`,
-    opts: opts.map(o=>o.toFixed(2)),
-    correct: opts.indexOf(correctVal),
-    exp:`Gamit ang formula na z = (x − μ) / σ: z = (${p.x} − ${p.mu}) / ${p.sigma} = ${correctVal}. ${correctVal>0?"Positibong z-score ibig sabihin nasa itaas ng mean ang score.":correctVal<0?"Negatibong z-score ibig sabihin nasa ibaba ng mean ang score.":"Zero z-score ibig sabihin eksaktong katumbas ng mean ang score."}`
-  };
+  if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume(); }
+}
+function tone(freq, dur, type, delay, vol){
+  if(muted || !audioCtx) return;
+  delay = delay||0; vol = vol===undefined?0.15:vol;
+  const t0 = audioCtx.currentTime + delay;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type||'sine';
+  osc.frequency.setValueAtTime(freq, t0);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(vol, t0+0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0+dur+0.02);
+}
+function sndDice(){ for(let i=0;i<4;i++) tone(300+Math.random()*300, 0.06, 'square', i*0.07, 0.08); }
+function sndCorrect(){ [523,659,784].forEach((f,i)=>tone(f,0.18,'triangle',i*0.09,0.16)); }
+function sndWrong(){ tone(180,0.35,'sawtooth',0,0.14); tone(140,0.35,'sawtooth',0.05,0.1); }
+function sndCoin(){ tone(880,0.08,'square',0,0.12); tone(1200,0.1,'square',0.06,0.1); }
+function sndTurn(){ tone(440,0.12,'sine',0,0.1); }
+function sndBuy(){ tone(600,0.1,'triangle',0,0.14); tone(900,0.15,'triangle',0.08,0.14); }
+
+/* ============================================================
+   Setup screen — dynamic player fields
+   ============================================================ */
+function buildPlayerFields(){
+  const n = parseInt(document.getElementById('numPlayers').value,10);
+  const wrap = document.getElementById('playerFields');
+  wrap.innerHTML = '';
+  for(let i=0;i<n;i++){
+    const row = document.createElement('div');
+    row.className='field';
+    row.innerHTML = `
+      <label>Player ${i+1}</label>
+      <div class="player-setup-row">
+        <input type="text" id="pname${i}" value="Player ${i+1}" maxlength="16" style="flex:1;">
+        <div class="token-pick" data-idx="${i}">
+          ${TOKEN_EMOJI.map((e,ti)=>`<span data-token="${ti}" class="${ti===i?'picked':''}">${e}</span>`).join('')}
+        </div>
+      </div>`;
+    wrap.appendChild(row);
+  }
+  wrap.querySelectorAll('.token-pick').forEach(tp=>{
+    tp.querySelectorAll('span').forEach(sp=>{
+      sp.addEventListener('click', ()=>{
+        tp.querySelectorAll('span').forEach(s=>s.classList.remove('picked'));
+        sp.classList.add('picked');
+      });
+    });
+  });
+}
+document.getElementById('numPlayers').addEventListener('change', buildPlayerFields);
+buildPlayerFields();
+
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  ensureAudio();
+  const n = parseInt(document.getElementById('numPlayers').value,10);
+  const players = [];
+  for(let i=0;i<n;i++){
+    const name = (document.getElementById('pname'+i).value || ('Player '+(i+1))).trim().slice(0,16);
+    const tp = document.querySelector(`.token-pick[data-idx="${i}"] .picked`);
+    const tokenIdx = tp ? parseInt(tp.getAttribute('data-token'),10) : i;
+    players.push({
+      name: name || ('Player '+(i+1)),
+      tokenIdx, cash:1000, pos:0, owned:[], inJail:false, active:true
+    });
+  }
+  initGame(players);
 });
 
-/* ---------------- STATE ---------------- */
-let state = {
-  player: PART_DEFS.map(p=>({...p, hp:HP_MAX})),
-  ai: PART_DEFS.map(p=>({...p, hp:HP_MAX})),
-  playerKP:0, aiKP:0,
-  usedA:[], usedB:[],
-  targetKey:null,
-  mode:null, // 'attack' | 'defend'
-  ended:false
-};
+/* ============================================================
+   Init
+   ============================================================ */
+function initGame(players){
+  state = { players, current:0, ended:false };
+  usedLength = new Set(); usedArea = new Set();
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+  document.getElementById('restartBtn').classList.remove('hidden');
+  renderBoard();
+  renderPlayers();
+  updateHint();
+  log(`🎮 Game started! Up first: ${players[0].name}. Last player standing wins!`);
+}
 
-/* ---------------- RENDER ---------------- */
-function renderParts(containerId, arr, targetable){
-  const el = document.getElementById(containerId);
-  el.innerHTML = '';
-  arr.forEach(p=>{
+/* ============================================================
+   Board rendering
+   ============================================================ */
+function renderBoard(){
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  TILES.forEach(t=>{
+    const pos = GRID_POS[t.id];
     const div = document.createElement('div');
-    div.className = 'part' + (p.hp<=0?' destroyed':'') + (targetable && p.hp>0 ? ' targetable':'');
-    div.innerHTML = `
-      <span class="icon">${p.icon}</span>
-      <div class="pname">${p.name}</div>
-      <div class="hp-dots">${Array.from({length:HP_MAX}).map((_,i)=>`<span class="hp-dot ${i<p.hp?'filled':''}"></span>`).join('')}</div>
-    `;
-    if(targetable && p.hp>0){
-      div.onclick = ()=> startAttack(p.key);
-    }
-    el.appendChild(div);
+    div.className = 'tile' + (t.type==='corner' ? ' corner':'');
+    div.style.gridRow = pos.r; div.style.gridColumn = pos.c;
+    div.id = 'tile-'+t.id;
+    let stripe = '';
+    if(t.type==='property'){ stripe = `<div class="tile-stripe" style="background:${DISTRICT_COLOR[t.district]}"></div>`; }
+    if(t.type==='chance'){ stripe = `<div class="tile-stripe" style="background:var(--chance)"></div>`; }
+    if(t.type==='tax'){ stripe = `<div class="tile-stripe" style="background:var(--tax)"></div>`; }
+    div.innerHTML = `${stripe}<div class="ticon">${t.icon}</div><div class="tname">${t.name}</div>${t.type==='property'?`<div class="tprice">$${t.price}</div>`:''}${t.type==='tax'?`<div class="tprice">-$${t.amount}</div>`:''}`;
+    board.appendChild(div);
   });
-}
-
-function renderAll(targetableAI=false){
-  renderParts('aiParts', state.ai, targetableAI);
-  renderParts('playerParts', state.player, false);
-  document.getElementById('playerKP').textContent = state.playerKP;
-  document.getElementById('aiKP').textContent = state.aiKP;
-  drawCurve();
-}
-
-function setStatus(msg){
-  document.getElementById('statusLine').textContent = msg;
-}
-
-function drawCurve(){
-  const totalPlayer = state.player.reduce((s,p)=>s+p.hp,0);
-  const totalAI = state.ai.reduce((s,p)=>s+p.hp,0);
-  const maxTotal = PART_DEFS.length*HP_MAX;
-  const health = (totalPlayer+totalAI)/(maxTotal*2); // 0..1
-  const sigma = 40 + (1-health)*60; // wider curve as health drops (more corrupted)
-  const svg = document.getElementById('curveViz');
-  const w=520,h=90,mid=w/2,base=80;
-  let path = `M0,${base} `;
-  for(let x=0;x<=w;x+=4){
-    const dx = x-mid;
-    const y = base - 60*Math.exp(-(dx*dx)/(2*sigma*sigma));
-    path += `L${x},${y.toFixed(1)} `;
-  }
-  const color = health>0.6?'#34d399':health>0.3?'#fbbf24':'#f87171';
-  svg.innerHTML = `
-    <path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" opacity="0.9"/>
-    <line x1="0" y1="${base}" x2="${w}" y2="${base}" stroke="#263252" stroke-width="1"/>
+  const center = document.createElement('div');
+  center.className='center';
+  center.innerHTML = `
+    <div class="diag-logo">
+      <div class="band">MEASURE-OPOLY</div>
+      <div class="sub">A FAST-CALCULATING MEASUREMENT GAME</div>
+    </div>
+    <div class="jeepney-sign" id="jeepneySign">UP NEXT: —</div>
+    <div class="dice-row">
+      <div class="die" id="die1">-</div>
+      <div class="die" id="die2">-</div>
+    </div>
+    <div id="roundLabel"></div>
   `;
+  board.appendChild(center);
+  renderTokens();
 }
-
-/* ---------------- HOW TO ---------------- */
-document.getElementById('btnHowTo').onclick = ()=>{
-  alert(
-"PAANO LARUIN:\n\n"+
-"1. Pindutin ang 'Attack' pagkatapos ay piliin kung aling AI lab part ang tatamaan mo.\n"+
-"2. Sasagutan mo ang isang Challenge Card (Illustrate o Z-Score Conversion). Tama = tatamaan mo ang part. Mali = mabibigo ang atake.\n"+
-"3. Pagkatapos ng turn mo, sasalakay din ang AI sa isa mong part — sasagutan mo rin ang tanong para depensahan ito.\n"+
-"4. Ang 'Study Round' ay nag-sskip ng attack para lang makakuha ng 1 Knowledge Point kapag tama ang sagot mo — walang risk.\n"+
-"5. Panalo: sirain lahat ng 5 parts ng kalaban, O maunang makarating sa 10 Knowledge Points."
-  );
-};
-
-/* ---------------- ATTACK FLOW ---------------- */
-document.getElementById('btnAttack').onclick = ()=>{
-  setStatus("Piliin ang Lab Part ng AI na gusto mong atakehin.");
-  renderAll(true);
-};
-
-document.getElementById('btnStudy').onclick = ()=>{
-  state.mode = 'study';
-  askChallenge();
-};
-
-function startAttack(key){
-  state.targetKey = key;
-  state.mode = 'attack';
-  renderAll(false);
-  askChallenge();
-}
-
-function pickQuestion(){
-  // alternate type A / type B, avoid repeats until exhausted
-  const useA = Math.random() < 0.5;
-  let pool = useA ? TYPE_A : TYPE_B;
-  let used = useA ? state.usedA : state.usedB;
-  if(used.length >= pool.length) used.length = 0;
-  let idx;
-  do { idx = Math.floor(Math.random()*pool.length); } while(used.includes(idx));
-  used.push(idx);
-  return {type: useA?'A':'B', q: pool[idx]};
-}
-
-function askChallenge(){
-  const {type, q} = pickQuestion();
-  state.currentType = type;
-  state.currentQ = q;
-  const tag = document.getElementById('cardTag');
-  tag.textContent = type==='A' ? 'TYPE A — ILLUSTRATE' : 'TYPE B — CONVERT TO Z-SCORE';
-  tag.className = 'card-tag ' + (type==='A'?'tag-A':'tag-B');
-  document.getElementById('cardQ').innerHTML = q.q + (type==='B' ? `<span class="formula">z = (x − μ) / σ</span>` : '');
-  const optsWrap = document.getElementById('cardOpts');
-  optsWrap.innerHTML='';
-  q.opts.forEach((optText,i)=>{
-    const b = document.createElement('button');
-    b.className='opt';
-    b.textContent = (type==='B' ? `z = ${optText}` : optText);
-    b.onclick = ()=> answer(i);
-    optsWrap.appendChild(b);
+function renderTokens(){
+  document.querySelectorAll('.token').forEach(el=>el.remove());
+  state.players.forEach((p, idx)=>{
+    if(!p.active) return;
+    const tileEl = document.getElementById('tile-'+p.pos);
+    if(!tileEl) return;
+    const tok = document.createElement('div');
+    tok.className='token';
+    tok.style.background = TOKEN_COLOR[p.tokenIdx];
+    tok.style.left = (3 + (idx%2)*11) + 'px';
+    tok.style.top = (3 + Math.floor(idx/2)*11) + 'px';
+    tok.textContent = TOKEN_EMOJI[p.tokenIdx];
+    tileEl.appendChild(tok);
   });
-  document.getElementById('feedback').className='feedback';
-  document.getElementById('continueBtn').style.display='none';
+  // owned markers
+  document.querySelectorAll('.tile.owned').forEach(el=>el.classList.remove('owned'));
+  TILES.filter(t=>t.type==='property').forEach(t=>{
+    const owner = state.players.find(p=>p.owned.includes(t.id));
+    if(owner){
+      const el = document.getElementById('tile-'+t.id);
+      el.classList.add('owned');
+      el.style.setProperty('--ownerColor', TOKEN_COLOR[owner.tokenIdx]);
+    }
+  });
+  const sign = document.getElementById('jeepneySign');
+  const cp = state.players[state.current];
+  if(sign) sign.textContent = 'UP NEXT: ' + cp.name + ' ' + TOKEN_EMOJI[cp.tokenIdx];
+  const rl = document.getElementById('roundLabel');
+  if(rl){
+    const activeN = state.players.filter(p=>p.active).length;
+    rl.textContent = activeN < state.players.length ? `Players left: ${activeN}/${state.players.length}` : '';
+  }
+}
+function renderPlayers(){
+  const wrap = document.getElementById('playersList');
+  wrap.innerHTML = '';
+  state.players.forEach((p, idx)=>{
+    const row = document.createElement('div');
+    row.className = 'player-row' + (idx===state.current && p.active ? ' active':'');
+    if(!p.active) row.style.opacity = '0.45';
+    row.innerHTML = `
+      <div class="player-token" style="--tokColor:${TOKEN_COLOR[p.tokenIdx]}">${TOKEN_EMOJI[p.tokenIdx]}</div>
+      <div class="player-info">
+        <div class="pname">${p.name} ${p.inJail?'<span class="jail-tag">IN STORAGE</span>':''}${!p.active?'<span class="jail-tag">BANKRUPT</span>':''}</div>
+        <div class="pcash cash">$${p.cash} • ${p.owned.length} properties</div>
+      </div>`;
+    wrap.appendChild(row);
+  });
+}
+function updateHint(){
+  const hint = document.getElementById('turnHint');
+  const p = state.players[state.current];
+  const rollBtn = document.getElementById('rollBtn');
+  if(p.inJail){
+    hint.textContent = `${p.name} is in Storage. Answer a question or pay $50 to get out.`;
+    rollBtn.textContent = '🔓 Try to Get Out';
+  } else {
+    hint.textContent = `${p.name}'s turn.`;
+    rollBtn.textContent = '🎲 Roll the Dice';
+  }
+}
+function log(msg){
+  const box = document.getElementById('logBox');
+  const line = document.createElement('div');
+  line.textContent = msg;
+  box.prepend(line);
+}
+
+/* ============================================================
+   Dice roll & turn flow
+   ============================================================ */
+document.getElementById('rollBtn').addEventListener('click', ()=>{
+  ensureAudio();
+  if(isRolling || modalLocked || state.ended) return; // bug prevention: no double actions
+  const p = state.players[state.current];
+  if(p.inJail){ handleJailAttempt(); return; }
+  isRolling = true;
+  document.getElementById('rollBtn').disabled = true;
+  sndDice();
+  let ticks = 0;
+  const d1el = document.getElementById('die1'), d2el = document.getElementById('die2');
+  const spin = setInterval(()=>{
+    d1el.textContent = 1+Math.floor(Math.random()*6);
+    d2el.textContent = 1+Math.floor(Math.random()*6);
+    ticks++;
+    if(ticks>=8){
+      clearInterval(spin);
+      const d1 = 1+Math.floor(Math.random()*6);
+      const d2 = 1+Math.floor(Math.random()*6);
+      d1el.textContent = d1; d2el.textContent = d2;
+      movePlayer(d1+d2);
+    }
+  }, 90);
+});
+
+function movePlayer(steps){
+  const p = state.players[state.current];
+  let stepsLeft = steps;
+  const stepMove = ()=>{
+    if(stepsLeft<=0){
+      isRolling = false;
+      renderTokens();
+      resolveTile(p);
+      return;
+    }
+    p.pos = (p.pos+1) % TILES.length;
+    if(p.pos === 0){
+      p.cash += 200;
+      log(`🏁 ${p.name} passed/landed on GO, +$200!`);
+      sndCoin();
+    }
+    renderTokens();
+    renderPlayers();
+    stepsLeft--;
+    setTimeout(stepMove, 140);
+  };
+  stepMove();
+}
+
+function resolveTile(p){
+  const t = TILES[p.pos];
+  renderPlayers();
+  if(t.type==='property'){
+    const owner = state.players.find(pl=>pl.owned.includes(t.id));
+    if(!owner){ openBuyModal(p, t); }
+    else if(owner===p){ endTurn(`${p.name} landed on their own property: ${t.name}.`); }
+    else { openRentModal(p, t, owner); }
+  } else if(t.type==='chance'){
+    openChanceModal(p);
+  } else if(t.type==='tax'){
+    const paid = chargePlayer(p, t.amount, null);
+    if(paid) sndCoin();
+    renderPlayers();
+    endTurn(paid ? `💸 ${p.name} paid $${t.amount} for ${t.name}.` : null);
+  } else if(t.type==='corner'){
+    if(t.sub==='go'){ endTurn(`${p.name} is on GO.`); }
+    else if(t.sub==='rest'){ openMarketModal(p); }
+    else if(t.sub==='jail'){ endTurn(`${p.name} is just visiting Storage. Safe!`); }
+    else if(t.sub==='gotojail'){
+      p.pos = 10; p.inJail = true; renderTokens(); renderPlayers();
+      sndWrong();
+      endTurn(`🚨 ${p.name} was sent to Storage! Must answer a question next turn.`);
+    }
+  }
+}
+
+/* ============================================================
+   Question helpers
+   ============================================================ */
+function pickQuestion(pool, usedSet){
+  if(usedSet.size >= pool.length) usedSet.clear(); // reshuffle when exhausted
+  let idx;
+  let tries=0;
+  do{ idx = Math.floor(Math.random()*pool.length); tries++; }
+  while(usedSet.has(idx) && tries<50);
+  usedSet.add(idx);
+  return {idx, item:pool[idx]};
+}
+
+/* ============================================================
+   Modal system
+   ============================================================ */
+function openModal(html){
+  modalLocked = true;
+  document.getElementById('modalBox').innerHTML = html;
   document.getElementById('overlay').classList.add('show');
 }
+function closeModal(){
+  modalLocked = false;
+  document.getElementById('overlay').classList.remove('show');
+}
 
-function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-
-function answer(i){
-  const q = state.currentQ;
-  const opts = document.querySelectorAll('.opt');
-  opts.forEach((b,idx)=>{
-    b.disabled = true;
-    if(idx===q.correct) b.classList.add('correct');
-    else if(idx===i && i!==q.correct) b.classList.add('wrong');
+function openBuyModal(p, t){
+  const isArea = isAreaDistrict(t.district);
+  const pool = isArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
+  const usedSet = isArea ? usedArea : usedLength;
+  const {item} = pickQuestion(pool, usedSet);
+  const tagColor = DISTRICT_COLOR[t.district];
+  openModal(`
+    <span class="tag" style="background:${tagColor}">${t.name}</span>
+    <h2>${t.icon} ${t.name}</h2>
+    <p><b>Details:</b> ${t.dims}<br><b>Price:</b> $${t.price}</p>
+    <p>${item.q}</p>
+    <div id="choices">
+      ${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}
+    </div>
+    <div id="modalFooter"></div>
+  `);
+  document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
+      const chosen = parseInt(btn.getAttribute('data-i'),10);
+      const correct = chosen === item.a;
+      btn.classList.add(correct?'correct':'wrong');
+      if(!correct){
+        document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
+      }
+      const footer = document.getElementById('modalFooter');
+      if(correct){
+        sndCorrect();
+        footer.innerHTML = `<div class="explain">✅ Correct! You can now buy this property.</div>
+          <div class="modal-actions">
+            ${p.cash>=t.price ? `<button class="btn gold" id="buyYes">🏠 Buy ($${t.price})</button>` : `<div class="explain">Not enough cash to buy this.</div>`}
+            <button class="btn ghost" id="buyNo">Not Now</button>
+          </div>`;
+        const buyYes = document.getElementById('buyYes');
+        if(buyYes) buyYes.addEventListener('click', ()=>{
+          p.cash -= t.price; p.owned.push(t.id);
+          sndBuy();
+          renderPlayers(); renderTokens();
+          closeModal();
+          endTurn(`🏠 ${p.name} bought ${t.name} for $${t.price}.`);
+        });
+        document.getElementById('buyNo').addEventListener('click', ()=>{
+          closeModal();
+          endTurn(`${p.name} chose not to buy ${t.name} for now.`);
+        });
+      } else {
+        sndWrong();
+        footer.innerHTML = `<div class="explain">❌ Incorrect. The right answer was: <b>${item.c[item.a]}</b>. This property can't be bought this turn.</div>
+          <div class="modal-actions"><button class="btn ghost" id="okBtn">OK</button></div>`;
+        document.getElementById('okBtn').addEventListener('click', ()=>{
+          closeModal();
+          endTurn(`${p.name} did not buy ${t.name}.`);
+        });
+      }
+    });
   });
-  const correct = (i===q.correct);
-  const fb = document.getElementById('feedback');
-  const fbTitle = document.getElementById('fbTitle');
-  const fbBody = document.getElementById('fbBody');
-  fbTitle.textContent = correct ? '✔ Tama!' : '✘ Mali.';
-  fbTitle.className = 'fb-title ' + (correct?'ok':'no');
-  fbBody.innerHTML = q.exp;
-  fb.classList.add('show');
-  document.getElementById('continueBtn').style.display='block';
-  document.getElementById('continueBtn').onclick = ()=> resolveOutcome(correct);
 }
 
-function resolveOutcome(correct){
-  document.getElementById('overlay').classList.remove('show');
-
-  if(state.mode==='attack'){
-    if(correct){
-      const target = state.ai.find(p=>p.key===state.targetKey);
-      target.hp -= 1;
-      state.playerKP += 1;
-      setStatus(`💥 Tama! Na-damage mo ang ${target.icon} ${target.name} ng AI.`);
-    } else {
-      setStatus(`❌ Mali ang sagot — nabigo ang atake mo. Turn ng AI ngayon.`);
-    }
-  } else if(state.mode==='study'){
-    if(correct){
-      state.playerKP += 1;
-      setStatus(`📖 Tama sa Study Round! +1 Knowledge Point, walang panganib.`);
-    } else {
-      setStatus(`📖 Mali sa Study Round, pero walang parusa. Turn ng AI ngayon.`);
-    }
-  }
-
-  renderAll(false);
-  if(checkGameOver()) return;
-
-  // proceed to AI turn after short delay
-  setTimeout(aiTurn, 900);
+function openRentModal(p, t, owner){
+  let rent = Math.round(t.price*0.3);
+  const sameDistrict = TILES.filter(x=>x.type==='property' && x.district===t.district).map(x=>x.id);
+  const ownsAll = sameDistrict.every(id=>owner.owned.includes(id));
+  if(ownsAll) rent *= 2;
+  const isArea = isAreaDistrict(t.district);
+  const pool = isArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
+  const usedSet = isArea ? usedArea : usedLength;
+  const {item} = pickQuestion(pool, usedSet);
+  openModal(`
+    <span class="tag" style="background:${DISTRICT_COLOR[t.district]}">${owner.name}'s Property</span>
+    <h2>${t.icon} ${t.name}</h2>
+    <p>You owe <b>$${rent}</b> in rent to ${owner.name}${ownsAll?' (doubled — they own the whole district!)':''}.</p>
+    <p>Answer correctly to cut the rent in half:</p>
+    <p>${item.q}</p>
+    <div id="choices">
+      ${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}
+    </div>
+    <div id="modalFooter"></div>
+  `);
+  document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
+      const chosen = parseInt(btn.getAttribute('data-i'),10);
+      const correct = chosen === item.a;
+      btn.classList.add(correct?'correct':'wrong');
+      if(!correct) document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
+      const finalRent = correct ? Math.max(1, Math.round(rent/2)) : rent;
+      const footer = document.getElementById('modalFooter');
+      footer.innerHTML = `<div class="explain">${correct? '✅ Correct! Rent is cut in half: $'+finalRent : '❌ Incorrect. Full rent: $'+finalRent}</div>
+        <div class="modal-actions"><button class="btn ${correct?'gold':'red'}" id="payBtn">Pay $${finalRent}</button></div>`;
+      if(correct) sndCorrect(); else sndWrong();
+      document.getElementById('payBtn').addEventListener('click', ()=>{
+        const paid = chargePlayer(p, finalRent, owner);
+        if(paid) sndCoin();
+        renderPlayers();
+        closeModal();
+        endTurn(paid ? `💸 ${p.name} paid $${finalRent} in rent to ${owner.name}.` : `${p.name} couldn't cover the $${finalRent} rent owed to ${owner.name}.`);
+      });
+    });
+  });
 }
 
-/* ---------------- AI TURN ---------------- */
-function aiTurn(){
-  if(state.ended) return;
-  const alive = state.player.filter(p=>p.hp>0);
-  if(alive.length===0){ checkGameOver(); return; }
-  const target = alive[Math.floor(Math.random()*alive.length)];
-  setStatus(`🤖 Inaatake ng AI ang iyong ${target.icon} ${target.name}! Ipagtanggol mo — sagutan ang tanong.`);
-  state.targetKey = target.key;
-  state.mode = 'defend';
-  askChallenge();
-  // override resolveOutcome behavior for defend handled below via mode check
+function openChanceModal(p){
+  const useArea = Math.random()<0.5;
+  const pool = useArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
+  const usedSet = useArea ? usedArea : usedLength;
+  const {item} = pickQuestion(pool, usedSet);
+  openModal(`
+    <span class="tag" style="background:var(--chance)">Measure Card</span>
+    <h2>📐 Pop Quiz!</h2>
+    <p>${item.q}</p>
+    <div id="choices">
+      ${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}
+    </div>
+    <div id="modalFooter"></div>
+  `);
+  document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
+      const chosen = parseInt(btn.getAttribute('data-i'),10);
+      const correct = chosen === item.a;
+      btn.classList.add(correct?'correct':'wrong');
+      if(!correct) document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
+      const footer = document.getElementById('modalFooter');
+      if(correct){ p.cash += 100; sndCorrect(); footer.innerHTML = `<div class="explain">✅ Correct! +$100</div><div class="modal-actions"><button class="btn gold" id="okBtn">OK</button></div>`; }
+      else { sndWrong(); const paid = chargePlayer(p,50,null); footer.innerHTML = paid ? `<div class="explain">❌ Incorrect. -$50. Correct answer: ${item.c[item.a]}</div><div class="modal-actions"><button class="btn ghost" id="okBtn">OK</button></div>` : `<div class="explain">❌ Incorrect, and ${p.name} couldn't cover the $50 penalty.</div><div class="modal-actions"><button class="btn ghost" id="okBtn">OK</button></div>`; }
+      renderPlayers();
+      document.getElementById('okBtn').addEventListener('click', ()=>{
+        closeModal();
+        endTurn(`${p.name} drew a Measure Card.`);
+      });
+    });
+  });
 }
 
-// extend resolveOutcome for defend
-const origResolve = resolveOutcome;
-resolveOutcome = function(correct){
-  document.getElementById('overlay').classList.remove('show');
-  if(state.mode==='defend'){
-    if(correct){
-      state.playerKP += 0; // defense doesn't grant KP, just survival
-      setStatus(`🛡️ Successfully defended! Walang natamaang part.`);
+function openMarketModal(p){
+  openModal(`
+    <span class="tag" style="background:var(--bigasan)">Market</span>
+    <h2>🥭 You're at the Market!</h2>
+    <p>You can rest safely, or answer a bonus question for +$150.</p>
+    <div class="modal-actions">
+      <button class="btn gold" id="tryBtn">📐 Answer the Bonus</button>
+      <button class="btn ghost" id="restBtn">😌 Rest</button>
+    </div>
+    <div id="modalFooter"></div>
+  `);
+  document.getElementById('restBtn').addEventListener('click', ()=>{
+    closeModal();
+    endTurn(`${p.name} rested at the Market.`);
+  });
+  document.getElementById('tryBtn').addEventListener('click', ()=>{
+    const useArea = Math.random()<0.5;
+    const pool = useArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
+    const usedSet = useArea ? usedArea : usedLength;
+    const {item} = pickQuestion(pool, usedSet);
+    document.getElementById('modalBox').innerHTML = `
+      <span class="tag" style="background:var(--bigasan)">Market Bonus</span>
+      <h2>🥭 Bonus Question</h2>
+      <p>${item.q}</p>
+      <div id="choices">${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}</div>
+      <div id="modalFooter"></div>`;
+    document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
+        const chosen = parseInt(btn.getAttribute('data-i'),10);
+        const correct = chosen === item.a;
+        btn.classList.add(correct?'correct':'wrong');
+        if(!correct) document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
+        const footer = document.getElementById('modalFooter');
+        if(correct){ p.cash+=150; sndCorrect(); footer.innerHTML = `<div class="explain">✅ Correct! +$150</div><div class="modal-actions"><button class="btn gold" id="okBtn2">OK</button></div>`; }
+        else{ sndWrong(); footer.innerHTML = `<div class="explain">❌ Incorrect, but no penalty. Correct answer: ${item.c[item.a]}</div><div class="modal-actions"><button class="btn ghost" id="okBtn2">OK</button></div>`; }
+        renderPlayers();
+        document.getElementById('okBtn2').addEventListener('click', ()=>{
+          closeModal();
+          endTurn(`${p.name} tried the Market bonus.`);
+        });
+      });
+    });
+  });
+}
+
+function handleJailAttempt(){
+  const p = state.players[state.current];
+  const useArea = Math.random()<0.5;
+  const pool = useArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
+  const usedSet = useArea ? usedArea : usedLength;
+  const {item} = pickQuestion(pool, usedSet);
+  openModal(`
+    <span class="tag" style="background:var(--corner)">Storage</span>
+    <h2>📦 Stuck in Storage</h2>
+    <p>Answer correctly to get out, or pay $50.</p>
+    <p>${item.q}</p>
+    <div id="choices">${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}</div>
+    <div class="modal-actions"><button class="btn red" id="payJail">Pay $50</button></div>
+    <div id="modalFooter"></div>
+  `);
+  document.getElementById('payJail').addEventListener('click', ()=>{
+    const paid = chargePlayer(p, 50, null);
+    p.inJail = false;
+    if(paid) sndCoin();
+    renderPlayers(); renderTokens();
+    closeModal();
+    if(paid){
+      log(`💰 ${p.name} paid $50 to get out of Storage.`);
+      updateHint();
+      document.getElementById('rollBtn').disabled = false;
     } else {
-      const target = state.player.find(p=>p.key===state.targetKey);
-      target.hp -= 1;
-      state.aiKP += 1;
-      setStatus(`💥 Hindi na-block ang atake — na-damage ang iyong ${target.icon} ${target.name}.`);
+      endTurn(null);
     }
-    renderAll(false);
-    if(checkGameOver()) return;
-    document.getElementById('statusLine').textContent += " Ikaw ulit ang gagalaw.";
-    return;
-  }
-  origResolve(correct);
-};
+  });
+  document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
+      document.getElementById('payJail').disabled = true;
+      const chosen = parseInt(btn.getAttribute('data-i'),10);
+      const correct = chosen === item.a;
+      btn.classList.add(correct?'correct':'wrong');
+      if(!correct) document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
+      const footer = document.getElementById('modalFooter');
+      if(correct){
+        p.inJail = false; sndCorrect();
+        footer.innerHTML = `<div class="explain">✅ Correct! You're free. You can roll the dice this turn.</div><div class="modal-actions"><button class="btn gold" id="freeOk">OK</button></div>`;
+        document.getElementById('freeOk').addEventListener('click', ()=>{
+          renderPlayers(); closeModal(); updateHint();
+          document.getElementById('rollBtn').disabled = false;
+        });
+      } else {
+        sndWrong();
+        footer.innerHTML = `<div class="explain">❌ Incorrect. You stay in Storage for now. Correct answer: ${item.c[item.a]}</div><div class="modal-actions"><button class="btn ghost" id="stayOk">OK</button></div>`;
+        document.getElementById('stayOk').addEventListener('click', ()=>{
+          closeModal();
+          endTurn(`${p.name} stayed in Storage.`);
+        });
+      }
+    });
+  });
+}
 
-/* ---------------- GAME OVER CHECK ---------------- */
-function checkGameOver(){
-  const aiDead = state.ai.every(p=>p.hp<=0);
-  const playerDead = state.player.every(p=>p.hp<=0);
-  const aiWinKP = state.aiKP >= 10;
-  const playerWinKP = state.playerKP >= 10;
-
-  if(aiDead || playerWinKP){
-    endGame(true, aiDead ? "Nasira mo ang lahat ng 5 lab parts ng AI!" : "Naabot mo ang 10 Knowledge Points!");
+/* ============================================================
+   Payment / bankruptcy handling
+   ============================================================ */
+function chargePlayer(p, amount, payee){
+  if(p.cash >= amount){
+    p.cash -= amount;
+    if(payee) payee.cash += amount;
     return true;
   }
-  if(playerDead || aiWinKP){
-    endGame(false, playerDead ? "Nasira ng AI ang lahat ng lab parts mo." : "Naunang naka-10 Knowledge Points ang AI.");
-    return true;
-  }
+  // not enough cash — bankruptcy
+  if(payee) payee.cash += p.cash;
+  p.cash = 0;
+  p.owned = [];
+  p.active = false;
+  p.inJail = false;
+  sndWrong();
+  log(`💀 ${p.name} ran out of money and is out of the game!`);
+  renderPlayers(); renderTokens();
   return false;
 }
 
-function endGame(won, reason){
-  state.ended = true;
-  document.getElementById('goTitle').textContent = won ? "🎉 PANALO!" : "💀 TALO";
-  document.getElementById('goSub').textContent = reason;
-  document.getElementById('gameover').classList.add('show');
+/* ============================================================
+   Turn management
+   ============================================================ */
+function endTurn(msg){
+  if(msg) log(msg);
+  renderPlayers();
+  document.getElementById('rollBtn').disabled = false;
+  isRolling = false;
+  nextPlayer();
+}
+function nextPlayer(){
+  const activePlayers = state.players.filter(p=>p.active);
+  if(activePlayers.length <= 1){
+    endGame();
+    return;
+  }
+  const n = state.players.length;
+  let next = state.current;
+  do{ next = (next+1) % n; } while(!state.players[next].active);
+  state.current = next;
+  sndTurn();
+  renderTokens();
+  renderPlayers();
+  updateHint();
 }
 
-/* ---------------- INIT ---------------- */
-renderAll(false);
+function netWorth(p){ return p.cash + p.owned.reduce((s,id)=>s + TILES.find(t=>t.id===id).price, 0); }
+
+function endGame(){
+  state.ended = true;
+  document.getElementById('rollBtn').disabled = true;
+  const ranked = [...state.players].sort((a,b)=>netWorth(b)-netWorth(a));
+  const winnerLine = state.players.filter(p=>p.active).length===1
+    ? `${ranked[0].name} is the last player standing!`
+    : `Here's the final ranking based on total worth (cash + properties).`;
+  const rows = ranked.map((p,i)=>`
+    <div class="player-row" style="${i===0?'border-color:var(--gold); background:#fff3d6;':''}">
+      <div class="player-token" style="--tokColor:${TOKEN_COLOR[p.tokenIdx]}">${TOKEN_EMOJI[p.tokenIdx]}</div>
+      <div class="player-info">
+        <div class="pname">${i===0?'🏆 ':''}${p.name}${!p.active?' (bankrupt)':''}</div>
+        <div class="pcash cash">Total worth: $${netWorth(p)} (cash $${p.cash}, ${p.owned.length} properties)</div>
+      </div>
+    </div>`).join('');
+  openModal(`
+    <span class="tag" style="background:var(--hardin)">Game Over!</span>
+    <h2>🏆 Measurement Champion: ${ranked[0].name}</h2>
+    <p>${winnerLine}</p>
+    ${rows}
+    <div class="modal-actions"><button class="btn primary" id="closeEnd">Close</button></div>
+  `);
+  document.getElementById('closeEnd').addEventListener('click', closeModal);
+  log('🏁 Game over!');
+}
+
+/* ============================================================
+   Top bar buttons
+   ============================================================ */
+document.getElementById('muteBtn').addEventListener('click', ()=>{
+  muted = !muted;
+  document.getElementById('muteBtn').textContent = muted ? '🔇 Sound' : '🔊 Sound';
+});
+document.getElementById('rulesBtn').addEventListener('click', ()=>{
+  openModal(`
+    <span class="tag" style="background:var(--tangke)">How to Play</span>
+    <h2>📖 Rules</h2>
+    <p><b>Goal:</b> Correctly estimate and measure length, distance, area, and perimeter to buy properties and become the Measurement Champion.</p>
+    <p><b>Taking Turns:</b> Roll the dice, and your token moves around the board. Passing or landing on GO earns you +$200.</p>
+    <p><b>Buying Properties:</b> Landing on an unowned property triggers a question. Answer correctly to unlock buying it.</p>
+    <p><b>Rent:</b> Landing on a property owned by another player means paying rent — but answering correctly cuts it in half. Rent is doubled if the owner holds the whole district.</p>
+    <p><b>Measure Card:</b> A random pop quiz — correct answers earn +$100, wrong answers cost -$50.</p>
+    <p><b>Market:</b> You can rest, or try a bonus question (+$150 if correct, no penalty if wrong).</p>
+    <p><b>Storage:</b> If sent here from "Go To Storage," you must answer a question or pay $50 on your next turn to get out.</p>
+    <p><b>Winning:</b> If you run out of money and can't pay what you owe, you go bankrupt and are out of the game. The last player left standing is the Measurement Champion!</p>
+    <div class="modal-actions"><button class="btn primary" id="closeRules">Got It</button></div>
+  `);
+  document.getElementById('closeRules').addEventListener('click', closeModal);
+});
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  if(!confirm('Are you sure you want to restart the game?')) return;
+  document.getElementById('gameScreen').classList.add('hidden');
+  document.getElementById('setupScreen').classList.remove('hidden');
+  document.getElementById('restartBtn').classList.add('hidden');
+  document.getElementById('logBox').innerHTML = '';
+  closeModal();
+  state = null;
+});
+document.getElementById('overlay').addEventListener('click', (e)=>{
+  // clicking the dark backdrop should not silently dismiss unresolved question modals
+  // (prevents a bug where players could skip paying/answering by clicking outside)
+  e.stopPropagation();
+});
 </script>
 </body>
 </html>
