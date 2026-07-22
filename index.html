@@ -3,1061 +3,1540 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Measure-opoly — The Measurement Board Game</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<title>UNO Logic — Conditional Propositions Edition</title>
 <style>
-  :root{
-    --bg: #FBF3DE;
-    --surface: #FFFFFF;
-    --ink: #2B1B12;
-    --ink-soft: #6b5947;
-    --tangke: #2C6E91;
-    --tangke-dark:#1d4c66;
-    --bigasan: #D9A441;
-    --bigasan-dark:#a97a26;
-    --balikbayan: #C1272D;
-    --balikbayan-dark:#8f1a1f;
-    --hardin: #3B7A47;
-    --hardin-dark:#255030;
-    --tiisan: #8B5E3C;
-    --palengke: #E08E23;
-    --paaralan: #1E8A78;
-    --poblacion: #4A3B78;
-    --terminal: #5B4636;
-    --utility: #B08D57;
-    --tax: #555555;
-    --corner: #3A2A1D;
-    --chance: #F4A300;
-    --gold: #F4A300;
-    --shadow: rgba(43,27,18,0.25);
-    --radius: 12px;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    min-height:100vh;
-    background:
-      radial-gradient(circle at 10% 10%, rgba(217,164,65,0.15), transparent 40%),
-      radial-gradient(circle at 90% 90%, rgba(59,122,71,0.15), transparent 40%),
-      var(--bg);
-    font-family:'Nunito', sans-serif;
-    color:var(--ink);
-    padding:16px;
-  }
-  h1,h2,h3, .display{ font-family:'Baloo 2', sans-serif; }
-  .cash, .num{ font-family:'Space Mono', monospace; }
+:root{
+  --ink:#141d2b;
+  --ink-2:#1c273a;
+  --panel:#212d42;
+  --panel-2:#283552;
+  --chalk:#f2efe4;
+  --chalk-dim:#c9c4b3;
+  --line: rgba(242,239,228,0.12);
+  --conditional:#e4572e;
+  --conditional-d:#a83f20;
+  --converse:#2e86ab;
+  --converse-d:#1f5f7a;
+  --inverse:#3b8c6e;
+  --inverse-d:#286450;
+  --contrapositive:#e8a33d;
+  --contrapositive-d:#a8752a;
+  --wild:#7b5ea7;
+  --wild-d:#54406f;
+  --good:#5fd88a;
+  --bad:#ff6b6b;
+  --font-display:'Fraunces', Georgia, serif;
+  --font-body:'Inter', -apple-system, sans-serif;
+  --font-mono:'IBM Plex Mono', monospace;
+  --radius:14px;
+}
+@font-face{font-family:'Fraunces';src:local('Georgia');}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background: radial-gradient(ellipse at top, #1a2438 0%, var(--ink) 55%, #0e1420 100%);
+  color:var(--chalk);
+  font-family:var(--font-body);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+::selection{background:var(--contrapositive);color:#1a1a1a;}
+button{font-family:inherit;cursor:pointer;}
+.hidden{display:none !important;}
 
-  /* ===== Top bar ===== */
-  .topbar{
-    max-width:1180px; margin:0 auto 14px auto;
-    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-  }
-  .brand{ display:flex; align-items:center; gap:10px; }
-  .brand-badge{
-    width:46px;height:46px;border-radius:10px;
-    background:linear-gradient(135deg, var(--hardin), var(--tangke));
-    display:flex;align-items:center;justify-content:center;font-size:22px;
-    box-shadow:0 4px 0 var(--shadow);
-  }
-  .brand h1{ margin:0; font-size:22px; letter-spacing:0.5px; }
-  .brand p{ margin:0; font-size:12px; color:var(--ink-soft); font-weight:700;}
-  .topbtns{ display:flex; gap:8px; flex-wrap:wrap; }
-  .iconbtn{
-    border:2px solid var(--corner); background:var(--surface); color:var(--corner);
-    border-radius:10px; padding:8px 12px; font-weight:800; font-family:'Nunito';
-    cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px;
-    transition:transform .1s ease;
-  }
-  .iconbtn:hover{ transform:translateY(-2px); }
-  .iconbtn:active{ transform:translateY(0); }
+/* ---------- TOP BAR ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;
+  background:linear-gradient(180deg, rgba(20,29,43,0.95), rgba(20,29,43,0.75));
+  border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(6px);
+  flex-wrap:wrap;
+  gap:10px;
+}
+.brand{display:flex;align-items:baseline;gap:10px;}
+.brand h1{
+  font-family:var(--font-display);
+  font-size:1.5rem;font-weight:700;margin:0;letter-spacing:0.2px;
+  background:linear-gradient(90deg,var(--conditional),var(--contrapositive));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.brand span{font-family:var(--font-mono);font-size:0.68rem;color:var(--chalk-dim);letter-spacing:1.5px;text-transform:uppercase;}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;}
+.tab-btn{
+  background:var(--panel);border:1px solid var(--line);color:var(--chalk-dim);
+  padding:8px 14px;border-radius:999px;font-size:0.8rem;font-weight:600;
+  transition:.15s;
+}
+.tab-btn:hover{color:var(--chalk);border-color:var(--chalk-dim);}
+.tab-btn.active{background:var(--conditional);color:#fff;border-color:var(--conditional);}
+.topbar-controls{display:flex;gap:8px;align-items:center;}
+.icon-btn{
+  width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
+  background:var(--panel);color:var(--chalk);font-size:1rem;
+  display:flex;align-items:center;justify-content:center;
+}
+.icon-btn:hover{background:var(--panel-2);}
 
-  /* ===== Layout ===== */
-  .wrap{ max-width:1180px; margin:0 auto; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
-  .board-col{ flex:1 1 640px; display:flex; justify-content:center; }
-  .side-col{ flex:0 1 340px; min-width:280px; display:flex; flex-direction:column; gap:12px; }
+/* ---------- LAYOUT ---------- */
+.view{display:none;padding:20px;max-width:1300px;margin:0 auto;}
+.view.active{display:block;}
 
-  /* ===== Board ===== */
-  .board-frame{
-    background:var(--corner); padding:10px; border-radius:18px;
-    box-shadow:0 10px 0 rgba(0,0,0,0.15), 0 14px 24px rgba(0,0,0,0.25);
-  }
-  .board{
-    width:min(92vw,660px); aspect-ratio:1/1;
-    display:grid; grid-template-columns:repeat(11,1fr); grid-template-rows:repeat(11,1fr);
-    gap:2px; background:var(--corner); border-radius:10px; overflow:hidden;
-  }
-  .tile{
-    background:var(--surface); position:relative; border-radius:3px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:1px; overflow:hidden; text-align:center;
-  }
-  .tile .tname{ font-size:5.6px; font-weight:800; line-height:1.05; color:var(--ink); }
-  .tile .ticon{ font-size:11px; }
-  .tile .tprice{ font-size:5px; color:var(--ink-soft); font-family:'Space Mono'; }
-  .tile.corner{ background:var(--corner); color:#fff; }
-  .tile.corner .tname{ color:#F4E9CF; font-size:6px; }
-  .tile.corner .ticon{ font-size:15px; }
-  .tile-stripe{ position:absolute; top:0; left:0; right:0; height:5px; }
-  .tile.owned::after{
-    content:''; position:absolute; bottom:1px; right:1px; width:5px; height:5px; border-radius:50%;
-    background:var(--ownerColor,#333); border:1px solid #fff;
-  }
-  .center{
-    grid-row:2/11; grid-column:2/11; background:linear-gradient(160deg,#fffdf6,#f4ead0);
-    border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:8px; padding:10px; text-align:center; position:relative; overflow:hidden;
-  }
-  .diag-logo{
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-28deg);
-    width:130%; text-align:center; pointer-events:none; opacity:0.9;
-  }
-  .diag-logo .band{
-    background:var(--balikbayan); color:#fff; font-family:'Baloo 2'; font-weight:800;
-    font-size:26px; letter-spacing:1px; padding:6px 0; border:3px solid #fff;
-    box-shadow:0 4px 0 rgba(0,0,0,0.25);
-  }
-  .diag-logo .sub{ font-size:8px; color:var(--corner); font-weight:700; letter-spacing:2px; margin-top:2px; }
-  .jeepney-sign{
-    background:#161311; color:var(--gold); font-family:'Space Mono',monospace;
-    padding:8px 14px; border-radius:6px; letter-spacing:1.5px; font-size:12px;
-    text-transform:uppercase; box-shadow:inset 0 0 10px rgba(244,163,0,0.35);
-    border:2px solid #000; z-index:2;
-  }
-  .dice-row{ display:flex; gap:8px; align-items:center; justify-content:center; z-index:2; }
-  .die{
-    width:38px;height:38px;background:#fff;border:2px solid var(--corner); border-radius:8px;
-    display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;
-    box-shadow:0 3px 0 var(--corner);
-  }
-  #roundLabel{ z-index:2; font-size:11px; color:var(--ink-soft); }
-  .token{
-    position:absolute; width:12px; height:12px; border-radius:50%; border:1.5px solid #fff;
-    box-shadow:0 1px 3px rgba(0,0,0,0.5); font-size:7px; display:flex; align-items:center; justify-content:center;
-    transition: all 0.35s ease; z-index:5;
-  }
+/* ---------- HOME / MODE SELECT ---------- */
+.hero{
+  text-align:center;padding:40px 10px 20px;
+}
+.hero h2{
+  font-family:var(--font-display);font-size:2.4rem;margin:0 0 6px;
+}
+.hero p{color:var(--chalk-dim);max-width:600px;margin:0 auto;font-size:0.95rem;line-height:1.5;}
+.mode-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:16px;margin-top:30px;
+}
+.mode-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;text-align:left;transition:.2s;position:relative;overflow:hidden;
+}
+.mode-card:hover{transform:translateY(-3px);border-color:var(--chalk-dim);}
+.mode-card .m-icon{font-size:1.8rem;}
+.mode-card h3{font-family:var(--font-display);margin:10px 0 6px;font-size:1.2rem;}
+.mode-card p{color:var(--chalk-dim);font-size:0.83rem;line-height:1.45;margin:0 0 14px;}
+.mode-card button{
+  width:100%;padding:10px;border-radius:8px;border:none;
+  background:var(--contrapositive);color:#1a1200;font-weight:700;font-size:0.85rem;
+}
+.mode-card.bar-conditional{border-top:4px solid var(--conditional);}
+.mode-card.bar-converse{border-top:4px solid var(--converse);}
+.mode-card.bar-inverse{border-top:4px solid var(--inverse);}
+.mode-card.bar-contrapositive{border-top:4px solid var(--contrapositive);}
 
-  /* ===== Side panel ===== */
-  .card{
-    background:var(--surface); border-radius:var(--radius); padding:12px 14px;
-    box-shadow:0 3px 0 var(--shadow);
-  }
-  .card h3{ margin:0 0 8px 0; font-size:14px; color:var(--corner); }
-  .player-row{
-    display:flex; align-items:center; gap:8px; padding:7px 8px; border-radius:8px; margin-bottom:6px;
-    background:#faf5e6; border:2px solid transparent;
-  }
-  .player-row.active{ border-color:var(--gold); background:#fff3d6; }
-  .player-token{
-    width:26px;height:26px;border-radius:50%; display:flex;align-items:center;justify-content:center;
-    font-size:14px; border:2px solid #fff; box-shadow:0 0 0 2px var(--tokColor,#333);
-  }
-  .player-info{ flex:1; }
-  .player-info .pname{ font-weight:800; font-size:13px; }
-  .player-info .pcash{ font-size:12px; color:var(--hardin-dark); font-weight:700; }
-  .jail-tag{ font-size:9px; background:var(--balikbayan); color:#fff; padding:2px 6px; border-radius:6px; font-weight:800; }
+.setup-panel{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;margin-top:20px;
+}
+.setup-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.setup-row label{font-size:0.8rem;color:var(--chalk-dim);display:block;margin-bottom:5px;}
+.setup-row select, .setup-row input[type=number], .setup-row input[type=text]{
+  background:var(--ink-2);border:1px solid var(--line);color:var(--chalk);
+  padding:8px 10px;border-radius:8px;font-family:var(--font-body);font-size:0.85rem;
+}
+.player-name-inputs{display:flex;gap:10px;flex-wrap:wrap;}
+.start-btn{
+  background:linear-gradient(90deg,var(--conditional),var(--contrapositive));
+  color:#1a1200;border:none;padding:12px 26px;border-radius:999px;font-weight:800;font-size:0.95rem;
+  margin-top:6px;
+}
 
-  #rollBtn{
-    width:100%; padding:12px; border:none; border-radius:10px; font-family:'Baloo 2';
-    font-weight:700; font-size:16px; color:#fff; cursor:pointer;
-    background:linear-gradient(180deg, var(--hardin), var(--hardin-dark));
-    box-shadow:0 4px 0 #163d20;
-  }
-  #rollBtn:disabled{ opacity:0.5; cursor:not-allowed; }
-  #rollBtn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 1px 0 #163d20; }
+/* ---------- GAME TABLE ---------- */
+.table-wrap{display:none;}
+.table-wrap.active{display:block;}
+.status-bar{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:10px 16px;margin-bottom:14px;font-size:0.85rem;
+}
+.status-bar .turn-indicator{font-weight:700;color:var(--contrapositive);}
+.status-bar .dir-arrow{font-family:var(--font-mono);color:var(--chalk-dim);}
+.scoreboard{display:flex;gap:10px;flex-wrap:wrap;}
+.score-chip{
+  background:var(--ink-2);border:1px solid var(--line);border-radius:999px;
+  padding:5px 12px;font-size:0.75rem;display:flex;gap:6px;align-items:center;
+}
+.score-chip.current{border-color:var(--contrapositive);color:var(--contrapositive);}
 
-  .log{ max-height:150px; overflow-y:auto; font-size:12px; color:var(--ink-soft); display:flex; flex-direction:column; gap:4px;}
-  .log div{ border-bottom:1px dashed #e5d9bd; padding-bottom:3px; }
+.table{
+  display:grid;grid-template-columns:1fr 260px;gap:16px;
+}
+.center-area{
+  background:radial-gradient(ellipse at center, #223046 0%, #182238 100%);
+  border:1px solid var(--line);border-radius:20px;
+  padding:26px;display:flex;flex-direction:column;align-items:center;gap:18px;min-height:340px;
+  position:relative;
+}
+.piles{display:flex;gap:30px;align-items:center;justify-content:center;}
+.pile-label{font-family:var(--font-mono);font-size:0.68rem;color:var(--chalk-dim);text-align:center;margin-top:6px;letter-spacing:1px;text-transform:uppercase;}
 
-  /* ===== Modal ===== */
-  .overlay{
-    position:fixed; inset:0; background:rgba(20,14,8,0.55); display:none;
-    align-items:center; justify-content:center; z-index:50; padding:16px;
-  }
-  .overlay.show{ display:flex; }
-  .modal{
-    background:var(--surface); border-radius:16px; max-width:460px; width:100%;
-    padding:22px; box-shadow:0 12px 0 rgba(0,0,0,0.2); max-height:88vh; overflow-y:auto;
-  }
-  .modal h2{ margin:0 0 6px 0; font-size:19px; }
-  .modal .tag{
-    display:inline-block; font-size:11px; font-weight:800; color:#fff; padding:3px 10px;
-    border-radius:20px; margin-bottom:10px;
-  }
-  .modal p{ font-size:14px; line-height:1.5; }
-  .choice-btn{
-    display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border-radius:10px;
-    border:2px solid #e4d6b3; background:#fffdf7; cursor:pointer; font-family:'Nunito'; font-weight:700; font-size:13.5px;
-  }
-  .choice-btn:hover{ border-color:var(--gold); }
-  .choice-btn.correct{ background:#e4f5e6; border-color:var(--hardin); }
-  .choice-btn.wrong{ background:#fbe6e6; border-color:var(--balikbayan); }
-  .modal-actions{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
-  .btn{
-    padding:10px 16px; border-radius:10px; border:none; font-family:'Baloo 2'; font-weight:700;
-    cursor:pointer; font-size:14px; color:#fff;
-  }
-  .btn.primary{ background:linear-gradient(180deg,var(--tangke),var(--tangke-dark)); }
-  .btn.gold{ background:linear-gradient(180deg,var(--gold),#b97900); }
-  .btn.ghost{ background:transparent; color:var(--ink); border:2px solid var(--ink-soft); }
-  .btn.red{ background:linear-gradient(180deg,var(--balikbayan),var(--balikbayan-dark)); }
-  .explain{ font-size:12.5px; background:#f4ecd8; padding:8px 10px; border-radius:8px; margin-top:8px; }
+.card{
+  width:92px;height:132px;border-radius:10px;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 6px 14px rgba(0,0,0,0.4);
+  border:2px solid rgba(255,255,255,0.25);
+  color:#fff;font-weight:800;user-select:none;flex-shrink:0;
+  transition:transform .15s;
+}
+.card .card-top{position:absolute;top:6px;left:8px;font-size:0.9rem;font-family:var(--font-mono);}
+.card .card-symbol{font-family:var(--font-mono);font-size:1.05rem;text-align:center;line-height:1.2;padding:0 4px;}
+.card .card-sub{font-size:0.6rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:4px;opacity:0.85;}
+.card.back{
+  background:repeating-linear-gradient(45deg, #2b3550, #2b3550 8px, #232c44 8px, #232c44 16px);
+  border-color:rgba(255,255,255,0.15);
+}
+.card.color-conditional{background:linear-gradient(160deg,var(--conditional),var(--conditional-d));}
+.card.color-converse{background:linear-gradient(160deg,var(--converse),var(--converse-d));}
+.card.color-inverse{background:linear-gradient(160deg,var(--inverse),var(--inverse-d));}
+.card.color-contrapositive{background:linear-gradient(160deg,var(--contrapositive),var(--contrapositive-d));}
+.card.color-wild{background:conic-gradient(var(--conditional),var(--converse),var(--inverse),var(--contrapositive),var(--conditional));}
+.draw-pile{cursor:pointer;}
+.draw-pile:hover{transform:translateY(-2px);}
+.discard-pile .card{cursor:default;}
 
-  /* ===== Setup ===== */
-  .setup-wrap{ max-width:560px; margin:40px auto; }
-  .field{ margin-bottom:14px; }
-  .field label{ font-size:12.5px; font-weight:800; color:var(--ink-soft); display:block; margin-bottom:4px;}
-  .field input, .field select{
-    width:100%; padding:9px 10px; border-radius:8px; border:2px solid #e4d6b3; font-family:'Nunito'; font-size:14px;
-  }
-  .player-setup-row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
-  .token-pick{ display:flex; gap:4px; }
-  .token-pick span{
-    width:28px;height:28px; border-radius:50%; background:#fff2d6; display:flex;align-items:center;justify-content:center;
-    font-size:15px; cursor:pointer; border:2px solid transparent;
-  }
-  .token-pick span.picked{ border-color:var(--gold); }
-  .muted-small{ font-size:11px; color:var(--ink-soft); }
-  .hidden{ display:none !important; }
+.deck-count{font-family:var(--font-mono);font-size:0.7rem;color:var(--chalk-dim);text-align:center;}
+
+.hand-area{
+  display:flex;gap:-10px;justify-content:center;flex-wrap:wrap;
+  padding:12px 6px;min-height:150px;
+}
+.hand-area .card{margin-left:-18px;}
+.hand-area .card:first-child{margin-left:0;}
+.hand-area .card.playable{cursor:pointer;filter:brightness(1);}
+.hand-area .card.playable:hover{transform:translateY(-12px) scale(1.04);z-index:5;}
+.hand-area .card.unplayable{filter:brightness(0.55) saturate(0.6);cursor:not-allowed;}
+
+.side-panel{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;
+  display:flex;flex-direction:column;gap:14px;max-height:640px;overflow-y:auto;
+}
+.side-panel h4{margin:0 0 6px;font-family:var(--font-display);font-size:1rem;border-bottom:1px solid var(--line);padding-bottom:8px;}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:0.78rem;color:var(--chalk-dim);margin-bottom:6px;}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+.log-feed{font-family:var(--font-mono);font-size:0.72rem;color:var(--chalk-dim);display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto;}
+.log-feed .entry-good{color:var(--good);}
+.log-feed .entry-bad{color:var(--bad);}
+.mini-controls{display:flex;flex-direction:column;gap:8px;}
+.mini-controls button{
+  background:var(--ink-2);border:1px solid var(--line);color:var(--chalk);
+  padding:8px 10px;border-radius:8px;font-size:0.8rem;text-align:left;
+}
+.mini-controls button:hover{border-color:var(--chalk-dim);}
+
+.pass-gate{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  min-height:340px;background:var(--panel);border-radius:20px;border:1px dashed var(--chalk-dim);
+}
+.pass-gate h3{font-family:var(--font-display);font-size:1.4rem;margin:0;}
+.pass-gate button{
+  background:var(--contrapositive);color:#1a1200;border:none;padding:10px 24px;border-radius:999px;font-weight:800;
+}
+
+/* ---------- MODAL: QUESTION ---------- */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(10,14,22,0.82);
+  display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;
+}
+.modal{
+  background:var(--panel);border-radius:20px;border:1px solid var(--line);
+  max-width:640px;width:100%;padding:26px;max-height:92vh;overflow-y:auto;
+  animation:pop .22s ease;
+}
+@keyframes pop{from{transform:scale(0.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.modal-header .req-badge{
+  font-family:var(--font-mono);font-size:0.72rem;padding:4px 10px;border-radius:999px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;
+}
+.timer-bar-wrap{height:6px;background:var(--ink-2);border-radius:4px;overflow:hidden;margin:10px 0 18px;}
+.timer-bar{height:100%;background:linear-gradient(90deg,var(--good),var(--contrapositive),var(--bad));width:100%;transition:width .3s linear;}
+.prop-statement{
+  background:var(--ink-2);border-radius:12px;padding:16px;margin-bottom:16px;font-size:1rem;line-height:1.55;
+}
+.prop-statement .p-part{color:var(--converse);font-weight:700;}
+.prop-statement .q-part{color:var(--contrapositive);font-weight:700;}
+.prop-statement .label{font-family:var(--font-mono);font-size:0.65rem;color:var(--chalk-dim);display:block;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;}
+.options{display:flex;flex-direction:column;gap:10px;}
+.option-btn{
+  text-align:left;background:var(--ink-2);border:1px solid var(--line);color:var(--chalk);
+  padding:12px 14px;border-radius:10px;font-size:0.9rem;line-height:1.4;transition:.12s;
+}
+.option-btn:hover{border-color:var(--chalk-dim);}
+.option-btn.correct{background:rgba(95,216,138,0.18);border-color:var(--good);}
+.option-btn.wrong{background:rgba(255,107,107,0.18);border-color:var(--bad);}
+.option-btn:disabled{cursor:default;}
+.modal-footer-note{font-size:0.75rem;color:var(--chalk-dim);margin-top:14px;text-align:center;}
+.hint-btn{background:none;border:1px dashed var(--chalk-dim);color:var(--chalk-dim);padding:6px 12px;border-radius:8px;font-size:0.75rem;margin-top:8px;}
+
+/* ---------- ANALYTICS VIEW ---------- */
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+.stat-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;}
+.stat-card h4{margin:0 0 10px;font-family:var(--font-display);font-size:1.05rem;}
+.mastery-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:0.78rem;}
+.mastery-row .mlabel{width:110px;color:var(--chalk-dim);flex-shrink:0;}
+.mastery-bar-bg{flex:1;background:var(--ink-2);border-radius:6px;height:10px;overflow:hidden;}
+.mastery-bar-fill{height:100%;border-radius:6px;}
+.export-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.export-row button{background:var(--ink-2);border:1px solid var(--line);color:var(--chalk);padding:8px 14px;border-radius:8px;font-size:0.8rem;}
+table.data-table{width:100%;border-collapse:collapse;font-size:0.78rem;}
+table.data-table th, table.data-table td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;}
+table.data-table th{color:var(--chalk-dim);font-weight:600;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* ---------- TEACHER VIEW ---------- */
+.teacher-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;}
+.qbank-item{background:var(--ink-2);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;}
+.qbank-item .diff-tag{font-family:var(--font-mono);font-size:0.65rem;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:0.5px;}
+.diff-easy{background:rgba(95,216,138,0.2);color:var(--good);}
+.diff-medium{background:rgba(232,163,61,0.22);color:var(--contrapositive);}
+.diff-hard{background:rgba(255,107,107,0.22);color:var(--bad);}
+.forms-list{margin-top:8px;font-size:0.8rem;line-height:1.6;color:var(--chalk-dim);}
+.forms-list b{color:var(--chalk);}
+
+/* ---------- DOCS VIEW ---------- */
+.docs-section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;}
+.docs-section h3{font-family:var(--font-display);margin:0 0 8px;font-size:1.1rem;color:var(--contrapositive);}
+.docs-section p, .docs-section li{font-size:0.85rem;color:var(--chalk-dim);line-height:1.6;}
+.docs-section ul{margin:4px 0;padding-left:20px;}
+
+/* ---------- WIN OVERLAY ---------- */
+.win-modal{text-align:center;}
+.win-modal .trophy{font-size:3.4rem;}
+.win-modal h2{font-family:var(--font-display);font-size:1.8rem;margin:6px 0;}
+
+/* ---------- TOAST ---------- */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--panel);border:1px solid var(--line);padding:10px 20px;border-radius:999px;
+  font-size:0.85rem;z-index:300;box-shadow:0 6px 20px rgba(0,0,0,0.4);
+}
+
+@media(max-width:820px){
+  .table{grid-template-columns:1fr;}
+  .side-panel{max-height:280px;}
+}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="brand">
-    <div class="brand-badge">📏</div>
+    <h1>UNO Logic</h1>
+    <span>Conditional Propositions Ed.</span>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-view="home">Play</button>
+    <button class="tab-btn" data-view="analytics">Analytics</button>
+    <button class="tab-btn" data-view="teacher">Teacher</button>
+    <button class="tab-btn" data-view="docs">Game Guide</button>
+  </div>
+  <div class="topbar-controls">
+    <button class="icon-btn" id="sfxToggle" title="Toggle sound effects">🔊</button>
+    <button class="icon-btn" id="musicToggle" title="Toggle background music">🎵</button>
+  </div>
+</div>
+
+<!-- ================= HOME / SETUP ================= -->
+<div class="view active" id="view-home">
+  <div class="hero">
+    <h2>If p, then q.</h2>
+    <p>Learn to build the <b>Conditional</b>, <b>Converse</b>, <b>Inverse</b>, and <b>Contrapositive</b> of a proposition
+      by playing them like UNO. Match colors and numbers, answer the logic prompt to land the card, and empty your hand first.</p>
+  </div>
+
+  <div class="mode-grid">
+    <div class="mode-card bar-conditional">
+      <div class="m-icon">🧠</div>
+      <h3>Practice Mode</h3>
+      <p>Solo drills, no penalties, hints available. Best for getting comfortable with the four forms before a real match.</p>
+      <button data-mode="practice">Start Practice</button>
+    </div>
+    <div class="mode-card bar-converse">
+      <div class="m-icon">👥</div>
+      <h3>Multiplayer (Hotseat)</h3>
+      <p>2–4 players share one device. Hands are hidden between turns with a pass-the-device gate.</p>
+      <button data-mode="multiplayer">Set Up Multiplayer</button>
+    </div>
+    <div class="mode-card bar-inverse">
+      <div class="m-icon">🤖</div>
+      <h3>AI Mode</h3>
+      <p>Play against 1–3 computer opponents with adjustable difficulty. Good for a quick round without classmates.</p>
+      <button data-mode="ai">Play vs AI</button>
+    </div>
+    <div class="mode-card bar-contrapositive">
+      <div class="m-icon">🧑‍🏫</div>
+      <h3>Teacher Mode</h3>
+      <p>Run a monitored class match: see the answer key live, track every player, and export the mastery report after.</p>
+      <button data-mode="teacher-play">Launch Teacher Session</button>
+    </div>
+  </div>
+
+  <div class="setup-panel" id="setupPanel">
+    <div class="setup-row">
+      <div>
+        <label>Number of players</label>
+        <select id="numPlayers">
+          <option value="1">1 (Practice)</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4" selected>4</option>
+        </select>
+      </div>
+      <div>
+        <label>Difficulty pool</label>
+        <select id="difficultyPool">
+          <option value="easy">Easy only</option>
+          <option value="mixed" selected>Mixed (Easy → Hard)</option>
+          <option value="hard">Hard only</option>
+        </select>
+      </div>
+      <div>
+        <label>Answer timer (seconds)</label>
+        <select id="timerLength">
+          <option value="10">10s — fast</option>
+          <option value="15" selected>15s — standard</option>
+          <option value="25">25s — relaxed</option>
+          <option value="0">No timer (practice)</option>
+        </select>
+      </div>
+      <div>
+        <label>Starting hand size</label>
+        <select id="handSize">
+          <option value="5">5 cards</option>
+          <option value="7" selected>7 cards</option>
+        </select>
+      </div>
+    </div>
+    <div class="setup-row" id="nameRow">
+      <div style="width:100%">
+        <label>Player names</label>
+        <div class="player-name-inputs" id="playerNameInputs"></div>
+      </div>
+    </div>
+    <button class="start-btn" id="startGameBtn">▶ Deal the cards</button>
+  </div>
+</div>
+
+<!-- ================= GAME TABLE ================= -->
+<div class="view" id="view-table">
+  <div id="passGate" class="table-wrap">
+    <div class="pass-gate">
+      <div style="font-size:2rem;">🔁</div>
+      <h3 id="passGateText">Pass the device to Player 1</h3>
+      <p style="color:var(--chalk-dim);font-size:0.85rem;">Tap ready when it's safely in front of the right player.</p>
+      <button id="passGateBtn">I'm ready — show my hand</button>
+    </div>
+  </div>
+
+  <div id="gameTable" class="table-wrap">
+    <div class="status-bar">
+      <div><span class="turn-indicator" id="turnIndicator">—</span> <span class="dir-arrow" id="dirArrow">→</span></div>
+      <div class="scoreboard" id="scoreboard"></div>
+      <button class="icon-btn" id="exitGameBtn" title="End session">✕</button>
+    </div>
+
+    <div class="table">
+      <div>
+        <div class="center-area">
+          <div class="piles">
+            <div>
+              <div class="card back draw-pile" id="drawPile">🂠</div>
+              <div class="deck-count" id="drawCount">Draw</div>
+              <div class="pile-label">Draw Pile</div>
+            </div>
+            <div class="discard-pile">
+              <div class="card" id="topCard"></div>
+              <div class="pile-label">Discard</div>
+            </div>
+          </div>
+          <div id="handWrapLabel" style="font-family:var(--font-mono);font-size:0.7rem;color:var(--chalk-dim);letter-spacing:1px;text-transform:uppercase;">Your Hand</div>
+        </div>
+        <div class="hand-area" id="handArea"></div>
+      </div>
+      <div class="side-panel">
+        <div>
+          <h4>Logic Card Key</h4>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--conditional)"></div> Conditional — "If p, then q."</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--converse)"></div> Converse — "If q, then p."</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--inverse)"></div> Inverse — "If ~p, then ~q."</div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--contrapositive)"></div> Contrapositive — "If ~q, then ~p."</div>
+        </div>
+        <div>
+          <h4>Round Log</h4>
+          <div class="log-feed" id="logFeed"></div>
+        </div>
+        <div id="teacherLivePanel" class="hidden">
+          <h4>Answer Key (Teacher)</h4>
+          <div id="teacherLiveContent" style="font-size:0.78rem;color:var(--chalk-dim);line-height:1.5;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ANALYTICS ================= -->
+<div class="view" id="view-analytics">
+  <h2 style="font-family:var(--font-display);">Analytics Dashboard</h2>
+  <p style="color:var(--chalk-dim);font-size:0.88rem;max-width:700px;">Individual performance, class-wide aggregates, and a per-form mastery report. Data is saved automatically to this browser and can be exported for grading.</p>
+  <div class="analytics-grid" id="analyticsGrid"></div>
+  <div class="stat-card" style="margin-top:16px;">
+    <h4>Class Performance — All Sessions</h4>
+    <div id="classTableWrap"><table class="data-table" id="classTable"><thead><tr><th>Player</th><th>Games</th><th>Wins</th><th>Score</th><th>Accuracy</th><th>Best Streak</th></tr></thead><tbody></tbody></table></div>
+    <div class="export-row">
+      <button id="exportJson">⬇ Export JSON</button>
+      <button id="exportCsv">⬇ Export CSV</button>
+      <button id="resetAnalytics">🗑 Reset Analytics</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TEACHER ================= -->
+<div class="view" id="view-teacher">
+  <h2 style="font-family:var(--font-display);">Teacher Dashboard</h2>
+  <p style="color:var(--chalk-dim);font-size:0.88rem;max-width:700px;">Browse the full proposition bank with answer keys, or launch a monitored session from the Play tab's "Teacher Mode" card.</p>
+  <div class="teacher-grid">
     <div>
-      <h1>MEASURE-OPOLY</h1>
-      <p>The Measurement Board Game — Length, Distance, Area &amp; Perimeter</p>
+      <h3 style="font-family:var(--font-display);font-size:1rem;">Proposition Bank &amp; Answer Keys</h3>
+      <div id="qbankList" style="max-height:640px;overflow-y:auto;padding-right:6px;"></div>
     </div>
-  </div>
-  <div class="topbtns">
-    <button class="iconbtn" id="muteBtn">🔊 Sound</button>
-    <button class="iconbtn" id="rulesBtn">📖 How to Play</button>
-    <button class="iconbtn hidden" id="restartBtn">🔁 Restart</button>
-  </div>
-</div>
-
-<!-- ===================== SETUP SCREEN ===================== -->
-<div id="setupScreen" class="card setup-wrap">
-  <h2 style="margin-top:0;">Set Up the Game</h2>
-  <p class="muted-small">Choose 2–4 players. Each starts with $1000. Learn while you play: estimate the length of water tanks, rice storage, and balikbayan boxes, and calculate the area and perimeter of rooms and gardens.</p>
-
-  <div class="field">
-    <label>Number of Players</label>
-    <select id="numPlayers">
-      <option value="2">2 Players</option>
-      <option value="3">3 Players</option>
-      <option value="4" selected>4 Players</option>
-    </select>
-  </div>
-
-  <div id="playerFields"></div>
-
-  <p class="muted-small">🏆 <b>Goal:</b> Buy properties, collect rent, and answer measurement questions to grow your wealth. The last player who hasn't gone bankrupt wins!</p>
-
-  <button class="btn primary" style="width:100%; padding:13px; font-size:16px;" id="startBtn">🚀 Start Game</button>
-</div>
-
-<!-- ===================== GAME SCREEN ===================== -->
-<div id="gameScreen" class="wrap hidden">
-  <div class="board-col">
-    <div class="board-frame">
-      <div class="board" id="board"></div>
-    </div>
-  </div>
-
-  <div class="side-col">
-    <div class="card">
-      <h3>Players</h3>
-      <div id="playersList"></div>
-    </div>
-    <div class="card">
-      <button id="rollBtn">🎲 Roll the Dice</button>
-      <div style="margin-top:8px; font-size:12px; color:var(--ink-soft);" id="turnHint"></div>
-    </div>
-    <div class="card">
-      <h3>Game Log</h3>
-      <div class="log" id="logBox"></div>
+    <div>
+      <div class="stat-card">
+        <h4>Class Snapshot</h4>
+        <div id="teacherClassSnapshot" style="font-size:0.82rem;color:var(--chalk-dim);line-height:1.7;"></div>
+      </div>
+      <div class="stat-card" style="margin-top:14px;">
+        <h4>Session Controls</h4>
+        <p style="font-size:0.8rem;color:var(--chalk-dim);">Teacher Mode games automatically reveal this panel during play and log every answer for the mastery report.</p>
+        <div class="export-row">
+          <button id="teacherExportJson">⬇ Export Class JSON</button>
+          <button id="teacherExportCsv">⬇ Export Class CSV</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ===================== MODAL ===================== -->
-<div class="overlay" id="overlay">
-  <div class="modal" id="modalBox"></div>
+<!-- ================= DOCS / GAME GUIDE ================= -->
+<div class="view" id="view-docs">
+  <h2 style="font-family:var(--font-display);">Game Design Reference</h2>
+  <div class="docs-section">
+    <h3>1 · Objective &amp; Win Condition</h3>
+    <p>Empty your hand before your opponents by legally playing Logic Cards (matched by color or number, like UNO) and Action Cards. Playing a Logic Card requires correctly identifying the requested form — Conditional, Converse, Inverse, or Contrapositive — of a proposition drawn from the deck. In Practice Mode the "win" is simply completing a set of questions with a strong streak.</p>
+  </div>
+  <div class="docs-section">
+    <h3>2 · Turn Sequence</h3>
+    <ul>
+      <li>Play a card from your hand that matches the discard pile's color, number, or is a Wild — Logic Cards trigger a proposition question first.</li>
+      <li>Answer correctly within the timer to land the card and pass the turn (respecting Skip/Reverse/+2 effects).</li>
+      <li>Answer incorrectly or time out: the card returns to your hand, you draw one penalty card, and your turn ends.</li>
+      <li>No playable card in hand: draw one from the pile. If it's playable you may play it immediately, otherwise your turn passes.</li>
+    </ul>
+  </div>
+  <div class="docs-section">
+    <h3>3 · Card &amp; Deck System</h3>
+    <p><b>Logic Cards</b> (numbered 0–9, four colors): 🔴 Conditional, 🔵 Converse, 🟢 Inverse, 🟡 Contrapositive.</p>
+    <p><b>Action Cards</b>: Skip (next player loses a turn), Reverse (flips play direction), Challenge +2 (target must answer a proposition in 10s or draw two), Wild (choose the next color), Wild Challenge (choose color + target answers a hard question or draws four).</p>
+    <p><b>Proposition Deck</b>: a bank of everyday and mathematical statements tagged Easy / Medium / Hard, each with a programmatically generated answer key for all four forms.</p>
+  </div>
+  <div class="docs-section">
+    <h3>4 · Scoring &amp; Penalties</h3>
+    <p>Correct answers award points scaled by difficulty and remaining time, plus a streak bonus. Wrong answers or timeouts reset the streak and add one penalty card to your hand. Practice Mode disables penalties and adds an optional hint after a miss.</p>
+  </div>
+  <div class="docs-section">
+    <h3>5 · Modes</h3>
+    <p><b>Practice</b> — solo, untimed-friendly, hints on. <b>Multiplayer</b> — 2–4 players, hotseat pass-device privacy gate between turns. <b>AI Mode</b> — 1–3 bots with simulated accuracy based on difficulty. <b>Teacher Mode</b> — reveals a live answer-key panel and feeds every attempt into the Class Performance report.</p>
+  </div>
+  <div class="docs-section">
+    <h3>6 · Design System</h3>
+    <p>Each logic form owns a color used consistently across cards, legends, and charts. Type pairs a serif display face for headings with a plain body face and a monospace face for logic notation (p, q, ~p, ~q). Sound effects and a soft generative background pad are synthesized in-browser (Web Audio) and can be muted independently.</p>
+  </div>
+  <div class="docs-section">
+    <h3>7 · Analytics</h3>
+    <p>Per-player accuracy by form, current and best streak, and total score are tracked live. The Class Performance table aggregates every player across every session saved in this browser, exportable as JSON or CSV for a gradebook.</p>
+  </div>
+  <div class="docs-section">
+    <h3>8 · Technical Notes</h3>
+    <p><b>Architecture</b>: single-file app split into DATA (proposition bank, deck factory), STATE (game object), AUDIO, STORAGE, RENDER, and GAME LOGIC modules. <b>Bug prevention</b>: all plays are validated against the current top card before mutating state, question modals disable double-submission, and timers are cleared on every transition. <b>Save system</b>: analytics persist via key-value storage scoped to this browser; matches themselves are session-only by design so every game starts clean. <b>Future expansion</b>: hooks are in place to add new proposition packs, extra action cards, or online multiplayer without touching the core turn engine.</p>
+  </div>
 </div>
+
+<div id="toastHost"></div>
 
 <script>
-/* ============================================================
-   MEASURE-OPOLY — game data
-   ============================================================ */
-const LENGTH_QUESTIONS = [
-  {q:"The water tank in the backyard is 150 cm tall. How many meters is that?", c:["1.5 m","15 m","0.15 m","1.05 m"], a:0},
-  {q:"If 5 sacks of rice are laid end to end, each 70 cm long, what is the total length of the row?", c:["350 cm","300 cm","250 cm","400 cm"], a:0},
-  {q:"A balikbayan box is 0.6 m long. How many centimeters is that?", c:["60 cm","6 cm","600 cm","0.6 cm"], a:0},
-  {q:"The distance from the gate to the front door is estimated at 8 meters. About how many feet is that? (1 m ≈ 3.28 ft)", c:["~26 ft","~16 ft","~36 ft","~8 ft"], a:0},
-  {q:"Which of these is the closest estimate for the height of a typical household water tank?", c:["1.5 m","0.5 m","4 m","10 m"], a:0},
-  {q:"A 25-kilo sack of rice is about 60 cm long. If you line up 3 sacks end to end, what is the total length?", c:["1.8 m","2.4 m","1.2 m","3.0 m"], a:0},
-  {q:"600 mm is equal to how many meters?", c:["0.6 m","6 m","60 m","0.06 m"], a:0},
-  {q:"The width of a medium balikbayan box is 50 cm. How many meters is that?", c:["0.5 m","5 m","0.05 m","50 m"], a:0},
-  {q:"If a tank is 2 m tall and you add a 20 cm base, what is the total height from the ground?", c:["2.2 m","2.02 m","4 m","20.2 m"], a:0},
-  {q:"Which unit is most appropriate for measuring the distance from the house to the market?", c:["kilometer","millimeter","centimeter","gram"], a:0},
-  {q:"A measuring tape reads 340 cm for the length of a storage room. How many meters is that?", c:["3.4 m","34 m","0.34 m","3.04 m"], a:0},
-  {q:"If a balikbayan box is 0.7 m long and you want to place 4 of them side by side, how many meters of space will they need in total?", c:["2.8 m","2.4 m","3.2 m","1.4 m"], a:0},
-  {q:"A jeepney route is 3200 meters long. How many kilometers is that?", c:["3.2 km","32 km","0.32 km","320 km"], a:0},
-  {q:"Two jeepney terminals are 1.5 km apart. How many meters is that?", c:["1500 m","150 m","15 m","15000 m"], a:0},
-  {q:"A market stall table is 200 cm long. How many meters is that?", c:["2 m","20 m","0.2 m","2000 m"], a:0},
-  {q:"If a fish stall table is 2.5 m and a vegetable stall table is 2 m, what is their combined length?", c:["4.5 m","4 m","5 m","0.5 m"], a:0},
-  {q:"An electrical cable measures 1200 cm. How many meters is that?", c:["12 m","120 m","1.2 m","0.12 m"], a:0},
-  {q:"A water pipe run is 9 m long. How many centimeters is that?", c:["900 cm","90 cm","9000 cm","9.0 cm"], a:0},
-];
-const AREA_QUESTIONS = [
-  {q:"A garden is 4 m long and 3 m wide. What is its perimeter?", c:["14 m","12 m","7 m","24 m"], a:0},
-  {q:"Using the same garden (4 m x 3 m), what is its area?", c:["12 sq.m","14 sq.m","7 sq.m","24 sq.m"], a:0},
-  {q:"A bedroom being renovated measures 5 m x 4 m. What is its area?", c:["20 sq.m","18 sq.m","9 sq.m","24 sq.m"], a:0},
-  {q:"You want to install molding around the ceiling of a 5 m x 4 m room. How many meters of molding do you need (perimeter)?", c:["18 m","20 m","9 m","16 m"], a:0},
-  {q:"A living room extension is 6 m long and 4.5 m wide. What is its area?", c:["27 sq.m","24 sq.m","21 sq.m","30 sq.m"], a:0},
-  {q:"How much fencing is needed around a 6 m x 4.5 m garden (perimeter)?", c:["21 m","27 m","24 m","10.5 m"], a:0},
-  {q:"A square garden plot has sides of 3.5 m each. What is its area?", c:["12.25 sq.m","14 sq.m","7 sq.m","10.5 sq.m"], a:0},
-  {q:"What is the perimeter of that same square plot (3.5 m per side)?", c:["14 m","12.25 m","7 m","17.5 m"], a:0},
-  {q:"A room measures 4.5 m x 3.5 m. How many sq.m of tile are needed to cover the floor (area)?", c:["15.75 sq.m","16 sq.m","14 sq.m","18 sq.m"], a:0},
-  {q:"A backyard lot is 8 m x 5 m. What is the perimeter if you fence around it?", c:["26 m","40 m","13 m","20 m"], a:0},
-  {q:"How much space (area) will a new 3.2 m x 2.5 m terrace cover?", c:["8 sq.m","5.7 sq.m","11.4 sq.m","6.4 sq.m"], a:0},
-  {q:"If you double both the length and width of a 3 m x 2 m room, what is the new area?", c:["24 sq.m","12 sq.m","6 sq.m","18 sq.m"], a:0},
-  {q:"A classroom floor is 6 m long and 5 m wide. What is its area?", c:["30 sq.m","22 sq.m","11 sq.m","60 sq.m"], a:0},
-  {q:"How much border trim is needed around that same 6 m x 5 m classroom (perimeter)?", c:["22 m","30 m","11 m","20 m"], a:0},
-  {q:"A school playground is 10 m long and 8 m wide. What is its area?", c:["80 sq.m","18 sq.m","36 sq.m","64 sq.m"], a:0},
-  {q:"A rectangular plaza is 12 m by 9 m. What is its perimeter?", c:["42 m","21 m","108 m","54 m"], a:0},
-  {q:"What is the area of that same 12 m x 9 m plaza?", c:["108 sq.m","42 sq.m","21 sq.m","96 sq.m"], a:0},
-  {q:"A market complex floor measures 15 m x 10 m. What is its area?", c:["150 sq.m","50 sq.m","25 sq.m","125 sq.m"], a:0},
+/* =========================================================
+   DATA MODULE — Proposition bank
+   ========================================================= */
+const PROPOSITIONS = [
+  {id:1, diff:'easy', p:"a number is even", negP:"a number is not even", q:"it is divisible by 2", negQ:"it is not divisible by 2"},
+  {id:2, diff:'easy', p:"an angle measures 90°", negP:"an angle does not measure 90°", q:"it is a right angle", negQ:"it is not a right angle"},
+  {id:3, diff:'easy', p:"you study every night", negP:"you do not study every night", q:"you will pass the exam", negQ:"you will not pass the exam"},
+  {id:4, diff:'easy', p:"a shape is a square", negP:"a shape is not a square", q:"it has four equal sides", negQ:"it does not have four equal sides"},
+  {id:5, diff:'easy', p:"today is Saturday", negP:"today is not Saturday", q:"there is no class", negQ:"there is class"},
+  {id:6, diff:'easy', p:"a fruit is a mango", negP:"a fruit is not a mango", q:"it is sweet", negQ:"it is not sweet"},
+  {id:7, diff:'easy', p:"it is raining", negP:"it is not raining", q:"the ground is wet", negQ:"the ground is not wet"},
+  {id:8, diff:'easy', p:"a number ends in 0", negP:"a number does not end in 0", q:"it is divisible by 10", negQ:"it is not divisible by 10"},
+  {id:9, diff:'medium', p:"a triangle has three equal sides", negP:"a triangle does not have three equal sides", q:"it is equilateral", negQ:"it is not equilateral"},
+  {id:10, diff:'medium', p:"x is a prime number greater than 2", negP:"x is not a prime number greater than 2", q:"x is odd", negQ:"x is not odd"},
+  {id:11, diff:'medium', p:"a quadrilateral is a rectangle", negP:"a quadrilateral is not a rectangle", q:"its diagonals are congruent", negQ:"its diagonals are not congruent"},
+  {id:12, diff:'medium', p:"two lines are parallel", negP:"two lines are not parallel", q:"they never intersect", negQ:"they eventually intersect"},
+  {id:13, diff:'medium', p:"a number is divisible by 6", negP:"a number is not divisible by 6", q:"it is divisible by both 2 and 3", negQ:"it is not divisible by both 2 and 3"},
+  {id:14, diff:'medium', p:"a polygon has five sides", negP:"a polygon does not have five sides", q:"it is a pentagon", negQ:"it is not a pentagon"},
+  {id:15, diff:'medium', p:"a student attends all classes", negP:"a student does not attend all classes", q:"the student earns full attendance credit", negQ:"the student does not earn full attendance credit"},
+  {id:16, diff:'medium', p:"a number is a perfect square", negP:"a number is not a perfect square", q:"its square root is a whole number", negQ:"its square root is not a whole number"},
+  {id:17, diff:'hard', p:"a function is differentiable at a point", negP:"a function is not differentiable at a point", q:"it is continuous at that point", negQ:"it is not continuous at that point"},
+  {id:18, diff:'hard', p:"a square matrix is invertible", negP:"a square matrix is not invertible", q:"its determinant is nonzero", negQ:"its determinant is zero"},
+  {id:19, diff:'hard', p:"a sequence is bounded and monotonic", negP:"a sequence is not both bounded and monotonic", q:"it converges", negQ:"it does not converge"},
+  {id:20, diff:'hard', p:"an integer n squared is even", negP:"an integer n squared is not even", q:"n is even", negQ:"n is not even"},
+  {id:21, diff:'hard', p:"a polygon is regular", negP:"a polygon is not regular", q:"all its interior angles are congruent", negQ:"not all its interior angles are congruent"},
+  {id:22, diff:'hard', p:"a series of positive terms converges", negP:"a series of positive terms does not converge", q:"its terms approach zero", negQ:"its terms do not approach zero"},
+  {id:23, diff:'hard', p:"a graph has an Euler circuit", negP:"a graph does not have an Euler circuit", q:"every vertex has even degree", negQ:"some vertex has odd degree"},
+  {id:24, diff:'hard', p:"a relation is an equivalence relation", negP:"a relation is not an equivalence relation", q:"it is reflexive, symmetric, and transitive", negQ:"it is not reflexive, symmetric, and transitive"},
 ];
 
-const TILES = [
-  {id:0, type:'corner', sub:'go', name:'GO', icon:'🏁'},
-  {id:1, type:'property', district:'tiisan', name:'Sari-Sari Store Counter', price:100, dims:'Length: 1.2 m', icon:'🛒'},
-  {id:2, type:'chance', name:'Tulong Barangay', icon:'🤝'},
-  {id:3, type:'property', district:'tiisan', name:'Tricycle Sidecar', price:120, dims:'Length: 1.8 m', icon:'🛺'},
-  {id:4, type:'tax', name:'Buwis sa Kita (Income Tax)', icon:'💰', amount:200},
-  {id:5, type:'property', district:'terminal', name:'Jeepney Terminal – Divisoria', price:200, dims:'Route length: 3.2 km', icon:'🚐'},
-  {id:6, type:'property', district:'tangke', name:'Small Water Tank', price:140, dims:'Height: 1.0 m • Width: 0.8 m', icon:'🛢️'},
-  {id:7, type:'chance', name:'Sorpresa', icon:'🎲'},
-  {id:8, type:'property', district:'tangke', name:'Medium Water Tank', price:180, dims:'Height: 1.5 m • Width: 1.0 m', icon:'🛢️'},
-  {id:9, type:'property', district:'tangke', name:'Large Water Tank', price:220, dims:'Height: 2.0 m • Width: 1.2 m', icon:'🛢️'},
-  {id:10, type:'corner', sub:'jail', name:'Imbakan (Storage)', icon:'📦'},
-  {id:11, type:'property', district:'bigasan', name:'Stacked Rice Sacks', price:180, dims:'Length per sack: 70 cm', icon:'🌾'},
-  {id:12, type:'property', district:'utility', name:'Kuryente Metro (Electric)', price:150, dims:'Cable run: 12 m', icon:'💡'},
-  {id:13, type:'property', district:'bigasan', name:'Rice Storage Room', price:200, dims:'Length: 4 m • Width: 2.5 m', icon:'🌾'},
-  {id:14, type:'property', district:'bigasan', name:'Rice Warehouse', price:240, dims:'Length: 6 m • Width: 3 m', icon:'🌾'},
-  {id:15, type:'property', district:'terminal', name:'Jeepney Terminal – Quiapo', price:200, dims:'Route length: 4.1 km', icon:'🚐'},
-  {id:16, type:'property', district:'palengke', name:'Gulay Stall', price:260, dims:'Table length: 2.0 m', icon:'🥕'},
-  {id:17, type:'chance', name:'Tulong Barangay', icon:'🤝'},
-  {id:18, type:'property', district:'palengke', name:'Isda Stall', price:280, dims:'Table length: 2.5 m', icon:'🐟'},
-  {id:19, type:'property', district:'palengke', name:'Karne Stall', price:300, dims:'Table length: 3.0 m', icon:'🥩'},
-  {id:20, type:'corner', sub:'rest', name:'Plaza (Palengke Central)', icon:'🥭'},
-  {id:21, type:'property', district:'balikbayan', name:'Small Balikbayan Box', price:220, dims:'50 x 40 x 40 cm', icon:'🎁'},
-  {id:22, type:'chance', name:'Sorpresa', icon:'🎲'},
-  {id:23, type:'property', district:'balikbayan', name:'Medium Balikbayan Box', price:260, dims:'60 x 50 x 45 cm', icon:'🎁'},
-  {id:24, type:'property', district:'balikbayan', name:'Large Balikbayan Box', price:300, dims:'70 x 60 x 50 cm', icon:'🎁'},
-  {id:25, type:'property', district:'terminal', name:'Jeepney Terminal – Cubao', price:200, dims:'Route length: 5.6 km', icon:'🚐'},
-  {id:26, type:'property', district:'hardin', name:'Small Garden', price:300, dims:'Length: 3 m • Width: 2 m', icon:'🌿'},
-  {id:27, type:'property', district:'hardin', name:'Bedroom Renovation', price:320, dims:'Length: 4 m • Width: 3 m', icon:'🛏️'},
-  {id:28, type:'property', district:'utility', name:'Tubig Metro (Water)', price:150, dims:'Pipe run: 9 m', icon:'💧'},
-  {id:29, type:'property', district:'hardin', name:'Living Room Extension', price:340, dims:'Length: 5 m • Width: 4 m', icon:'🛋️'},
-  {id:30, type:'corner', sub:'gotojail', name:'Punta sa Imbakan', icon:'🚨'},
-  {id:31, type:'property', district:'paaralan', name:'Classroom Floor', price:340, dims:'Length: 6 m • Width: 5 m', icon:'🏫'},
-  {id:32, type:'property', district:'paaralan', name:'School Playground', price:360, dims:'Length: 10 m • Width: 8 m', icon:'⚽'},
-  {id:33, type:'chance', name:'Tulong Barangay', icon:'🤝'},
-  {id:34, type:'property', district:'paaralan', name:'School Garden Plot', price:380, dims:'Length: 7 m • Width: 6 m', icon:'🌻'},
-  {id:35, type:'property', district:'terminal', name:'Jeepney Terminal – Alabang', price:200, dims:'Route length: 6.8 km', icon:'🚐'},
-  {id:36, type:'chance', name:'Sorpresa', icon:'🎲'},
-  {id:37, type:'property', district:'poblacion', name:'Munisipyo Plaza', price:400, dims:'Length: 12 m • Width: 9 m', icon:'🏛️'},
-  {id:38, type:'tax', name:'Buwis sa Karangyaan (Luxury Tax)', icon:'💎', amount:100},
-  {id:39, type:'property', district:'poblacion', name:'Bagong Palengke Complex', price:450, dims:'Length: 15 m • Width: 10 m', icon:'🏢'},
-];
-
-const GRID_POS = {
-  0:{r:11,c:11}, 1:{r:11,c:10}, 2:{r:11,c:9}, 3:{r:11,c:8}, 4:{r:11,c:7}, 5:{r:11,c:6},
-  6:{r:11,c:5}, 7:{r:11,c:4}, 8:{r:11,c:3}, 9:{r:11,c:2}, 10:{r:11,c:1},
-  11:{r:10,c:1}, 12:{r:9,c:1}, 13:{r:8,c:1}, 14:{r:7,c:1}, 15:{r:6,c:1},
-  16:{r:5,c:1}, 17:{r:4,c:1}, 18:{r:3,c:1}, 19:{r:2,c:1}, 20:{r:1,c:1},
-  21:{r:1,c:2}, 22:{r:1,c:3}, 23:{r:1,c:4}, 24:{r:1,c:5}, 25:{r:1,c:6},
-  26:{r:1,c:7}, 27:{r:1,c:8}, 28:{r:1,c:9}, 29:{r:1,c:10}, 30:{r:1,c:11},
-  31:{r:2,c:11}, 32:{r:3,c:11}, 33:{r:4,c:11}, 34:{r:5,c:11}, 35:{r:6,c:11},
-  36:{r:7,c:11}, 37:{r:8,c:11}, 38:{r:9,c:11}, 39:{r:10,c:11},
-};
-const DISTRICT_COLOR = {
-  tiisan:'var(--tiisan)', tangke:'var(--tangke)', bigasan:'var(--bigasan)',
-  palengke:'var(--palengke)', balikbayan:'var(--balikbayan)', hardin:'var(--hardin)',
-  paaralan:'var(--paaralan)', poblacion:'var(--poblacion)', terminal:'var(--terminal)', utility:'var(--utility)'
-};
-const AREA_DISTRICTS = ['hardin','paaralan','poblacion'];
-function isAreaDistrict(d){ return AREA_DISTRICTS.includes(d); }
-const TOKEN_EMOJI = ['🥥','🥭','🍍','🐔'];
-const TOKEN_COLOR = ['#2C6E91','#D9A441','#C1272D','#3B7A47'];
-
-/* ============================================================
-   State
-   ============================================================ */
-let state = null; // set on start
-let usedLength = new Set();
-let usedArea = new Set();
-let isRolling = false;
-let modalLocked = false; // when true, only modal buttons respond (prevents double actions)
-let audioCtx = null;
-let muted = false;
-
-/* ============================================================
-   Audio (WebAudio, generated tones — no external files, bug-safe)
-   ============================================================ */
-function ensureAudio(){
-  if(!audioCtx){
-    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    catch(e){ audioCtx = null; }
-  }
-  if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume(); }
+function buildForms(prop){
+  return {
+    conditional: `If ${prop.p}, then ${prop.q}.`,
+    converse: `If ${prop.q}, then ${prop.p}.`,
+    inverse: `If ${prop.negP}, then ${prop.negQ}.`,
+    contrapositive: `If ${prop.negQ}, then ${prop.negP}.`
+  };
 }
-function tone(freq, dur, type, delay, vol){
-  if(muted || !audioCtx) return;
-  delay = delay||0; vol = vol===undefined?0.15:vol;
-  const t0 = audioCtx.currentTime + delay;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type||'sine';
-  osc.frequency.setValueAtTime(freq, t0);
-  gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(vol, t0+0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(t0); osc.stop(t0+dur+0.02);
-}
-function sndDice(){ for(let i=0;i<4;i++) tone(300+Math.random()*300, 0.06, 'square', i*0.07, 0.08); }
-function sndCorrect(){ [523,659,784].forEach((f,i)=>tone(f,0.18,'triangle',i*0.09,0.16)); }
-function sndWrong(){ tone(180,0.35,'sawtooth',0,0.14); tone(140,0.35,'sawtooth',0.05,0.1); }
-function sndCoin(){ tone(880,0.08,'square',0,0.12); tone(1200,0.1,'square',0.06,0.1); }
-function sndTurn(){ tone(440,0.12,'sine',0,0.1); }
-function sndBuy(){ tone(600,0.1,'triangle',0,0.14); tone(900,0.15,'triangle',0.08,0.14); }
+const FORM_LABELS = {conditional:'Conditional', converse:'Converse', inverse:'Inverse', contrapositive:'Contrapositive'};
+const FORM_ORDER = ['conditional','converse','inverse','contrapositive'];
 
-/* ============================================================
-   Setup screen — dynamic player fields
-   ============================================================ */
-function buildPlayerFields(){
-  const n = parseInt(document.getElementById('numPlayers').value,10);
-  const wrap = document.getElementById('playerFields');
-  wrap.innerHTML = '';
-  for(let i=0;i<n;i++){
-    const row = document.createElement('div');
-    row.className='field';
-    row.innerHTML = `
-      <label>Player ${i+1}</label>
-      <div class="player-setup-row">
-        <input type="text" id="pname${i}" value="Player ${i+1}" maxlength="16" style="flex:1;">
-        <div class="token-pick" data-idx="${i}">
-          ${TOKEN_EMOJI.map((e,ti)=>`<span data-token="${ti}" class="${ti===i?'picked':''}">${e}</span>`).join('')}
-        </div>
-      </div>`;
-    wrap.appendChild(row);
-  }
-  wrap.querySelectorAll('.token-pick').forEach(tp=>{
-    tp.querySelectorAll('span').forEach(sp=>{
-      sp.addEventListener('click', ()=>{
-        tp.querySelectorAll('span').forEach(s=>s.classList.remove('picked'));
-        sp.classList.add('picked');
-      });
+function propsByPool(pool){
+  if(pool==='easy') return PROPOSITIONS.filter(p=>p.diff==='easy');
+  if(pool==='hard') return PROPOSITIONS.filter(p=>p.diff==='hard');
+  return PROPOSITIONS;
+}
+
+/* =========================================================
+   DATA MODULE — Deck factory
+   ========================================================= */
+const COLORS = ['conditional','converse','inverse','contrapositive'];
+const ACTIONS = ['skip','reverse','challenge2'];
+
+function buildDeck(){
+  let deck = [];
+  let uid = 0;
+  COLORS.forEach(color=>{
+    deck.push({uid:uid++, color, kind:'number', value:0});
+    for(let v=1; v<=9; v++){
+      deck.push({uid:uid++, color, kind:'number', value:v});
+    }
+    ACTIONS.forEach(a=>{
+      deck.push({uid:uid++, color, kind:'action', value:a});
+      deck.push({uid:uid++, color, kind:'action', value:a});
     });
   });
+  for(let i=0;i<4;i++) deck.push({uid:uid++, color:'wild', kind:'wild', value:'wild'});
+  for(let i=0;i<4;i++) deck.push({uid:uid++, color:'wild', kind:'wild', value:'wildchallenge'});
+  return shuffle(deck);
 }
-document.getElementById('numPlayers').addEventListener('change', buildPlayerFields);
-buildPlayerFields();
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
 
-document.getElementById('startBtn').addEventListener('click', ()=>{
-  ensureAudio();
-  const n = parseInt(document.getElementById('numPlayers').value,10);
+const ACTION_LABEL = {skip:'SKIP', reverse:'REV', challenge2:'+2'};
+const ACTION_ICON = {skip:'⊘', reverse:'⟲', challenge2:'+2'};
+
+/* =========================================================
+   AUDIO MODULE
+   ========================================================= */
+const Audio_ = (function(){
+  let ctx = null;
+  let sfxOn = true, musicOn = false;
+  let musicTimer = null;
+  function getCtx(){
+    if(!ctx){ ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+    if(ctx.state==='suspended') ctx.resume();
+    return ctx;
+  }
+  function tone(freq, dur, type='sine', gain=0.08, delay=0){
+    if(!sfxOn) return;
+    try{
+      const c = getCtx();
+      const osc = c.createOscillator();
+      const g = c.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      g.gain.value = gain;
+      osc.connect(g); g.connect(c.destination);
+      const t0 = c.currentTime + delay;
+      g.gain.setValueAtTime(gain, t0);
+      g.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+      osc.start(t0); osc.stop(t0+dur+0.02);
+    }catch(e){}
+  }
+  return {
+    cardFlip(){ tone(320,0.08,'square',0.05); },
+    draw(){ tone(160,0.12,'triangle',0.06); },
+    correct(){ tone(523.25,0.12,'sine',0.09); tone(659.25,0.14,'sine',0.09,0.09); tone(783.99,0.18,'sine',0.09,0.18); },
+    wrong(){ tone(220,0.22,'sawtooth',0.07); tone(160,0.28,'sawtooth',0.06,0.1); },
+    win(){ [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,0.22,'sine',0.09,i*0.14)); },
+    click(){ tone(700,0.05,'square',0.03); },
+    setSfx(v){ sfxOn = v; },
+    setMusic(v){
+      musicOn = v;
+      if(musicOn){
+        const notes = [261.6,293.7,329.6,392.0,440.0,392.0,329.6,293.7];
+        let i = 0;
+        musicTimer = setInterval(()=>{
+          if(!musicOn) return;
+          tone(notes[i % notes.length], 1.4, 'sine', 0.025);
+          i++;
+        }, 900);
+      } else {
+        clearInterval(musicTimer);
+      }
+    }
+  };
+})();
+
+/* =========================================================
+   STORAGE MODULE (window.storage with in-memory fallback)
+   ========================================================= */
+const Store = (function(){
+  let memoryFallback = {};
+  let usesFallback = false;
+  async function get(key){
+    if(usesFallback) return memoryFallback[key] ?? null;
+    try{
+      const r = await window.storage.get(key,false);
+      return r ? JSON.parse(r.value) : null;
+    }catch(e){ usesFallback = true; return memoryFallback[key] ?? null; }
+  }
+  async function set(key, value){
+    if(usesFallback){ memoryFallback[key]=value; return; }
+    try{ await window.storage.set(key, JSON.stringify(value), false); }
+    catch(e){ usesFallback = true; memoryFallback[key]=value; }
+  }
+  return {get, set};
+})();
+
+/* =========================================================
+   ANALYTICS MODULE
+   ========================================================= */
+let classData = {}; // { playerName: {games, wins, score, correct, attempts, correctByForm:{}, attemptsByForm:{}, bestStreak} }
+
+function blankPlayerAnalytics(){
+  return {games:0, wins:0, score:0, correct:0, attempts:0, bestStreak:0,
+    correctByForm:{conditional:0,converse:0,inverse:0,contrapositive:0},
+    attemptsByForm:{conditional:0,converse:0,inverse:0,contrapositive:0}};
+}
+async function loadAnalytics(){
+  const d = await Store.get('unologic:classData');
+  classData = d || {};
+}
+async function saveAnalytics(){
+  await Store.set('unologic:classData', classData);
+}
+function recordAttempt(name, form, correct){
+  if(!classData[name]) classData[name] = blankPlayerAnalytics();
+  const rec = classData[name];
+  rec.attempts++; rec.attemptsByForm[form]++;
+  if(correct){ rec.correct++; rec.correctByForm[form]++; }
+}
+function recordGameEnd(playerNames, winnerName, finalStreaks, finalScores){
+  playerNames.forEach(n=>{
+    if(!classData[n]) classData[n] = blankPlayerAnalytics();
+    classData[n].games++;
+    classData[n].score += (finalScores[n]||0);
+    if(finalStreaks[n] > classData[n].bestStreak) classData[n].bestStreak = finalStreaks[n];
+    if(n===winnerName) classData[n].wins++;
+  });
+  saveAnalytics();
+}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+let G = null; // active game state
+let currentMode = null;
+
+function newPlayer(name, isAI){
+  return {
+    name, isAI, hand:[], score:0, streak:0, bestStreak:0,
+    correct:0, attempts:0,
+    correctByForm:{conditional:0,converse:0,inverse:0,contrapositive:0},
+    attemptsByForm:{conditional:0,converse:0,inverse:0,contrapositive:0}
+  };
+}
+
+/* =========================================================
+   VIEW SWITCHING
+   ========================================================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const target = document.getElementById('view-'+btn.dataset.view);
+    target.classList.add('active');
+    if(btn.dataset.view==='analytics') renderAnalytics();
+    if(btn.dataset.view==='teacher') renderTeacherView();
+  });
+});
+function goToTableView(){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-table').classList.add('active');
+}
+
+/* =========================================================
+   SETUP SCREEN LOGIC
+   ========================================================= */
+document.querySelectorAll('.mode-card button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentMode = btn.dataset.mode;
+    const numSel = document.getElementById('numPlayers');
+    if(currentMode==='practice'){ numSel.value='1'; }
+    if(currentMode==='ai'){ if(numSel.value==='1') numSel.value='3'; }
+    if(currentMode==='multiplayer' || currentMode==='teacher-play'){ if(numSel.value==='1') numSel.value='4'; }
+    renderNameInputs();
+    document.getElementById('setupPanel').scrollIntoView({behavior:'smooth'});
+  });
+});
+document.getElementById('numPlayers').addEventListener('change', renderNameInputs);
+function renderNameInputs(){
+  const n = parseInt(document.getElementById('numPlayers').value);
+  const wrap = document.getElementById('playerNameInputs');
+  wrap.innerHTML = '';
+  for(let i=0;i<n;i++){
+    const isAI = (currentMode==='ai' && i>0);
+    const def = isAI ? `Bot ${i}` : (currentMode==='practice' ? 'You' : `Player ${i+1}`);
+    const inp = document.createElement('input');
+    inp.type='text'; inp.value=def; inp.dataset.ai = isAI ? '1':'0';
+    inp.id = 'pname'+i;
+    inp.style.width='140px';
+    wrap.appendChild(inp);
+  }
+}
+renderNameInputs();
+
+document.getElementById('startGameBtn').addEventListener('click', ()=>{
+  if(!currentMode) currentMode = 'multiplayer';
+  startGame();
+});
+
+/* =========================================================
+   GAME START / DEAL
+   ========================================================= */
+function startGame(){
+  const n = parseInt(document.getElementById('numPlayers').value);
+  const pool = document.getElementById('difficultyPool').value;
+  const timerLen = parseInt(document.getElementById('timerLength').value);
+  const handSize = parseInt(document.getElementById('handSize').value);
+
   const players = [];
   for(let i=0;i<n;i++){
-    const name = (document.getElementById('pname'+i).value || ('Player '+(i+1))).trim().slice(0,16);
-    const tp = document.querySelector(`.token-pick[data-idx="${i}"] .picked`);
-    const tokenIdx = tp ? parseInt(tp.getAttribute('data-token'),10) : i;
-    players.push({
-      name: name || ('Player '+(i+1)),
-      tokenIdx, cash:1000, pos:0, owned:[], inJail:false, active:true
-    });
+    const inp = document.getElementById('pname'+i);
+    const name = (inp && inp.value.trim()) || `Player ${i+1}`;
+    const isAI = inp && inp.dataset.ai==='1';
+    players.push(newPlayer(name, isAI));
   }
-  initGame(players);
-});
 
-/* ============================================================
-   Init
-   ============================================================ */
-function initGame(players){
-  state = { players, current:0, ended:false };
-  usedLength = new Set(); usedArea = new Set();
-  document.getElementById('setupScreen').classList.add('hidden');
-  document.getElementById('gameScreen').classList.remove('hidden');
-  document.getElementById('restartBtn').classList.remove('hidden');
-  renderBoard();
-  renderPlayers();
-  updateHint();
-  log(`🎮 Game started! Up first: ${players[0].name}. Last player standing wins!`);
-}
+  const deck = buildDeck();
+  players.forEach(p=>{
+    p.hand = deck.splice(0, handSize);
+  });
+  let firstCard = deck.shift();
+  while(firstCard.kind!=='number'){ deck.push(firstCard); firstCard = deck.shift(); }
 
-/* ============================================================
-   Board rendering
-   ============================================================ */
-function renderBoard(){
-  const board = document.getElementById('board');
-  board.innerHTML = '';
-  TILES.forEach(t=>{
-    const pos = GRID_POS[t.id];
-    const div = document.createElement('div');
-    div.className = 'tile' + (t.type==='corner' ? ' corner':'');
-    div.style.gridRow = pos.r; div.style.gridColumn = pos.c;
-    div.id = 'tile-'+t.id;
-    let stripe = '';
-    if(t.type==='property'){ stripe = `<div class="tile-stripe" style="background:${DISTRICT_COLOR[t.district]}"></div>`; }
-    if(t.type==='chance'){ stripe = `<div class="tile-stripe" style="background:var(--chance)"></div>`; }
-    if(t.type==='tax'){ stripe = `<div class="tile-stripe" style="background:var(--tax)"></div>`; }
-    div.innerHTML = `${stripe}<div class="ticon">${t.icon}</div><div class="tname">${t.name}</div>${t.type==='property'?`<div class="tprice">$${t.price}</div>`:''}${t.type==='tax'?`<div class="tprice">-$${t.amount}</div>`:''}`;
-    board.appendChild(div);
-  });
-  const center = document.createElement('div');
-  center.className='center';
-  center.innerHTML = `
-    <div class="diag-logo">
-      <div class="band">MEASURE-OPOLY</div>
-      <div class="sub">A FAST-CALCULATING MEASUREMENT GAME</div>
-    </div>
-    <div class="jeepney-sign" id="jeepneySign">UP NEXT: —</div>
-    <div class="dice-row">
-      <div class="die" id="die1">-</div>
-      <div class="die" id="die2">-</div>
-    </div>
-    <div id="roundLabel"></div>
-  `;
-  board.appendChild(center);
-  renderTokens();
-}
-function renderTokens(){
-  document.querySelectorAll('.token').forEach(el=>el.remove());
-  state.players.forEach((p, idx)=>{
-    if(!p.active) return;
-    const tileEl = document.getElementById('tile-'+p.pos);
-    if(!tileEl) return;
-    const tok = document.createElement('div');
-    tok.className='token';
-    tok.style.background = TOKEN_COLOR[p.tokenIdx];
-    tok.style.left = (3 + (idx%2)*11) + 'px';
-    tok.style.top = (3 + Math.floor(idx/2)*11) + 'px';
-    tok.textContent = TOKEN_EMOJI[p.tokenIdx];
-    tileEl.appendChild(tok);
-  });
-  // owned markers
-  document.querySelectorAll('.tile.owned').forEach(el=>el.classList.remove('owned'));
-  TILES.filter(t=>t.type==='property').forEach(t=>{
-    const owner = state.players.find(p=>p.owned.includes(t.id));
-    if(owner){
-      const el = document.getElementById('tile-'+t.id);
-      el.classList.add('owned');
-      el.style.setProperty('--ownerColor', TOKEN_COLOR[owner.tokenIdx]);
-    }
-  });
-  const sign = document.getElementById('jeepneySign');
-  const cp = state.players[state.current];
-  if(sign) sign.textContent = 'UP NEXT: ' + cp.name + ' ' + TOKEN_EMOJI[cp.tokenIdx];
-  const rl = document.getElementById('roundLabel');
-  if(rl){
-    const activeN = state.players.filter(p=>p.active).length;
-    rl.textContent = activeN < state.players.length ? `Players left: ${activeN}/${state.players.length}` : '';
-  }
-}
-function renderPlayers(){
-  const wrap = document.getElementById('playersList');
-  wrap.innerHTML = '';
-  state.players.forEach((p, idx)=>{
-    const row = document.createElement('div');
-    row.className = 'player-row' + (idx===state.current && p.active ? ' active':'');
-    if(!p.active) row.style.opacity = '0.45';
-    row.innerHTML = `
-      <div class="player-token" style="--tokColor:${TOKEN_COLOR[p.tokenIdx]}">${TOKEN_EMOJI[p.tokenIdx]}</div>
-      <div class="player-info">
-        <div class="pname">${p.name} ${p.inJail?'<span class="jail-tag">IN STORAGE</span>':''}${!p.active?'<span class="jail-tag">BANKRUPT</span>':''}</div>
-        <div class="pcash cash">$${p.cash} • ${p.owned.length} properties</div>
-      </div>`;
-    wrap.appendChild(row);
-  });
-}
-function updateHint(){
-  const hint = document.getElementById('turnHint');
-  const p = state.players[state.current];
-  const rollBtn = document.getElementById('rollBtn');
-  if(p.inJail){
-    hint.textContent = `${p.name} is in Storage. Answer a question or pay $50 to get out.`;
-    rollBtn.textContent = '🔓 Try to Get Out';
+  G = {
+    deck, discard:[firstCard], players, current:0, direction:1,
+    pool, timerLen, isPractice: currentMode==='practice',
+    isTeacher: currentMode==='teacher-play',
+    hideHands: currentMode==='multiplayer' || currentMode==='teacher-play',
+    activeColor: firstCard.color,
+    log:[], gameOver:false, pendingPassIndex:null, questionTimer:null
+  };
+
+  document.getElementById('teacherLivePanel').classList.toggle('hidden', !G.isTeacher);
+  logEvent(`New game started — ${players.map(p=>p.name).join(', ')}.`, 'neutral');
+  goToTableView();
+
+  if(G.hideHands){
+    showPassGate(0);
   } else {
-    hint.textContent = `${p.name}'s turn.`;
-    rollBtn.textContent = '🎲 Roll the Dice';
+    showTable();
   }
 }
-function log(msg){
-  const box = document.getElementById('logBox');
-  const line = document.createElement('div');
-  line.textContent = msg;
-  box.prepend(line);
+
+/* =========================================================
+   PASS-DEVICE GATE (hotseat privacy)
+   ========================================================= */
+function showPassGate(idx){
+  document.getElementById('passGate').classList.add('active');
+  document.getElementById('gameTable').classList.remove('active');
+  document.getElementById('passGateText').textContent = `Pass the device to ${G.players[idx].name}`;
+  G.pendingPassIndex = idx;
+}
+document.getElementById('passGateBtn').addEventListener('click', ()=>{
+  Audio_.click();
+  showTable();
+});
+function showTable(){
+  document.getElementById('passGate').classList.remove('active');
+  document.getElementById('gameTable').classList.add('active');
+  render();
+  maybeRunAITurn();
 }
 
-/* ============================================================
-   Dice roll & turn flow
-   ============================================================ */
-document.getElementById('rollBtn').addEventListener('click', ()=>{
-  ensureAudio();
-  if(isRolling || modalLocked || state.ended) return; // bug prevention: no double actions
-  const p = state.players[state.current];
-  if(p.inJail){ handleJailAttempt(); return; }
-  isRolling = true;
-  document.getElementById('rollBtn').disabled = true;
-  sndDice();
-  let ticks = 0;
-  const d1el = document.getElementById('die1'), d2el = document.getElementById('die2');
-  const spin = setInterval(()=>{
-    d1el.textContent = 1+Math.floor(Math.random()*6);
-    d2el.textContent = 1+Math.floor(Math.random()*6);
-    ticks++;
-    if(ticks>=8){
-      clearInterval(spin);
-      const d1 = 1+Math.floor(Math.random()*6);
-      const d2 = 1+Math.floor(Math.random()*6);
-      d1el.textContent = d1; d2el.textContent = d2;
-      movePlayer(d1+d2);
-    }
-  }, 90);
-});
+/* =========================================================
+   RENDERING
+   ========================================================= */
+function cardSymbol(card){
+  if(card.kind==='number') return String(card.value);
+  if(card.kind==='action') return ACTION_ICON[card.value];
+  if(card.value==='wild') return 'W';
+  if(card.value==='wildchallenge') return 'W+4';
+  return '?';
+}
+function cardSubLabel(card){
+  if(card.kind==='number') return FORM_LABELS[card.color];
+  if(card.kind==='action') return ACTION_LABEL[card.value] + ' · ' + FORM_LABELS[card.color];
+  if(card.value==='wild') return 'Wild';
+  return 'Wild Challenge';
+}
+function makeCardEl(card, faceUp=true){
+  const el = document.createElement('div');
+  if(!faceUp){ el.className='card back'; el.textContent='🂠'; return el; }
+  el.className = 'card color-'+ (card.kind==='wild' ? 'wild' : card.color);
+  el.innerHTML = `<div class="card-symbol">${cardSymbol(card)}</div><div class="card-sub">${cardSubLabel(card)}</div>`;
+  return el;
+}
 
-function movePlayer(steps){
-  const p = state.players[state.current];
-  let stepsLeft = steps;
-  const stepMove = ()=>{
-    if(stepsLeft<=0){
-      isRolling = false;
-      renderTokens();
-      resolveTile(p);
+function render(){
+  if(!G || G.gameOver) return;
+  const p = G.players[G.current];
+  document.getElementById('turnIndicator').textContent = `${p.name}'s turn`;
+  document.getElementById('dirArrow').textContent = G.direction===1 ? '→ clockwise' : '← counter-clockwise';
+
+  // scoreboard
+  const sb = document.getElementById('scoreboard');
+  sb.innerHTML = '';
+  G.players.forEach((pl,i)=>{
+    const chip = document.createElement('div');
+    chip.className = 'score-chip' + (i===G.current?' current':'');
+    chip.innerHTML = `${pl.name}: ${pl.score} pts · ${pl.hand.length} cards`;
+    sb.appendChild(chip);
+  });
+
+  // discard top
+  const top = G.discard[G.discard.length-1];
+  const topEl = document.getElementById('topCard');
+  topEl.className = 'card ' + (top.kind==='wild' ? 'color-'+G.activeColor : 'color-'+top.color);
+  topEl.innerHTML = `<div class="card-symbol">${cardSymbol(top)}</div><div class="card-sub">${cardSubLabel(top)}</div>`;
+
+  document.getElementById('drawCount').textContent = `Draw (${G.deck.length})`;
+
+  // hand
+  document.getElementById('handWrapLabel').textContent = G.hideHands ? `${p.name}'s Hand` : 'Your Hand';
+  const handArea = document.getElementById('handArea');
+  handArea.innerHTML = '';
+  const showHand = !p.isAI;
+  p.hand.forEach((card, idx)=>{
+    if(!showHand){
+      handArea.appendChild(makeCardEl(card, false));
       return;
     }
-    p.pos = (p.pos+1) % TILES.length;
-    if(p.pos === 0){
-      p.cash += 200;
-      log(`🏁 ${p.name} passed/landed on GO, +$200!`);
-      sndCoin();
-    }
-    renderTokens();
-    renderPlayers();
-    stepsLeft--;
-    setTimeout(stepMove, 140);
-  };
-  stepMove();
-}
+    const el = makeCardEl(card, true);
+    const can = canPlay(card);
+    el.classList.add(can ? 'playable' : 'unplayable');
+    el.addEventListener('click', ()=>{ if(can) attemptPlay(idx); else { Audio_.wrong(); toast("That card doesn't match the pile."); } });
+    handArea.appendChild(el);
+  });
 
-function resolveTile(p){
-  const t = TILES[p.pos];
-  renderPlayers();
-  if(t.type==='property'){
-    const owner = state.players.find(pl=>pl.owned.includes(t.id));
-    if(!owner){ openBuyModal(p, t); }
-    else if(owner===p){ endTurn(`${p.name} landed on their own property: ${t.name}.`); }
-    else { openRentModal(p, t, owner); }
-  } else if(t.type==='chance'){
-    openChanceModal(p);
-  } else if(t.type==='tax'){
-    const paid = chargePlayer(p, t.amount, null);
-    if(paid) sndCoin();
-    renderPlayers();
-    endTurn(paid ? `💸 ${p.name} paid $${t.amount} for ${t.name}.` : null);
-  } else if(t.type==='corner'){
-    if(t.sub==='go'){ endTurn(`${p.name} is on GO.`); }
-    else if(t.sub==='rest'){ openMarketModal(p); }
-    else if(t.sub==='jail'){ endTurn(`${p.name} is just visiting Storage. Safe!`); }
-    else if(t.sub==='gotojail'){
-      p.pos = 10; p.inJail = true; renderTokens(); renderPlayers();
-      sndWrong();
-      endTurn(`🚨 ${p.name} was sent to Storage! Must answer a question next turn.`);
-    }
+  // teacher live panel
+  if(G.isTeacher){
+    renderTeacherLive();
   }
 }
 
-/* ============================================================
-   Question helpers
-   ============================================================ */
-function pickQuestion(pool, usedSet){
-  if(usedSet.size >= pool.length) usedSet.clear(); // reshuffle when exhausted
-  let idx;
-  let tries=0;
-  do{ idx = Math.floor(Math.random()*pool.length); tries++; }
-  while(usedSet.has(idx) && tries<50);
-  usedSet.add(idx);
-  return {idx, item:pool[idx]};
+function logEvent(text, type='neutral'){
+  G.log.unshift({text, type});
+  if(G.log.length>40) G.log.pop();
+  const feed = document.getElementById('logFeed');
+  feed.innerHTML = G.log.map(l=>`<div class="${l.type==='good'?'entry-good':l.type==='bad'?'entry-bad':''}">${l.text}</div>`).join('');
+}
+function toast(msg){
+  const host = document.getElementById('toastHost');
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent = msg;
+  host.appendChild(t);
+  setTimeout(()=>t.remove(), 2400);
 }
 
-/* ============================================================
-   Modal system
-   ============================================================ */
-function openModal(html){
-  modalLocked = true;
-  document.getElementById('modalBox').innerHTML = html;
-  document.getElementById('overlay').classList.add('show');
-}
-function closeModal(){
-  modalLocked = false;
-  document.getElementById('overlay').classList.remove('show');
-}
-
-function openBuyModal(p, t){
-  const isArea = isAreaDistrict(t.district);
-  const pool = isArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
-  const usedSet = isArea ? usedArea : usedLength;
-  const {item} = pickQuestion(pool, usedSet);
-  const tagColor = DISTRICT_COLOR[t.district];
-  openModal(`
-    <span class="tag" style="background:${tagColor}">${t.name}</span>
-    <h2>${t.icon} ${t.name}</h2>
-    <p><b>Details:</b> ${t.dims}<br><b>Price:</b> $${t.price}</p>
-    <p>${item.q}</p>
-    <div id="choices">
-      ${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}
-    </div>
-    <div id="modalFooter"></div>
-  `);
-  document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
-      const chosen = parseInt(btn.getAttribute('data-i'),10);
-      const correct = chosen === item.a;
-      btn.classList.add(correct?'correct':'wrong');
-      if(!correct){
-        document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
-      }
-      const footer = document.getElementById('modalFooter');
-      if(correct){
-        sndCorrect();
-        footer.innerHTML = `<div class="explain">✅ Correct! You can now buy this property.</div>
-          <div class="modal-actions">
-            ${p.cash>=t.price ? `<button class="btn gold" id="buyYes">🏠 Buy ($${t.price})</button>` : `<div class="explain">Not enough cash to buy this.</div>`}
-            <button class="btn ghost" id="buyNo">Not Now</button>
-          </div>`;
-        const buyYes = document.getElementById('buyYes');
-        if(buyYes) buyYes.addEventListener('click', ()=>{
-          p.cash -= t.price; p.owned.push(t.id);
-          sndBuy();
-          renderPlayers(); renderTokens();
-          closeModal();
-          endTurn(`🏠 ${p.name} bought ${t.name} for $${t.price}.`);
-        });
-        document.getElementById('buyNo').addEventListener('click', ()=>{
-          closeModal();
-          endTurn(`${p.name} chose not to buy ${t.name} for now.`);
-        });
-      } else {
-        sndWrong();
-        footer.innerHTML = `<div class="explain">❌ Incorrect. The right answer was: <b>${item.c[item.a]}</b>. This property can't be bought this turn.</div>
-          <div class="modal-actions"><button class="btn ghost" id="okBtn">OK</button></div>`;
-        document.getElementById('okBtn').addEventListener('click', ()=>{
-          closeModal();
-          endTurn(`${p.name} did not buy ${t.name}.`);
-        });
-      }
-    });
-  });
-}
-
-function openRentModal(p, t, owner){
-  let rent = Math.round(t.price*0.3);
-  const sameDistrict = TILES.filter(x=>x.type==='property' && x.district===t.district).map(x=>x.id);
-  const ownsAll = sameDistrict.every(id=>owner.owned.includes(id));
-  if(ownsAll) rent *= 2;
-  const isArea = isAreaDistrict(t.district);
-  const pool = isArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
-  const usedSet = isArea ? usedArea : usedLength;
-  const {item} = pickQuestion(pool, usedSet);
-  openModal(`
-    <span class="tag" style="background:${DISTRICT_COLOR[t.district]}">${owner.name}'s Property</span>
-    <h2>${t.icon} ${t.name}</h2>
-    <p>You owe <b>$${rent}</b> in rent to ${owner.name}${ownsAll?' (doubled — they own the whole district!)':''}.</p>
-    <p>Answer correctly to cut the rent in half:</p>
-    <p>${item.q}</p>
-    <div id="choices">
-      ${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}
-    </div>
-    <div id="modalFooter"></div>
-  `);
-  document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
-      const chosen = parseInt(btn.getAttribute('data-i'),10);
-      const correct = chosen === item.a;
-      btn.classList.add(correct?'correct':'wrong');
-      if(!correct) document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
-      const finalRent = correct ? Math.max(1, Math.round(rent/2)) : rent;
-      const footer = document.getElementById('modalFooter');
-      footer.innerHTML = `<div class="explain">${correct? '✅ Correct! Rent is cut in half: $'+finalRent : '❌ Incorrect. Full rent: $'+finalRent}</div>
-        <div class="modal-actions"><button class="btn ${correct?'gold':'red'}" id="payBtn">Pay $${finalRent}</button></div>`;
-      if(correct) sndCorrect(); else sndWrong();
-      document.getElementById('payBtn').addEventListener('click', ()=>{
-        const paid = chargePlayer(p, finalRent, owner);
-        if(paid) sndCoin();
-        renderPlayers();
-        closeModal();
-        endTurn(paid ? `💸 ${p.name} paid $${finalRent} in rent to ${owner.name}.` : `${p.name} couldn't cover the $${finalRent} rent owed to ${owner.name}.`);
-      });
-    });
-  });
-}
-
-function openChanceModal(p){
-  const useArea = Math.random()<0.5;
-  const pool = useArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
-  const usedSet = useArea ? usedArea : usedLength;
-  const {item} = pickQuestion(pool, usedSet);
-  openModal(`
-    <span class="tag" style="background:var(--chance)">Measure Card</span>
-    <h2>📐 Pop Quiz!</h2>
-    <p>${item.q}</p>
-    <div id="choices">
-      ${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}
-    </div>
-    <div id="modalFooter"></div>
-  `);
-  document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
-      const chosen = parseInt(btn.getAttribute('data-i'),10);
-      const correct = chosen === item.a;
-      btn.classList.add(correct?'correct':'wrong');
-      if(!correct) document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
-      const footer = document.getElementById('modalFooter');
-      if(correct){ p.cash += 100; sndCorrect(); footer.innerHTML = `<div class="explain">✅ Correct! +$100</div><div class="modal-actions"><button class="btn gold" id="okBtn">OK</button></div>`; }
-      else { sndWrong(); const paid = chargePlayer(p,50,null); footer.innerHTML = paid ? `<div class="explain">❌ Incorrect. -$50. Correct answer: ${item.c[item.a]}</div><div class="modal-actions"><button class="btn ghost" id="okBtn">OK</button></div>` : `<div class="explain">❌ Incorrect, and ${p.name} couldn't cover the $50 penalty.</div><div class="modal-actions"><button class="btn ghost" id="okBtn">OK</button></div>`; }
-      renderPlayers();
-      document.getElementById('okBtn').addEventListener('click', ()=>{
-        closeModal();
-        endTurn(`${p.name} drew a Measure Card.`);
-      });
-    });
-  });
-}
-
-function openMarketModal(p){
-  openModal(`
-    <span class="tag" style="background:var(--bigasan)">Market</span>
-    <h2>🥭 You're at the Market!</h2>
-    <p>You can rest safely, or answer a bonus question for +$150.</p>
-    <div class="modal-actions">
-      <button class="btn gold" id="tryBtn">📐 Answer the Bonus</button>
-      <button class="btn ghost" id="restBtn">😌 Rest</button>
-    </div>
-    <div id="modalFooter"></div>
-  `);
-  document.getElementById('restBtn').addEventListener('click', ()=>{
-    closeModal();
-    endTurn(`${p.name} rested at the Market.`);
-  });
-  document.getElementById('tryBtn').addEventListener('click', ()=>{
-    const useArea = Math.random()<0.5;
-    const pool = useArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
-    const usedSet = useArea ? usedArea : usedLength;
-    const {item} = pickQuestion(pool, usedSet);
-    document.getElementById('modalBox').innerHTML = `
-      <span class="tag" style="background:var(--bigasan)">Market Bonus</span>
-      <h2>🥭 Bonus Question</h2>
-      <p>${item.q}</p>
-      <div id="choices">${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}</div>
-      <div id="modalFooter"></div>`;
-    document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
-        const chosen = parseInt(btn.getAttribute('data-i'),10);
-        const correct = chosen === item.a;
-        btn.classList.add(correct?'correct':'wrong');
-        if(!correct) document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
-        const footer = document.getElementById('modalFooter');
-        if(correct){ p.cash+=150; sndCorrect(); footer.innerHTML = `<div class="explain">✅ Correct! +$150</div><div class="modal-actions"><button class="btn gold" id="okBtn2">OK</button></div>`; }
-        else{ sndWrong(); footer.innerHTML = `<div class="explain">❌ Incorrect, but no penalty. Correct answer: ${item.c[item.a]}</div><div class="modal-actions"><button class="btn ghost" id="okBtn2">OK</button></div>`; }
-        renderPlayers();
-        document.getElementById('okBtn2').addEventListener('click', ()=>{
-          closeModal();
-          endTurn(`${p.name} tried the Market bonus.`);
-        });
-      });
-    });
-  });
-}
-
-function handleJailAttempt(){
-  const p = state.players[state.current];
-  const useArea = Math.random()<0.5;
-  const pool = useArea ? AREA_QUESTIONS : LENGTH_QUESTIONS;
-  const usedSet = useArea ? usedArea : usedLength;
-  const {item} = pickQuestion(pool, usedSet);
-  openModal(`
-    <span class="tag" style="background:var(--corner)">Storage</span>
-    <h2>📦 Stuck in Storage</h2>
-    <p>Answer correctly to get out, or pay $50.</p>
-    <p>${item.q}</p>
-    <div id="choices">${item.c.map((c,i)=>`<button class="choice-btn" data-i="${i}">${c}</button>`).join('')}</div>
-    <div class="modal-actions"><button class="btn red" id="payJail">Pay $50</button></div>
-    <div id="modalFooter"></div>
-  `);
-  document.getElementById('payJail').addEventListener('click', ()=>{
-    const paid = chargePlayer(p, 50, null);
-    p.inJail = false;
-    if(paid) sndCoin();
-    renderPlayers(); renderTokens();
-    closeModal();
-    if(paid){
-      log(`💰 ${p.name} paid $50 to get out of Storage.`);
-      updateHint();
-      document.getElementById('rollBtn').disabled = false;
-    } else {
-      endTurn(null);
-    }
-  });
-  document.querySelectorAll('#choices .choice-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('#choices .choice-btn').forEach(b=>b.disabled=true);
-      document.getElementById('payJail').disabled = true;
-      const chosen = parseInt(btn.getAttribute('data-i'),10);
-      const correct = chosen === item.a;
-      btn.classList.add(correct?'correct':'wrong');
-      if(!correct) document.querySelectorAll('#choices .choice-btn')[item.a].classList.add('correct');
-      const footer = document.getElementById('modalFooter');
-      if(correct){
-        p.inJail = false; sndCorrect();
-        footer.innerHTML = `<div class="explain">✅ Correct! You're free. You can roll the dice this turn.</div><div class="modal-actions"><button class="btn gold" id="freeOk">OK</button></div>`;
-        document.getElementById('freeOk').addEventListener('click', ()=>{
-          renderPlayers(); closeModal(); updateHint();
-          document.getElementById('rollBtn').disabled = false;
-        });
-      } else {
-        sndWrong();
-        footer.innerHTML = `<div class="explain">❌ Incorrect. You stay in Storage for now. Correct answer: ${item.c[item.a]}</div><div class="modal-actions"><button class="btn ghost" id="stayOk">OK</button></div>`;
-        document.getElementById('stayOk').addEventListener('click', ()=>{
-          closeModal();
-          endTurn(`${p.name} stayed in Storage.`);
-        });
-      }
-    });
-  });
-}
-
-/* ============================================================
-   Payment / bankruptcy handling
-   ============================================================ */
-function chargePlayer(p, amount, payee){
-  if(p.cash >= amount){
-    p.cash -= amount;
-    if(payee) payee.cash += amount;
-    return true;
-  }
-  // not enough cash — bankruptcy
-  if(payee) payee.cash += p.cash;
-  p.cash = 0;
-  p.owned = [];
-  p.active = false;
-  p.inJail = false;
-  sndWrong();
-  log(`💀 ${p.name} ran out of money and is out of the game!`);
-  renderPlayers(); renderTokens();
+/* =========================================================
+   GAME LOGIC — matching & turns
+   ========================================================= */
+function topCard(){ return G.discard[G.discard.length-1]; }
+function canPlay(card){
+  const top = topCard();
+  if(card.kind==='wild') return true;
+  const topColor = top.kind==='wild' ? G.activeColor : top.color;
+  if(card.color === topColor) return true;
+  if(card.kind==='number' && top.kind==='number' && card.value===top.value) return true;
+  if(card.kind==='action' && top.kind==='action' && card.value===top.value) return true;
   return false;
 }
-
-/* ============================================================
-   Turn management
-   ============================================================ */
-function endTurn(msg){
-  if(msg) log(msg);
-  renderPlayers();
-  document.getElementById('rollBtn').disabled = false;
-  isRolling = false;
-  nextPlayer();
+function advanceTurn(steps=1){
+  const n = G.players.length;
+  G.current = ((G.current + steps*G.direction) % n + n) % n;
 }
-function nextPlayer(){
-  const activePlayers = state.players.filter(p=>p.active);
-  if(activePlayers.length <= 1){
-    endGame();
+function endTurnAndAdvance(){
+  advanceTurn(1);
+  postTurnTransition();
+}
+function postTurnTransition(){
+  render();
+  if(G.hideHands && !G.gameOver){
+    showPassGate(G.current);
+  } else {
+    maybeRunAITurn();
+  }
+}
+
+function attemptPlay(idx){
+  const p = G.players[G.current];
+  const card = p.hand[idx];
+  if(!canPlay(card)) return;
+
+  if(card.kind==='number'){
+    openQuestionModal(card, (correct)=>{
+      if(correct){
+        playCardOut(idx);
+      } else {
+        penalizeDraw(1);
+        logEvent(`${p.name} answered incorrectly and drew a penalty card.`,'bad');
+        endTurnAndAdvance();
+      }
+    });
+  } else if(card.kind==='action'){
+    playCardOut(idx);
+    resolveActionEffects(card);
+  } else if(card.kind==='wild'){
+    chooseWildColor((color)=>{
+      G.activeColor = color;
+      playCardOut(idx, true);
+      if(card.value==='wildchallenge'){
+        resolveWildChallenge();
+      } else {
+        endTurnAndAdvance();
+      }
+    });
+  }
+}
+
+function playCardOut(idx, skipColorReset){
+  const p = G.players[G.current];
+  const card = p.hand.splice(idx,1)[0];
+  G.discard.push(card);
+  if(!skipColorReset && card.kind!=='wild') G.activeColor = card.color;
+  Audio_.cardFlip();
+  logEvent(`${p.name} played ${cardSubLabel(card)} ${card.kind==='number'?card.value:''}.`.trim());
+  if(p.hand.length===0){
+    finishGame(p);
+  }
+}
+
+function resolveActionEffects(card){
+  const p = G.players[G.current];
+  if(card.value==='skip'){
+    logEvent(`${G.players[(G.current+G.direction+G.players.length)%G.players.length].name} is skipped!`,'bad');
+    advanceTurn(1); // skip target
+    endTurnAndAdvance();
+  } else if(card.value==='reverse'){
+    G.direction *= -1;
+    logEvent(`Direction reversed.`);
+    endTurnAndAdvance();
+  } else if(card.value==='challenge2'){
+    resolveChallenge(2);
+  }
+}
+
+function targetIndex(){ return ((G.current + G.direction) % G.players.length + G.players.length) % G.players.length; }
+
+function resolveChallenge(drawCount){
+  const tIdx = targetIndex();
+  const target = G.players[tIdx];
+  logEvent(`${target.name} must answer or draw ${drawCount}!`,'bad');
+  const prop = pickProposition();
+  const form = FORM_ORDER[Math.floor(Math.random()*4)];
+  askPlayer(target, prop, form, 10, (correct)=>{
+    if(correct){
+      logEvent(`${target.name} deflected the challenge!`,'good');
+    } else {
+      drawCardsFor(target, drawCount);
+      logEvent(`${target.name} drew ${drawCount} penalty cards.`,'bad');
+    }
+    endTurnAndAdvance();
+  });
+}
+function resolveWildChallenge(){
+  const tIdx = targetIndex();
+  const target = G.players[tIdx];
+  const prop = pickProposition('hard');
+  const form = FORM_ORDER[Math.floor(Math.random()*4)];
+  logEvent(`${target.name} faces a Wild Challenge!`,'bad');
+  askPlayer(target, prop, form, 12, (correct)=>{
+    if(correct){
+      logEvent(`${target.name} answered correctly — no penalty!`,'good');
+    } else {
+      drawCardsFor(target, 4);
+      logEvent(`${target.name} drew 4 penalty cards.`,'bad');
+    }
+    endTurnAndAdvance();
+  });
+}
+
+function chooseWildColor(cb){
+  const overlay = document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.innerHTML = `<div class="modal" style="max-width:380px;text-align:center;">
+    <h3 style="font-family:var(--font-display);margin-top:0;">Choose a color</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
+      ${COLORS.map(c=>`<button class="option-btn" data-c="${c}" style="text-align:center;font-weight:700;">${FORM_LABELS[c]}</button>`).join('')}
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      Audio_.click();
+      overlay.remove();
+      cb(b.dataset.c);
+    });
+  });
+}
+
+/* =========================================================
+   DRAW PILE
+   ========================================================= */
+document.getElementById('drawPile').addEventListener('click', ()=>{
+  if(!G || G.gameOver) return;
+  const p = G.players[G.current];
+  if(p.isAI) return;
+  drawForCurrentTurn();
+});
+function ensureDeck(){
+  if(G.deck.length===0){
+    const top = G.discard.pop();
+    G.deck = shuffle(G.discard);
+    G.discard = [top];
+  }
+}
+function drawCardsFor(player, n){
+  for(let i=0;i<n;i++){
+    ensureDeck();
+    if(G.deck.length===0) break;
+    player.hand.push(G.deck.shift());
+  }
+  Audio_.draw();
+}
+function penalizeDraw(n){
+  drawCardsFor(G.players[G.current], n);
+}
+function drawForCurrentTurn(){
+  ensureDeck();
+  if(G.deck.length===0){ toast('No cards left to draw.'); return; }
+  const p = G.players[G.current];
+  const card = G.deck.shift();
+  p.hand.push(card);
+  Audio_.draw();
+  logEvent(`${p.name} drew a card.`);
+  render();
+  if(canPlay(card)){
+    toast('That card is playable — tap it if you want to play it now.');
+  } else {
+    endTurnAndAdvance();
+  }
+}
+
+/* =========================================================
+   QUESTION MODAL
+   ========================================================= */
+function pickProposition(forcedDiff){
+  let pool = propsByPool(G ? G.pool : 'mixed');
+  if(forcedDiff) pool = PROPOSITIONS.filter(p=>p.diff===forcedDiff);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function openQuestionModal(card, cb){
+  const p = G.players[G.current];
+  const prop = pickProposition();
+  const form = card.color; // required form = card's color
+  askPlayer(p, prop, form, G.timerLen, (correct)=>{
+    cb(correct);
+    render();
+  }, true);
+}
+
+function askPlayer(player, prop, form, timerLen, cb, isMainPlay){
+  if(player.isAI){
+    // AI simulated accuracy based on difficulty
+    const acc = {easy:0.9, medium:0.72, hard:0.55}[prop.diff];
+    const correct = Math.random() < acc;
+    setTimeout(()=>{
+      recordPlayerAnswer(player, form, correct);
+      if(!G.isPractice) applyScoring(player, correct, prop.diff, timerLen>0?timerLen*0.6:8);
+      logEvent(`${player.name} (AI) answered ${correct?'correctly':'incorrectly'} on ${FORM_LABELS[form]}.`, correct?'good':'bad');
+      cb(correct);
+    }, 700);
     return;
   }
-  const n = state.players.length;
-  let next = state.current;
-  do{ next = (next+1) % n; } while(!state.players[next].active);
-  state.current = next;
-  sndTurn();
-  renderTokens();
-  renderPlayers();
-  updateHint();
+  showQuestionUI(player, prop, form, timerLen, cb, isMainPlay);
 }
 
-function netWorth(p){ return p.cash + p.owned.reduce((s,id)=>s + TILES.find(t=>t.id===id).price, 0); }
+function recordPlayerAnswer(player, form, correct){
+  player.attempts++; player.attemptsByForm[form]++;
+  if(correct){ player.correct++; player.correctByForm[form]++; player.streak++; if(player.streak>player.bestStreak) player.bestStreak=player.streak; }
+  else { player.streak = 0; }
+  recordAttempt(player.name, form, correct);
+}
+function applyScoring(player, correct, diff, timeLeft){
+  if(correct){
+    const base = {easy:10, medium:20, hard:30}[diff];
+    const speedBonus = Math.round((timeLeft||0) * 1.5);
+    const streakBonus = Math.min(player.streak*3, 30);
+    player.score += base + speedBonus + streakBonus;
+  }
+}
 
-function endGame(){
-  state.ended = true;
-  document.getElementById('rollBtn').disabled = true;
-  const ranked = [...state.players].sort((a,b)=>netWorth(b)-netWorth(a));
-  const winnerLine = state.players.filter(p=>p.active).length===1
-    ? `${ranked[0].name} is the last player standing!`
-    : `Here's the final ranking based on total worth (cash + properties).`;
-  const rows = ranked.map((p,i)=>`
-    <div class="player-row" style="${i===0?'border-color:var(--gold); background:#fff3d6;':''}">
-      <div class="player-token" style="--tokColor:${TOKEN_COLOR[p.tokenIdx]}">${TOKEN_EMOJI[p.tokenIdx]}</div>
-      <div class="player-info">
-        <div class="pname">${i===0?'🏆 ':''}${p.name}${!p.active?' (bankrupt)':''}</div>
-        <div class="pcash cash">Total worth: $${netWorth(p)} (cash $${p.cash}, ${p.owned.length} properties)</div>
+function showQuestionUI(player, prop, form, timerLen, cb, isMainPlay){
+  const forms = buildForms(prop);
+  const correctText = forms[form];
+  const distractorForms = FORM_ORDER.filter(f=>f!==form);
+  const options = shuffle([{text:correctText, ok:true}, ...distractorForms.map(f=>({text:forms[f], ok:false}))]);
+
+  const overlay = document.createElement('div');
+  overlay.className='modal-overlay';
+  const colorVar = `var(--${form})`;
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-header">
+        <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--chalk-dim);">${player.name} · ${prop.diff.toUpperCase()}</div>
+        <div class="req-badge" style="background:${colorVar};color:#111;">Build the ${FORM_LABELS[form]}</div>
       </div>
-    </div>`).join('');
-  openModal(`
-    <span class="tag" style="background:var(--hardin)">Game Over!</span>
-    <h2>🏆 Measurement Champion: ${ranked[0].name}</h2>
-    <p>${winnerLine}</p>
-    ${rows}
-    <div class="modal-actions"><button class="btn primary" id="closeEnd">Close</button></div>
-  `);
-  document.getElementById('closeEnd').addEventListener('click', closeModal);
-  log('🏁 Game over!');
+      <div class="timer-bar-wrap"><div class="timer-bar" id="qTimerBar"></div></div>
+      <div class="prop-statement">
+        <span class="label">Base proposition</span>
+        If <span class="p-part">${prop.p}</span> (p), then <span class="q-part">${prop.q}</span> (q).
+      </div>
+      <div style="font-size:0.85rem;color:var(--chalk-dim);margin-bottom:10px;">Which statement below is the correct <b>${FORM_LABELS[form]}</b>?</div>
+      <div class="options" id="qOptions"></div>
+      <div class="modal-footer-note" id="qFooterNote">${timerLen>0 ? 'Answer before time runs out.' : 'Take your time — this is practice.'}</div>
+      ${G.isPractice ? '<button class="hint-btn" id="hintBtn">💡 Show a hint</button>' : ''}
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const optWrap = overlay.querySelector('#qOptions');
+  let answered = false;
+  options.forEach(opt=>{
+    const b = document.createElement('button');
+    b.className='option-btn';
+    b.textContent = opt.text;
+    b.addEventListener('click', ()=>{
+      if(answered) return;
+      answered = true;
+      clearInterval(intervalRef);
+      finalize(opt.ok, b);
+    });
+    optWrap.appendChild(b);
+  });
+
+  const hintBtn = overlay.querySelector('#hintBtn');
+  if(hintBtn){
+    hintBtn.addEventListener('click', ()=>{
+      toast(`Hint: negate both p and q for Inverse; swap p and q for Converse; do both for Contrapositive.`);
+    });
+  }
+
+  let timeLeft = timerLen>0 ? timerLen : 999;
+  const bar = overlay.querySelector('#qTimerBar');
+  let intervalRef = null;
+  if(timerLen>0){
+    intervalRef = setInterval(()=>{
+      timeLeft -= 0.2;
+      bar.style.width = Math.max(0,(timeLeft/timerLen*100))+'%';
+      if(timeLeft<=0){
+        clearInterval(intervalRef);
+        if(!answered){
+          answered = true;
+          finalize(false, null, true);
+        }
+      }
+    }, 200);
+  } else {
+    bar.style.width='100%';
+  }
+
+  function finalize(correct, btnEl, timedOut){
+    Array.from(optWrap.children).forEach(b=>{ b.disabled = true; });
+    if(btnEl) btnEl.classList.add(correct?'correct':'wrong');
+    if(!correct){
+      Array.from(optWrap.children).forEach(b=>{ if(b.textContent===correctText) b.classList.add('correct'); });
+    }
+    if(correct){ Audio_.correct(); } else { Audio_.wrong(); }
+    recordPlayerAnswer(player, form, correct);
+    if(!G.isPractice) applyScoring(player, correct, prop.diff, timeLeft);
+    const note = overlay.querySelector('#qFooterNote');
+    note.textContent = timedOut ? "Time's up! The correct answer is highlighted." : (correct ? 'Correct! Card played.' : 'Not quite — the correct form is highlighted.');
+    setTimeout(()=>{
+      overlay.remove();
+      cb(correct);
+    }, correct ? 900 : 1700);
+  }
 }
 
-/* ============================================================
-   Top bar buttons
-   ============================================================ */
-document.getElementById('muteBtn').addEventListener('click', ()=>{
-  muted = !muted;
-  document.getElementById('muteBtn').textContent = muted ? '🔇 Sound' : '🔊 Sound';
+/* =========================================================
+   AI TURN HANDLING
+   ========================================================= */
+function maybeRunAITurn(){
+  if(!G || G.gameOver) return;
+  const p = G.players[G.current];
+  if(!p.isAI) return;
+  setTimeout(()=>{
+    if(!G || G.gameOver) return;
+    const playableIdx = p.hand.findIndex(c=>canPlay(c));
+    if(playableIdx===-1){
+      ensureDeck();
+      if(G.deck.length>0){
+        const card = G.deck.shift();
+        p.hand.push(card);
+        Audio_.draw();
+        logEvent(`${p.name} (AI) drew a card.`);
+        if(canPlay(card)){
+          setTimeout(()=>doAIPlay(p.hand.indexOf(card)), 500);
+          return;
+        }
+      }
+      render();
+      endTurnAndAdvance();
+      return;
+    }
+    doAIPlay(playableIdx);
+  }, 800);
+}
+function doAIPlay(idx){
+  const p = G.players[G.current];
+  const card = p.hand[idx];
+  if(card.kind==='number'){
+    const prop = pickProposition();
+    askPlayer(p, prop, card.color, G.timerLen, (correct)=>{
+      if(correct){
+        playCardOut(idx);
+        render();
+        if(!G.gameOver) endTurnAndAdvance();
+      } else {
+        drawCardsFor(p,1);
+        render();
+        endTurnAndAdvance();
+      }
+    });
+  } else if(card.kind==='action'){
+    playCardOut(idx);
+    if(!G.gameOver) resolveActionEffects(card);
+    render();
+  } else {
+    const color = COLORS[Math.floor(Math.random()*4)];
+    G.activeColor = color;
+    playCardOut(idx, true);
+    render();
+    if(!G.gameOver){
+      if(card.value==='wildchallenge') resolveWildChallenge();
+      else endTurnAndAdvance();
+    }
+  }
+}
+
+/* =========================================================
+   WIN / GAME END
+   ========================================================= */
+function finishGame(winner){
+  G.gameOver = true;
+  Audio_.win();
+  const finalStreaks = {}, finalScores = {};
+  G.players.forEach(p=>{ finalStreaks[p.name]=p.bestStreak; finalScores[p.name]=p.score; });
+  recordGameEnd(G.players.map(p=>p.name), winner.name, finalStreaks, finalScores);
+
+  const overlay = document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.innerHTML = `<div class="modal win-modal">
+    <div class="trophy">🏆</div>
+    <h2>${winner.name} wins!</h2>
+    <p style="color:var(--chalk-dim);">Final scores: ${G.players.map(p=>`${p.name} — ${p.score} pts`).join(' · ')}</p>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;">
+      <button class="start-btn" id="playAgainBtn">Play Again</button>
+      <button class="hint-btn" id="viewAnalyticsBtn">View Analytics</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#playAgainBtn').addEventListener('click', ()=>{
+    overlay.remove();
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.querySelector('.tab-btn[data-view=home]').classList.add('active');
+    document.getElementById('view-home').classList.add('active');
+  });
+  overlay.querySelector('#viewAnalyticsBtn').addEventListener('click', ()=>{
+    overlay.remove();
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.querySelector('.tab-btn[data-view=analytics]').classList.add('active');
+    document.getElementById('view-analytics').classList.add('active');
+    renderAnalytics();
+  });
+}
+
+document.getElementById('exitGameBtn').addEventListener('click', ()=>{
+  if(confirm('End this session and return to the mode menu?')){
+    G = null;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.querySelector('.tab-btn[data-view=home]').classList.add('active');
+    document.getElementById('view-home').classList.add('active');
+  }
 });
-document.getElementById('rulesBtn').addEventListener('click', ()=>{
-  openModal(`
-    <span class="tag" style="background:var(--tangke)">How to Play</span>
-    <h2>📖 Rules</h2>
-    <p><b>Goal:</b> Correctly estimate and measure length, distance, area, and perimeter to buy properties and become the Measurement Champion.</p>
-    <p><b>Taking Turns:</b> Roll the dice, and your token moves around the board. Passing or landing on GO earns you +$200.</p>
-    <p><b>Buying Properties:</b> Landing on an unowned property triggers a question. Answer correctly to unlock buying it.</p>
-    <p><b>Rent:</b> Landing on a property owned by another player means paying rent — but answering correctly cuts it in half. Rent is doubled if the owner holds the whole district.</p>
-    <p><b>Measure Card:</b> A random pop quiz — correct answers earn +$100, wrong answers cost -$50.</p>
-    <p><b>Market:</b> You can rest, or try a bonus question (+$150 if correct, no penalty if wrong).</p>
-    <p><b>Storage:</b> If sent here from "Go To Storage," you must answer a question or pay $50 on your next turn to get out.</p>
-    <p><b>Winning:</b> If you run out of money and can't pay what you owe, you go bankrupt and are out of the game. The last player left standing is the Measurement Champion!</p>
-    <div class="modal-actions"><button class="btn primary" id="closeRules">Got It</button></div>
-  `);
-  document.getElementById('closeRules').addEventListener('click', closeModal);
+
+/* =========================================================
+   TEACHER LIVE PANEL (during play)
+   ========================================================= */
+function renderTeacherLive(){
+  const top = topCard();
+  const content = document.getElementById('teacherLiveContent');
+  const prop = PROPOSITIONS[0];
+  content.innerHTML = FORM_ORDER.map(f=>{
+    const sampleForms = buildForms(prop);
+    return `<div style="margin-bottom:8px;"><b>${FORM_LABELS[f]}:</b> ${sampleForms[f]}</div>`;
+  }).join('') + `<div style="margin-top:6px;font-size:0.7rem;">(sample using proposition #${prop.id} — full bank in the Teacher tab)</div>`;
+}
+
+/* =========================================================
+   ANALYTICS VIEW RENDER
+   ========================================================= */
+function renderAnalytics(){
+  const grid = document.getElementById('analyticsGrid');
+  grid.innerHTML = '';
+  const players = (G && G.players) ? G.players : [];
+  if(players.length===0){
+    grid.innerHTML = `<div class="stat-card"><h4>No active game</h4><p style="color:var(--chalk-dim);font-size:0.85rem;">Start a match from the Play tab to see live individual performance here. Class-wide history is below.</p></div>`;
+  }
+  players.forEach(p=>{
+    const acc = p.attempts>0 ? Math.round((p.correct/p.attempts)*100) : 0;
+    const card = document.createElement('div');
+    card.className = 'stat-card';
+    card.innerHTML = `<h4>${p.name} ${p.isAI?'🤖':''}</h4>
+      <div style="font-size:0.8rem;color:var(--chalk-dim);margin-bottom:10px;">Score: <b style="color:var(--chalk)">${p.score}</b> · Accuracy: <b style="color:var(--chalk)">${acc}%</b> · Best streak: <b style="color:var(--chalk)">${p.bestStreak}</b></div>
+      ${FORM_ORDER.map(f=>{
+        const a = p.attemptsByForm[f], c = p.correctByForm[f];
+        const pct = a>0 ? Math.round((c/a)*100) : 0;
+        return `<div class="mastery-row"><div class="mlabel">${FORM_LABELS[f]}</div><div class="mastery-bar-bg"><div class="mastery-bar-fill" style="width:${pct}%;background:var(--${f})"></div></div><div style="width:36px;text-align:right;">${pct}%</div></div>`;
+      }).join('')}`;
+    grid.appendChild(card);
+  });
+  renderClassTable();
+}
+function renderClassTable(){
+  const tbody = document.querySelector('#classTable tbody');
+  tbody.innerHTML = '';
+  Object.keys(classData).forEach(name=>{
+    const d = classData[name];
+    const acc = d.attempts>0 ? Math.round((d.correct/d.attempts)*100) : 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${name}</td><td>${d.games}</td><td>${d.wins}</td><td>${d.score}</td><td>${acc}%</td><td>${d.bestStreak}</td>`;
+    tbody.appendChild(tr);
+  });
+  if(Object.keys(classData).length===0){
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--chalk-dim);">No games recorded yet.</td></tr>`;
+  }
+}
+function downloadFile(filename, content, mime){
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+}
+document.getElementById('exportJson').addEventListener('click', ()=>{
+  downloadFile('uno-logic-class-data.json', JSON.stringify(classData,null,2), 'application/json');
 });
-document.getElementById('restartBtn').addEventListener('click', ()=>{
-  if(!confirm('Are you sure you want to restart the game?')) return;
-  document.getElementById('gameScreen').classList.add('hidden');
-  document.getElementById('setupScreen').classList.remove('hidden');
-  document.getElementById('restartBtn').classList.add('hidden');
-  document.getElementById('logBox').innerHTML = '';
-  closeModal();
-  state = null;
+document.getElementById('exportCsv').addEventListener('click', ()=>{
+  let rows = [['Player','Games','Wins','Score','Attempts','Correct','Accuracy%','BestStreak',
+    'Conditional_Attempts','Conditional_Correct','Converse_Attempts','Converse_Correct',
+    'Inverse_Attempts','Inverse_Correct','Contrapositive_Attempts','Contrapositive_Correct']];
+  Object.keys(classData).forEach(name=>{
+    const d = classData[name];
+    const acc = d.attempts>0 ? Math.round((d.correct/d.attempts)*100) : 0;
+    rows.push([name,d.games,d.wins,d.score,d.attempts,d.correct,acc,d.bestStreak,
+      d.attemptsByForm.conditional,d.correctByForm.conditional,
+      d.attemptsByForm.converse,d.correctByForm.converse,
+      d.attemptsByForm.inverse,d.correctByForm.inverse,
+      d.attemptsByForm.contrapositive,d.correctByForm.contrapositive]);
+  });
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  downloadFile('uno-logic-class-data.csv', csv, 'text/csv');
 });
-document.getElementById('overlay').addEventListener('click', (e)=>{
-  // clicking the dark backdrop should not silently dismiss unresolved question modals
-  // (prevents a bug where players could skip paying/answering by clicking outside)
-  e.stopPropagation();
+document.getElementById('resetAnalytics').addEventListener('click', async ()=>{
+  if(confirm('Reset all saved class analytics? This cannot be undone.')){
+    classData = {};
+    await saveAnalytics();
+    renderAnalytics();
+  }
 });
+
+/* =========================================================
+   TEACHER VIEW RENDER
+   ========================================================= */
+function renderTeacherView(){
+  const list = document.getElementById('qbankList');
+  list.innerHTML = PROPOSITIONS.map(prop=>{
+    const forms = buildForms(prop);
+    return `<div class="qbank-item">
+      <span class="diff-tag diff-${prop.diff}">${prop.diff}</span>
+      <div style="margin-top:8px;font-size:0.85rem;">p: ${prop.p} &nbsp;|&nbsp; q: ${prop.q}</div>
+      <div class="forms-list">
+        <div><b>Conditional:</b> ${forms.conditional}</div>
+        <div><b>Converse:</b> ${forms.converse}</div>
+        <div><b>Inverse:</b> ${forms.inverse}</div>
+        <div><b>Contrapositive:</b> ${forms.contrapositive}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const snap = document.getElementById('teacherClassSnapshot');
+  const names = Object.keys(classData);
+  if(names.length===0){
+    snap.innerHTML = 'No class data recorded yet — results appear here after a session ends.';
+  } else {
+    const totalGames = names.reduce((s,n)=>s+classData[n].games,0);
+    const totalCorrect = names.reduce((s,n)=>s+classData[n].correct,0);
+    const totalAttempts = names.reduce((s,n)=>s+classData[n].attempts,0);
+    const classAcc = totalAttempts>0 ? Math.round(totalCorrect/totalAttempts*100) : 0;
+    snap.innerHTML = `Players tracked: <b>${names.length}</b><br>Total games played: <b>${totalGames}</b><br>Class-wide accuracy: <b>${classAcc}%</b>`;
+  }
+}
+document.getElementById('teacherExportJson').addEventListener('click', ()=>{
+  downloadFile('uno-logic-class-data.json', JSON.stringify(classData,null,2), 'application/json');
+});
+document.getElementById('teacherExportCsv').addEventListener('click', ()=>{
+  document.getElementById('exportCsv').click();
+});
+
+/* =========================================================
+   SOUND TOGGLES
+   ========================================================= */
+let sfxEnabled = true, musicEnabled = false;
+document.getElementById('sfxToggle').addEventListener('click', ()=>{
+  sfxEnabled = !sfxEnabled;
+  Audio_.setSfx(sfxEnabled);
+  document.getElementById('sfxToggle').textContent = sfxEnabled ? '🔊' : '🔇';
+  if(sfxEnabled) Audio_.click();
+});
+document.getElementById('musicToggle').addEventListener('click', ()=>{
+  musicEnabled = !musicEnabled;
+  Audio_.setMusic(musicEnabled);
+  document.getElementById('musicToggle').textContent = musicEnabled ? '🎵' : '🔈';
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+(async function init(){
+  await loadAnalytics();
+  renderAnalytics();
+  renderTeacherView();
+})();
 </script>
 </body>
 </html>
